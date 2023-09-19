@@ -61,3 +61,19 @@ type K8sNativeComponentSpec struct {
 	// +optional
 	AdditionalVolumeMounts []corev1.VolumeMount `json:"additionalVolumeMounts,omitempty"`
 }
+
+// ResourceRef contains the k8s resource ref info.
+// +k8s:openapi-gen=true
+type ResourceRef struct {
+	Name      string `json:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
+}
+
+// ComponentPhase is the current state of member
+type ComponentPhase string
+
+const (
+	NormalPhase  ComponentPhase = "Normal"
+	UpgradePhase ComponentPhase = "Upgrade"
+	ScalePhase   ComponentPhase = "Scale"
+)

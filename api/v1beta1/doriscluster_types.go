@@ -44,9 +44,9 @@ type DorisClusterList struct {
 // DorisClusterSpec describes the attributes that a user creates on a Doris cluster.
 // +k8s:openapi-gen=true
 type DorisClusterSpec struct {
-	Fe         *FeSpec         `json:"fe,omitempty"`
-	Be         *BeSpec         `json:"be,omitempty"`
-	Cn         *CnSpec         `json:"cn,omitempty"`
+	FE         *FESpec         `json:"fe,omitempty"`
+	BE         *BESpec         `json:"be,omitempty"`
+	CN         *CNSpec         `json:"cn,omitempty"`
 	Broker     *BrokerSpec     `json:"broker,omitempty"`
 	HadoopConf *HadoopConfSpec `json:"hadoopConf,omitempty"`
 
@@ -61,6 +61,9 @@ type DorisClusterSpec struct {
 	// any of the images.
 	// +optional
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
+
+	// Specify a Service Account
+	ServiceAccount string `json:"serviceAccount,omitempty"`
 
 	// Annotations of Doris cluster pods that will be merged with component annotation settings.
 	// +optional
@@ -83,9 +86,9 @@ type DorisClusterSpec struct {
 	StatefulSetUpdateStrategy apps.StatefulSetUpdateStrategyType `json:"statefulSetUpdateStrategy,omitempty"`
 }
 
-// FeSpec contains details of FE members.
+// FESpec contains details of FE members.
 // +k8s:openapi-gen=true
-type FeSpec struct {
+type FESpec struct {
 	DorisComponentSpec `json:",inline"`
 
 	// The storageClassName of the persistent volume for TiDB data storage.
@@ -97,9 +100,9 @@ type FeSpec struct {
 	Service *FeServiceSpec `json:"service,omitempty"`
 }
 
-// BeSpec contains details of BE members.
+// BESpec contains details of BE members.
 // +k8s:openapi-gen=true
-type BeSpec struct {
+type BESpec struct {
 	DorisComponentSpec `json:",inline"`
 
 	// The storageClassName of the persistent volume for TiDB data storage.
@@ -108,9 +111,9 @@ type BeSpec struct {
 	StorageClassName string `json:"storageClassName,omitempty"`
 }
 
-// CnSpec contains details of CN members.
+// CNSpec contains details of CN members.
 // +k8s:openapi-gen=true
-type CnSpec struct {
+type CNSpec struct {
 	DorisComponentSpec `json:",inline"`
 }
 
@@ -132,7 +135,7 @@ type HadoopConfSpec struct {
 // HostnameIpItem define Hostname-IP kv item
 // +k8s:openapi-gen=true
 type HostnameIpItem struct {
-	Ip   string `json:"ip"`
+	IP   string `json:"ip"`
 	Name string `json:"name"`
 }
 
@@ -192,7 +195,69 @@ type DorisComponentSpec struct {
 
 // DorisClusterStatus defines the observed state of DorisCluster
 type DorisClusterStatus struct {
+	FE         FEStatus                `json:"fe,omitempty"`
+	BE         BEStatus                `json:"be,omitempty"`
+	CN         CNStatus                `json:"cn,omitempty"`
+	Broker     BrokerStatus            `json:"broker,omitempty"`
+	Conditions []DorisClusterCondition `json:"conditions,omitempty"`
 }
+
+// FEStatus represents the current state of Doris FE
+type FEStatus struct {
+	ServiceName     string `json:"serviceName,omitempty"`
+	ComponentStatus `json:",inline"`
+}
+
+// BEStatus represents the current state of Doris BE
+type BEStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+// CNStatus represents the current state of Doris CN
+type CNStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+// BrokerStatus represents the current state of Doris Broker
+type BrokerStatus struct {
+	ComponentStatus `json:",inline"`
+}
+
+type ComponentStatus struct {
+	StatefulSetName string                     `json:"statefulSetName,omitempty"`
+	StatefulSet     *apps.StatefulSetStatus    `json:"statefulSet,omitempty"`
+	Image           string                     `json:"image,omitempty"`
+	Phase           ComponentPhase             `json:"phase,omitempty"`
+	Members         map[string]ComponentMember `json:"members,omitempty"`
+	Conditions      []metav1.Condition         `json:"conditions,omitempty"`
+}
+
+// ComponentMember represents the current state of a component member
+type ComponentMember struct {
+	Name      string `json:"name"`
+	Available bool   `json:"available"`
+	// +nullable
+	CreatedAt metav1.Time `json:"createdAt,omitempty"`
+	// +nullable
+	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
+}
+
+// DorisClusterCondition describes the state of a tidb cluster at a certain point.
+type DorisClusterCondition struct {
+	Type               DorisClusterConditionType `json:"type"`
+	Status             corev1.ConditionStatus    `json:"status"`
+	LastTransitionTime metav1.Time               `json:"lastTransitionTime,omitempty"`
+	Reason             string                    `json:"reason,omitempty"`
+	Message            string                    `json:"message,omitempty"`
+}
+
+// DorisClusterConditionType represents a tidb cluster condition value.
+type DorisClusterConditionType string
+
+const (
+	// DorisClusterReady indicates that the tidb cluster is ready or not.
+	DorisClusterReady DorisClusterConditionType = "Ready"
+)
 
 func init() {
 	SchemeBuilder.Register(&DorisCluster{}, &DorisClusterList{})
