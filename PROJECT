@@ -16,4 +16,28 @@ resources:
   kind: DorisCluster
   path: github.com/al-assad/doris-operator/api/v1beta1
   version: v1beta1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: al-assad.github.io
+  kind: DorisInitializer
+  path: github.com/al-assad/doris-operator/api/v1beta1
+  version: v1beta1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: al-assad.github.io
+  kind: DorisAutoscaler
+  path: github.com/al-assad/doris-operator/api/v1beta1
+  version: v1beta1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: al-assad.github.io
+  kind: DorisMonitor
+  path: github.com/al-assad/doris-operator/api/v1beta1
+  version: v1beta1
 version: "3"

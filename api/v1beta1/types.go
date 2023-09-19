@@ -65,14 +65,21 @@ type K8sNativeComponentSpec struct {
 // ResourceRef contains the k8s resource ref info.
 // +k8s:openapi-gen=true
 type ResourceRef struct {
-	Name      string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
+	// +optional
 	Namespace string `json:"namespace,omitempty"`
+}
+
+// DorisClusterRef is the reference to DorisCluster.
+type DorisClusterRef struct {
+	ResourceRef `json:",inline"`
 }
 
 // ComponentPhase is the current state of member
 type ComponentPhase string
 
 const (
+	StandbyPhase ComponentPhase = "Standby"
 	NormalPhase  ComponentPhase = "Normal"
 	UpgradePhase ComponentPhase = "Upgrade"
 	ScalePhase   ComponentPhase = "Scale"

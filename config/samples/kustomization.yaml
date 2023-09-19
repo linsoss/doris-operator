@@ -1,4 +1,7 @@
 ## Append samples of your project ##
 resources:
 - _v1beta1_doriscluster.yaml
+- _v1beta1_dorisinitializer.yaml
+- _v1beta1_dorisautoscaler.yaml
+- _v1beta1_dorismonitor.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

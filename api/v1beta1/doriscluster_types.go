@@ -194,6 +194,7 @@ type DorisComponentSpec struct {
 }
 
 // DorisClusterStatus defines the observed state of DorisCluster
+// +k8s:openapi-gen=true
 type DorisClusterStatus struct {
 	FE         FEStatus                `json:"fe,omitempty"`
 	BE         BEStatus                `json:"be,omitempty"`

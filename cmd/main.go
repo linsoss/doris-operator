@@ -84,6 +84,27 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "DorisCluster")
 		os.Exit(1)
 	}
+	if err = (&controller.DorisInitializerReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "DorisInitializer")
+		os.Exit(1)
+	}
+	if err = (&controller.DorisAutoscalerReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "DorisAutoscaler")
+		os.Exit(1)
+	}
+	if err = (&controller.DorisMonitorReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "DorisMonitor")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
