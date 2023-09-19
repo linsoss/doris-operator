@@ -153,12 +153,12 @@ type FeServiceSpec struct {
 	// Expose the FE query port
 	// Optional: Defaults to 0
 	// +optional
-	QueryPort *int `json:"queryPort,omitempty"`
+	QueryPort int `json:"queryPort,omitempty"`
 
 	// Expose the FE http port
 	// Optional: Defaults to 0
 	// +optional
-	HttpPort *int `json:"httpPort,omitempty"`
+	HttpPort int `json:"httpPort,omitempty"`
 }
 
 // DorisComponentSpec is the base component spec.
@@ -225,12 +225,12 @@ type BrokerStatus struct {
 }
 
 type ComponentStatus struct {
-	StatefulSetName string                     `json:"statefulSetName,omitempty"`
-	StatefulSet     *apps.StatefulSetStatus    `json:"statefulSet,omitempty"`
-	Image           string                     `json:"image,omitempty"`
-	Phase           ComponentPhase             `json:"phase,omitempty"`
-	Members         map[string]ComponentMember `json:"members,omitempty"`
-	Conditions      []metav1.Condition         `json:"conditions,omitempty"`
+	StatefulSetRef ResourceRef                `json:"statefulSetRef,omitempty"`
+	StatefulSet    *apps.StatefulSetStatus    `json:"statefulSet,omitempty"`
+	Image          string                     `json:"image,omitempty"`
+	Phase          ComponentPhase             `json:"phase,omitempty"`
+	Members        map[string]ComponentMember `json:"members,omitempty"`
+	Conditions     []metav1.Condition         `json:"conditions,omitempty"`
 }
 
 // ComponentMember represents the current state of a component member

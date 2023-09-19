@@ -87,13 +87,15 @@ type DorisInitializerSpec struct {
 type DorisInitializerStatus struct {
 	Phase InitializePhase `json:"phase,omitempty"`
 	// Last time the condition transit from one Phase to another.
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,4,opt,name=lastTransitionTime"`
+	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
 	// +optional
-	Reason string `json:"reason,omitempty" protobuf:"bytes,5,opt,name=reason"`
+	Reason string `json:"reason,omitempty"`
 	// +optional
-	Message string `json:"message,omitempty" protobuf:"bytes,6,opt,name=message"`
+	Message string `json:"message,omitempty"`
+	// +optional
+	JobRef ResourceRef `json:"jobRef,omitempty"`
 	// +nullable
-	batchv1.JobStatus `json:",inline"`
+	JobStatus *batchv1.JobStatus `json:",inline"`
 }
 
 type InitializePhase string
