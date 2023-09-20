@@ -1,0 +1,12 @@
+apiVersion: al-assad.github.io/v1beta1
+kind: DorisInitializer
+metadata:
+  labels:
+    app.kubernetes.io/name: dorisinitializer
+    app.kubernetes.io/instance: dorisinitializer-sample
+    app.kubernetes.io/part-of: doris-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: doris-operator
+  name: dorisinitializer-sample
+spec:
+  # TODO(user): Add fields here

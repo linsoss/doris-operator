@@ -1,0 +1,12 @@
+apiVersion: al-assad.github.io/v1beta1
+kind: DorisAutoscaler
+metadata:
+  labels:
+    app.kubernetes.io/name: dorisautoscaler
+    app.kubernetes.io/instance: dorisautoscaler-sample
+    app.kubernetes.io/part-of: doris-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: doris-operator
+  name: dorisautoscaler-sample
+spec:
+  # TODO(user): Add fields here

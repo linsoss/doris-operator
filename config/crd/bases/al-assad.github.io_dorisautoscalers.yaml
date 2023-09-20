@@ -1,0 +1,178 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.12.0
+  name: dorisautoscalers.al-assad.github.io
+spec:
+  group: al-assad.github.io
+  names:
+    kind: DorisAutoscaler
+    listKind: DorisAutoscalerList
+    plural: dorisautoscalers
+    singular: dorisautoscaler
+  scope: Namespaced
+  versions:
+  - name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: DorisAutoscaler is the Schema for the Doris cluster autoscaling
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DorisAutoscalerSpec defines the desired state of DorisAutoscaler
+            properties:
+              cluster:
+                description: Reference of the target DorisCluster
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                type: object
+              cn:
+                description: CNAutoscalerSpec contains autoscaling details of CN components.
+                properties:
+                  cluster:
+                    description: Reference of the target DorisCluster
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    type: object
+                  disableScaleDown:
+                    description: Whether to disable scale down Default to false
+                    type: boolean
+                  replicas:
+                    description: The range of replicas for automatic scaling
+                    properties:
+                      max:
+                        format: int32
+                        type: integer
+                      min:
+                        format: int32
+                        type: integer
+                    type: object
+                  rules:
+                    description: The metric rules for automatic scaling
+                    properties:
+                      cpu:
+                        description: Rules for scaling based on cpu usage percentage
+                          of CN pods
+                        properties:
+                          max:
+                            format: int32
+                            type: integer
+                          min:
+                            format: int32
+                            type: integer
+                        type: object
+                      memory:
+                        description: Rules for scaling based on memory usage percentage
+                          of CN pods
+                        properties:
+                          max:
+                            format: int32
+                            type: integer
+                          min:
+                            format: int32
+                            type: integer
+                        type: object
+                    type: object
+                  scalePeriodSeconds:
+                    description: 'ScalePeriodSeconds indicates the length of time
+                      in the past for which the k8s HPA scale policy must hold true
+                      Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#scaling-policies'
+                    properties:
+                      scaleDown:
+                        type: integer
+                      scaleUp:
+                        type: integer
+                    type: object
+                required:
+                - cluster
+                type: object
+            required:
+            - cluster
+            type: object
+          status:
+            description: DorisAutoscalerStatus defines the observed state of DorisAutoscaler
+            properties:
+              cn:
+                description: CNAutoscalerStatus defines the observed state of CN autoscaler
+                properties:
+                  lastTransitionTime:
+                    description: Last time the condition transit from one Phase to
+                      another.
+                    format: date-time
+                    type: string
+                  message:
+                    type: string
+                  phase:
+                    description: AutoScalePhase is the current state of autoscaler
+                    type: string
+                  reason:
+                    type: string
+                  scaleDown:
+                    description: Scale down HPA
+                    nullable: true
+                    properties:
+                      apiVersion:
+                        description: 'APIVersion defines the versioned schema of this
+                          representation of an object. Servers should convert recognized
+                          schemas to the latest internal value, and may reject unrecognized
+                          values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                        type: string
+                      kind:
+                        description: 'Kind is a string value representing the REST
+                          resource this object represents. Servers may infer this
+                          from the endpoint the client submits requests to. Cannot
+                          be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                        type: string
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    type: object
+                  scaleUp:
+                    description: Scale up HPA
+                    nullable: true
+                    properties:
+                      apiVersion:
+                        description: 'APIVersion defines the versioned schema of this
+                          representation of an object. Servers should convert recognized
+                          schemas to the latest internal value, and may reject unrecognized
+                          values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                        type: string
+                      kind:
+                        description: 'Kind is a string value representing the REST
+                          resource this object represents. Servers may infer this
+                          from the endpoint the client submits requests to. Cannot
+                          be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                        type: string
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    type: object
+                type: object
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

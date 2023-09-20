@@ -1,0 +1,110 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisautoscalers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisautoscalers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisautoscalers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisclusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisclusters/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisclusters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisinitializers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisinitializers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisinitializers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorismonitors
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorismonitors/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorismonitors/status
+  verbs:
+  - get
+  - patch
+  - update

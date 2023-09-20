@@ -1,0 +1,31 @@
+# permissions for end users to edit dorisinitializers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: dorisinitializer-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: doris-operator
+    app.kubernetes.io/part-of: doris-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: dorisinitializer-editor-role
+rules:
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisinitializers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisinitializers/status
+  verbs:
+  - get

@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	alassadgithubiov1beta1 "github.com/al-assad/doris-operator/api/v1beta1"
+	v1beta1 "github.com/al-assad/doris-operator/api/v1beta1"
 )
 
 // DorisClusterReconciler reconciles a DorisCluster object
@@ -48,7 +48,6 @@ type DorisClusterReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.15.0/pkg/reconcile
 func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
-
 	// TODO(user): your logic here
 
 	return ctrl.Result{}, nil
@@ -57,6 +56,6 @@ func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request
 // SetupWithManager sets up the controller with the Manager.
 func (r *DorisClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&alassadgithubiov1beta1.DorisCluster{}).
+		For(&v1beta1.DorisCluster{}).
 		Complete(r)
 }

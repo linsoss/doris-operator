@@ -1,0 +1,27 @@
+# permissions for end users to view dorisinitializers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: dorisinitializer-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: doris-operator
+    app.kubernetes.io/part-of: doris-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: dorisinitializer-viewer-role
+rules:
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisinitializers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisinitializers/status
+  verbs:
+  - get
