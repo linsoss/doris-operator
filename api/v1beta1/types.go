@@ -71,6 +71,7 @@ type ResourceRef struct {
 }
 
 // DorisClusterRef is the reference to DorisCluster.
+// +k8s:openapi-gen=true
 type DorisClusterRef struct {
 	ResourceRef `json:",inline"`
 }

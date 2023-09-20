@@ -63,6 +63,7 @@ type DorisClusterSpec struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 
 	// Specify a Service Account
+	// +optional
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
 	// Annotations of Doris cluster pods that will be merged with component annotation settings.
@@ -201,11 +202,27 @@ type DorisClusterStatus struct {
 	CN         CNStatus                `json:"cn,omitempty"`
 	Broker     BrokerStatus            `json:"broker,omitempty"`
 	Conditions []DorisClusterCondition `json:"conditions,omitempty"`
+
+	// The reference of the DorisInitializer
+	// +nullable
+	InitializerRef ResourceRef `json:"initializerRef,omitempty"`
+
+	// Whether the initialization process defined by DorisInitializer has been completed once.
+	// +nullable
+	Initialized bool `json:"initialized,omitempty"`
+
+	// The reference of the DorisAutoscaler
+	// +nullable
+	AutoScalerRef AutoScalerRef `json:"autoScalerRef,omitempty"`
+
+	// The reference of the DorisMonitor
+	// +nullable
+	MonitorRef ResourceRef `json:"monitorRef,omitempty"`
 }
 
 // FEStatus represents the current state of Doris FE
 type FEStatus struct {
-	ServiceName     string `json:"serviceName,omitempty"`
+	ServiceRef      ResourceRef `json:"serviceName,omitempty"`
 	ComponentStatus `json:",inline"`
 }
 

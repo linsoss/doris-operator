@@ -60,6 +60,7 @@ type DorisInitializerSpec struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 
 	// Specify a Service Account
+	// +optional
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
 	// Default Doris root user password
@@ -75,7 +76,7 @@ type DorisInitializerSpec struct {
 	SqlScript string `json:"initSqlScript,omitempty"`
 
 	// +optional
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+	corev1.ResourceRequirements `json:",inline"`
 
 	// Tolerations of the Doris initializer Pod
 	// +optional
