@@ -46,6 +46,9 @@ spec:
                     type: string
                   namespace:
                     type: string
+                required:
+                - name
+                - namespace
                 type: object
               image:
                 type: string
@@ -144,6 +147,9 @@ spec:
                     type: string
                   namespace:
                     type: string
+                required:
+                - name
+                - namespace
                 type: object
               lastTransitionTime:
                 format: date-time

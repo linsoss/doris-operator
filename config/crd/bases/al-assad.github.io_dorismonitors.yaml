@@ -32,6 +32,9 @@ spec:
                     type: string
                   namespace:
                     type: string
+                required:
+                - name
+                - namespace
                 type: object
               grafana:
                 properties:
@@ -178,6 +181,9 @@ spec:
                     type: string
                   namespace:
                     type: string
+                required:
+                - name
+                - namespace
                 type: object
               prometheusServiceRef:
                 properties:
@@ -185,6 +191,9 @@ spec:
                     type: string
                   namespace:
                     type: string
+                required:
+                - name
+                - namespace
                 type: object
               statefulSet:
                 nullable: true
@@ -242,6 +251,9 @@ spec:
                     type: string
                   namespace:
                     type: string
+                required:
+                - name
+                - namespace
                 type: object
             type: object
         type: object

@@ -32,6 +32,9 @@ spec:
                     type: string
                   namespace:
                     type: string
+                required:
+                - name
+                - namespace
                 type: object
               cn:
                 properties:
@@ -41,6 +44,9 @@ spec:
                         type: string
                       namespace:
                         type: string
+                    required:
+                    - name
+                    - namespace
                     type: object
                   disableScaleDown:
                     type: boolean
@@ -96,10 +102,6 @@ spec:
                     type: string
                   message:
                     type: string
-                  phase:
-                    type: string
-                  reason:
-                    type: string
                   scaleDown:
                     nullable: true
                     properties:
@@ -111,6 +113,9 @@ spec:
                         type: string
                       namespace:
                         type: string
+                    required:
+                    - name
+                    - namespace
                     type: object
                   scaleUp:
                     nullable: true
@@ -123,7 +128,12 @@ spec:
                         type: string
                       namespace:
                         type: string
+                    required:
+                    - name
+                    - namespace
                     type: object
+                  stage:
+                    type: string
                 type: object
             type: object
         type: object
