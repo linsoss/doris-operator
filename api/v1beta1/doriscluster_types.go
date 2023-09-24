@@ -41,6 +41,10 @@ type DorisClusterList struct {
 	Items           []DorisCluster `json:"items"`
 }
 
+// ########################################
+//   		DorisClusterSpec
+// ########################################
+
 // DorisClusterSpec describes the attributes that a user creates on a Doris cluster.
 // +k8s:openapi-gen=true
 type DorisClusterSpec struct {
@@ -194,88 +198,74 @@ type DorisComponentSpec struct {
 	K8sNativeComponentSpec `json:",inline"`
 }
 
+// ########################################
+//   		DorisClusterStatus
+// ########################################
+
 // DorisClusterStatus defines the observed state of DorisCluster
 // +k8s:openapi-gen=true
 type DorisClusterStatus struct {
-	FE         FEStatus                `json:"fe,omitempty"`
-	BE         BEStatus                `json:"be,omitempty"`
-	CN         CNStatus                `json:"cn,omitempty"`
-	Broker     BrokerStatus            `json:"broker,omitempty"`
-	Conditions []DorisClusterCondition `json:"conditions,omitempty"`
+	PrevSpec *DorisClusterSpec `json:"prevSpec,omitempty"`
 
-	// The reference of the DorisInitializer
-	// +nullable
-	InitializerRef ResourceRef `json:"initializerRef,omitempty"`
+	Stage              DorisClusterOprStage       `json:"stage,omitempty"`
+	StageStatus        DorisClusterOprStageStatus `json:"stageStatus,omitempty"`
+	LastMessage        string                     `json:"lastMessage,omitempty"`
+	LastTransitionTime metav1.Time                `json:"lastTransitionTime,omitempty"`
 
-	// Whether the initialization process defined by DorisInitializer has been completed once.
-	// +nullable
-	Initialized bool `json:"initialized,omitempty"`
+	FE     FEStatus     `json:"fe,omitempty"`
+	BE     BEStatus     `json:"be,omitempty"`
+	CN     CNStatus     `json:"cn,omitempty"`
+	Broker BrokerStatus `json:"broker,omitempty"`
 
-	// The reference of the DorisAutoscaler
-	// +nullable
-	AutoScalerRef AutoScalerRef `json:"autoScalerRef,omitempty"`
-
-	// The reference of the DorisMonitor
-	// +nullable
-	MonitorRef ResourceRef `json:"monitorRef,omitempty"`
+	// TODO Status indicates that the cluster is fully ready or able to provide external sql query service.
 }
+
+// DorisClusterOprStage represents DorisCluster operator stage
+type DorisClusterOprStage string
+
+const (
+	// TODO other stage
+	OprStageComplete DorisClusterOprStage = "complete"
+)
+
+// DorisClusterOprStageStatus status of represents DorisCluster operator stage
+type DorisClusterOprStageStatus string
+
+const (
+	OprStageStatusSucceeded  DorisClusterOprStageStatus = "succeeded"
+	OprStageStatusFailed     DorisClusterOprStageStatus = "failed"
+	OprStageStatusInProgress DorisClusterOprStageStatus = "in progress"
+)
 
 // FEStatus represents the current state of Doris FE
 type FEStatus struct {
-	ServiceRef      ResourceRef `json:"serviceName,omitempty"`
-	ComponentStatus `json:",inline"`
+	ServiceRef           NamespacedName `json:"serviceName,omitempty"`
+	DorisComponentStatus `json:",inline"`
 }
 
 // BEStatus represents the current state of Doris BE
 type BEStatus struct {
-	ComponentStatus `json:",inline"`
+	DorisComponentStatus `json:",inline"`
 }
 
 // CNStatus represents the current state of Doris CN
 type CNStatus struct {
-	ComponentStatus `json:",inline"`
+	DorisComponentStatus `json:",inline"`
 }
 
 // BrokerStatus represents the current state of Doris Broker
 type BrokerStatus struct {
-	ComponentStatus `json:",inline"`
+	DorisComponentStatus `json:",inline"`
 }
 
-type ComponentStatus struct {
-	StatefulSetRef ResourceRef                `json:"statefulSetRef,omitempty"`
-	StatefulSet    *apps.StatefulSetStatus    `json:"statefulSet,omitempty"`
-	Image          string                     `json:"image,omitempty"`
-	Phase          ComponentPhase             `json:"phase,omitempty"`
-	Members        map[string]ComponentMember `json:"members,omitempty"`
-	Conditions     []metav1.Condition         `json:"conditions,omitempty"`
+// DorisComponentStatus represents the current status of a DorisCluster component
+type DorisComponentStatus struct {
+	Image          string                      `json:"image,omitempty"`
+	StatefulSetRef NamespacedName              `json:"statefulSetRef,omitempty"`
+	Members        []string                    `json:"members,omitempty"`
+	ReadyMembers   []string                    `json:"readyMembers,omitempty"`
+	Conditions     []apps.StatefulSetCondition `json:"conditions,omitempty"`
 }
-
-// ComponentMember represents the current state of a component member
-type ComponentMember struct {
-	Name      string `json:"name"`
-	Available bool   `json:"available"`
-	// +nullable
-	CreatedAt metav1.Time `json:"createdAt,omitempty"`
-	// +nullable
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
-}
-
-// DorisClusterCondition describes the state of a tidb cluster at a certain point.
-type DorisClusterCondition struct {
-	Type               DorisClusterConditionType `json:"type"`
-	Status             corev1.ConditionStatus    `json:"status"`
-	LastTransitionTime metav1.Time               `json:"lastTransitionTime,omitempty"`
-	Reason             string                    `json:"reason,omitempty"`
-	Message            string                    `json:"message,omitempty"`
-}
-
-// DorisClusterConditionType represents a tidb cluster condition value.
-type DorisClusterConditionType string
-
-const (
-	// DorisClusterReady indicates that the tidb cluster is ready or not.
-	DorisClusterReady DorisClusterConditionType = "Ready"
-)
 
 func init() {
 	SchemeBuilder.Register(&DorisCluster{}, &DorisClusterList{})

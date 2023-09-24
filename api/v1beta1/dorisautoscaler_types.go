@@ -101,18 +101,14 @@ type DorisAutoscalerStatus struct {
 
 // CNAutoscalerStatus defines the observed state of CN autoscaler
 type CNAutoscalerStatus struct {
-	Phase AutoScalePhase `json:"phase,omitempty"`
-	// Last time the condition transit from one Phase to another.
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
-	// +optional
-	Reason string `json:"reason,omitempty"`
-	// +optional
-	Message string `json:"message,omitempty"`
-	// Scale up HPA
+	Phase              AutoScalePhase `json:"stage,omitempty"`
+	LastTransitionTime metav1.Time    `json:"lastTransitionTime,omitempty"`
+	LastMessage        string         `json:"message,omitempty"`
+	// Scale up HPA reference
 	// +nullable
 	ScaleUp *AutoScalerRef `json:"scaleUp,omitempty"`
+	// Scale down HPA reference
 	// +nullable
-	// Scale down HPA
 	ScaleDown *AutoScalerRef `json:"scaleDown,omitempty"`
 }
 
@@ -120,14 +116,14 @@ type CNAutoscalerStatus struct {
 type AutoScalePhase string
 
 const (
-	AutoScalePhaseStandby ComponentPhase = "Standby"
-	AutoScalPhaseUpgrade  ComponentPhase = "Upgrade"
-	AutoScalePhaseNormal  ComponentPhase = "Normal"
+	AutoScalePhasePending  AutoScalePhase = "pending"
+	AutoScalePhaseUpdating AutoScalePhase = "updating"
+	AutoScalPhaseCompleted AutoScalePhase = "completed"
 )
 
 // AutoScalerRef identifies a K8s HPA resource.
 type AutoScalerRef struct {
-	*ResourceRef     `json:",inline"`
+	*NamespacedName  `json:",inline"`
 	*metav1.TypeMeta `json:",inline"`
 }
 

@@ -145,9 +145,9 @@ type MonitorServiceSpec struct {
 // DorisMonitorStatus defines the observed state of DorisMonitor
 // +k8s:openapi-gen=true
 type DorisMonitorStatus struct {
-	StatefulSetRef       ResourceRef `json:"statefulSetRef,omitempty"`
-	PrometheusServiceRef ResourceRef `json:"prometheusServiceRef,omitempty"`
-	GrafanaServiceRef    ResourceRef `json:"grafanaServiceRef,omitempty"`
+	StatefulSetRef       NamespacedName `json:"statefulSetRef,omitempty"`
+	PrometheusServiceRef NamespacedName `json:"prometheusServiceRef,omitempty"`
+	GrafanaServiceRef    NamespacedName `json:"grafanaServiceRef,omitempty"`
 	// +nullable
 	StatefulSet *apps.StatefulSetStatus `json:"statefulSet,omitempty"`
 }

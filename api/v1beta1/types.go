@@ -62,26 +62,15 @@ type K8sNativeComponentSpec struct {
 	AdditionalVolumeMounts []corev1.VolumeMount `json:"additionalVolumeMounts,omitempty"`
 }
 
-// ResourceRef contains the k8s resource ref info.
+// NamespacedName is the name and namespace of the kubernetes object
 // +k8s:openapi-gen=true
-type ResourceRef struct {
-	Name string `json:"name,omitempty"`
-	// +optional
-	Namespace string `json:"namespace,omitempty"`
+type NamespacedName struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
 }
 
 // DorisClusterRef is the reference to DorisCluster.
 // +k8s:openapi-gen=true
 type DorisClusterRef struct {
-	ResourceRef `json:",inline"`
+	NamespacedName `json:",inline"`
 }
-
-// ComponentPhase is the current state of member
-type ComponentPhase string
-
-const (
-	StandbyPhase ComponentPhase = "Standby"
-	NormalPhase  ComponentPhase = "Normal"
-	UpgradePhase ComponentPhase = "Upgrade"
-	ScalePhase   ComponentPhase = "Scale"
-)

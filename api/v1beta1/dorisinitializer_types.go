@@ -94,7 +94,7 @@ type DorisInitializerStatus struct {
 	// +optional
 	Message string `json:"message,omitempty"`
 	// +optional
-	JobRef ResourceRef `json:"jobRef,omitempty"`
+	JobRef NamespacedName `json:"jobRef,omitempty"`
 	// +nullable
 	JobStatus *batchv1.JobStatus `json:",inline"`
 }
@@ -102,11 +102,10 @@ type DorisInitializerStatus struct {
 type InitializePhase string
 
 const (
-	InitializePhasePending   InitializePhase = "Pending"
-	InitializePhaseRunning   InitializePhase = "Running"
-	InitializePhaseCompleted InitializePhase = "Completed"
-	InitializePhaseSkipped   InitializePhase = "Skipped"
-	InitializePhaseFailed    InitializePhase = "Failed"
+	InitializePhasePending   InitializePhase = "pending"
+	InitializePhaseRunning   InitializePhase = "running"
+	InitializePhaseCompleted InitializePhase = "completed"
+	InitializePhaseFailed    InitializePhase = "failed"
 )
 
 func init() {
