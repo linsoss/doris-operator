@@ -36,6 +36,8 @@ spec:
                 - name
                 - namespace
                 type: object
+              enableLoki:
+                type: boolean
               grafana:
                 properties:
                   adminPassword:
@@ -81,6 +83,8 @@ spec:
                       type:
                         type: string
                     type: object
+                  storageClassName:
+                    type: string
                 required:
                 - image
                 type: object
@@ -94,8 +98,6 @@ spec:
                   type: object
                   x-kubernetes-map-type: atomic
                 type: array
-              persistent:
-                type: boolean
               prometheus:
                 properties:
                   claims:
@@ -110,10 +112,6 @@ spec:
                     x-kubernetes-list-map-keys:
                     - name
                     x-kubernetes-list-type: map
-                  commandOptions:
-                    items:
-                      type: string
-                    type: array
                   image:
                     type: string
                   limits:
@@ -124,8 +122,6 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
-                  logLevel:
-                    type: string
                   requests:
                     additionalProperties:
                       anyOf:
@@ -145,65 +141,317 @@ spec:
                       type:
                         type: string
                     type: object
+                  storageClassName:
+                    type: string
                 required:
                 - image
                 type: object
-              replicas:
-                format: int32
-                type: integer
+              serviceAccount:
+                type: string
               storageClassName:
                 type: string
-              tolerations:
-                items:
-                  properties:
-                    effect:
-                      type: string
-                    key:
-                      type: string
-                    operator:
-                      type: string
-                    tolerationSeconds:
-                      format: int64
-                      type: integer
-                    value:
-                      type: string
-                  type: object
-                type: array
             required:
             - cluster
-            - replicas
             type: object
           status:
             properties:
-              grafanaServiceRef:
+              grafana:
                 properties:
-                  name:
+                  conditions:
+                    items:
+                      properties:
+                        lastTransitionTime:
+                          format: date-time
+                          type: string
+                        lastUpdateTime:
+                          format: date-time
+                          type: string
+                        message:
+                          type: string
+                        reason:
+                          type: string
+                        status:
+                          type: string
+                        type:
+                          type: string
+                      required:
+                      - status
+                      - type
+                      type: object
+                    type: array
+                  deploymentRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
+                  pvcRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
+                  ready:
+                    type: boolean
+                  serviceRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
+                type: object
+              lastMessage:
+                type: string
+              lastTransitionTime:
+                format: date-time
+                type: string
+              loki:
+                properties:
+                  conditions:
+                    items:
+                      properties:
+                        lastTransitionTime:
+                          format: date-time
+                          type: string
+                        lastUpdateTime:
+                          format: date-time
+                          type: string
+                        message:
+                          type: string
+                        reason:
+                          type: string
+                        status:
+                          type: string
+                        type:
+                          type: string
+                      required:
+                      - status
+                      - type
+                      type: object
+                    type: array
+                  deploymentRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
+                  pvcRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
+                  ready:
+                    type: boolean
+                type: object
+              prevSpec:
+                properties:
+                  cluster:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
+                  enableLoki:
+                    type: boolean
+                  grafana:
+                    properties:
+                      adminPassword:
+                        type: string
+                      adminUser:
+                        type: string
+                      claims:
+                        items:
+                          properties:
+                            name:
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - name
+                        x-kubernetes-list-type: map
+                      image:
+                        type: string
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        type: object
+                      service:
+                        properties:
+                          externalTrafficPolicy:
+                            type: string
+                          httpPort:
+                            type: integer
+                          type:
+                            type: string
+                        type: object
+                      storageClassName:
+                        type: string
+                    required:
+                    - image
+                    type: object
+                  imagePullPolicy:
                     type: string
-                  namespace:
+                  imagePullSecrets:
+                    items:
+                      properties:
+                        name:
+                          type: string
+                      type: object
+                      x-kubernetes-map-type: atomic
+                    type: array
+                  prometheus:
+                    properties:
+                      claims:
+                        items:
+                          properties:
+                            name:
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - name
+                        x-kubernetes-list-type: map
+                      image:
+                        type: string
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        type: object
+                      retentionTime:
+                        type: string
+                      service:
+                        properties:
+                          externalTrafficPolicy:
+                            type: string
+                          httpPort:
+                            type: integer
+                          type:
+                            type: string
+                        type: object
+                      storageClassName:
+                        type: string
+                    required:
+                    - image
+                    type: object
+                  serviceAccount:
+                    type: string
+                  storageClassName:
                     type: string
                 required:
-                - name
-                - namespace
+                - cluster
                 type: object
-              prometheusServiceRef:
+              prometheus:
                 properties:
-                  name:
-                    type: string
-                  namespace:
-                    type: string
-                required:
-                - name
-                - namespace
+                  conditions:
+                    items:
+                      properties:
+                        lastTransitionTime:
+                          format: date-time
+                          type: string
+                        lastUpdateTime:
+                          format: date-time
+                          type: string
+                        message:
+                          type: string
+                        reason:
+                          type: string
+                        status:
+                          type: string
+                        type:
+                          type: string
+                      required:
+                      - status
+                      - type
+                      type: object
+                    type: array
+                  deploymentRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
+                  pvcRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
+                  ready:
+                    type: boolean
+                  serviceRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
                 type: object
-              statefulSet:
-                nullable: true
+              promtail:
                 properties:
-                  availableReplicas:
-                    format: int32
-                    type: integer
-                  collisionCount:
-                    format: int32
-                    type: integer
                   conditions:
                     items:
                       properties:
@@ -223,38 +471,23 @@ spec:
                       - type
                       type: object
                     type: array
-                  currentReplicas:
-                    format: int32
-                    type: integer
-                  currentRevision:
-                    type: string
-                  observedGeneration:
-                    format: int64
-                    type: integer
-                  readyReplicas:
-                    format: int32
-                    type: integer
-                  replicas:
-                    format: int32
-                    type: integer
-                  updateRevision:
-                    type: string
-                  updatedReplicas:
-                    format: int32
-                    type: integer
-                required:
-                - replicas
+                  daemonSetRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
+                  ready:
+                    type: boolean
                 type: object
-              statefulSetRef:
-                properties:
-                  name:
-                    type: string
-                  namespace:
-                    type: string
-                required:
-                - name
-                - namespace
-                type: object
+              stage:
+                type: string
+              stageStatus:
+                type: string
             type: object
         type: object
     served: true

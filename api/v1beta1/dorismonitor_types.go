@@ -50,6 +50,10 @@ type DorisMonitorSpec struct {
 	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`
 	Grafana    *GrafanaSpec    `json:"grafana,omitempty"`
 
+	// EnableLoki to enable Loki for log collection
+	// Default to true
+	EnableLoki bool `json:"enableLoki,omitempty"`
+
 	// ImagePullPolicy of DorisMonitor Pods
 	// +optional
 	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
@@ -59,23 +63,14 @@ type DorisMonitorSpec struct {
 	// +optional
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 
-	// Replicas is the number of desired replicas.
-	// Defaults to 1
-	Replicas int32 `json:"replicas"`
-
-	// Persistent determines DorisMinitor persists monitor data or not
-	// Defaults to true
-	// +optional
-	Persistent bool `json:"persistent,omitempty"`
-
 	// StorageClassName of the persistent volume for monitor data storage.
 	// Kubernetes default storage class is used if not setting this field.
 	// +optional
 	StorageClassName string `json:"storageClassName,omitempty"`
 
-	// Tolerations of the Doris initializer Pod
+	// Specify a Service Account
 	// +optional
-	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+	ServiceAccount string `json:"serviceAccount,omitempty"`
 }
 
 // PrometheusSpec defines the desired state of Prometheus
@@ -88,21 +83,15 @@ type PrometheusSpec struct {
 	// +optional
 	RetentionTime string `json:"retentionTime,omitempty"`
 
-	// LogLevel is Prometheus log level
-	// +optional
-	LogLevel string `json:"logLevel,omitempty"`
-
-	// CommandOptions is the additional prometheus CLI command option
-	// Ref: https://prometheus.io/docs/prometheus/latest/configuration/configuration/
-	// +optional
-	CommandOptions *[]string `json:"commandOptions,omitempty"`
-
 	// Service defines a Kubernetes service of Prometheus
 	// +optional
 	Service *MonitorServiceSpec `json:"service,omitempty"`
 
 	// +optional
 	corev1.ResourceRequirements `json:",inline"`
+
+	// +optional
+	StorageClassName string `json:"storageClassName,omitempty"`
 }
 
 // GrafanaSpec defines the desired state of Grafana
@@ -122,6 +111,34 @@ type GrafanaSpec struct {
 	// +optional
 	Service *MonitorServiceSpec `json:"service,omitempty"`
 
+	// +optional
+	corev1.ResourceRequirements `json:",inline"`
+
+	// +optional
+	StorageClassName string `json:"storageClassName,omitempty"`
+}
+
+// LokiSpec defines the desired state of Loki
+type LokiSpec struct {
+	// Image tags of the loki
+	Image string `json:"image"`
+
+	// Loki chunks retention time
+	// When it is empty, do not enable retention deletion of Loki.
+	// +optional
+	RetentionTime string `json:"retentionTime,omitempty"`
+
+	// +optional
+	corev1.ResourceRequirements `json:",inline"`
+
+	// +optional
+	StorageClassName string `json:"storageClassName,omitempty"`
+}
+
+// PromtailSpec defines the desired state of Promtail
+type PromtailSpec struct {
+	// Image tags of the promtail
+	Image string `json:"image"`
 	// +optional
 	corev1.ResourceRequirements `json:",inline"`
 }
@@ -145,11 +162,63 @@ type MonitorServiceSpec struct {
 // DorisMonitorStatus defines the observed state of DorisMonitor
 // +k8s:openapi-gen=true
 type DorisMonitorStatus struct {
-	StatefulSetRef       NamespacedName `json:"statefulSetRef,omitempty"`
-	PrometheusServiceRef NamespacedName `json:"prometheusServiceRef,omitempty"`
-	GrafanaServiceRef    NamespacedName `json:"grafanaServiceRef,omitempty"`
-	// +nullable
-	StatefulSet *apps.StatefulSetStatus `json:"statefulSet,omitempty"`
+	PrevSpec           *DorisMonitorSpec          `json:"prevSpec,omitempty"`
+	Stage              DorisMonitorOprStage       `json:"stage,omitempty"`
+	StageStatus        DorisMonitorOprStageStatus `json:"stageStatus,omitempty"`
+	LastMessage        string                     `json:"lastMessage,omitempty"`
+	LastTransitionTime metav1.Time                `json:"lastTransitionTime,omitempty"`
+
+	Prometheus PrometheusStatus `json:"prometheus,omitempty"`
+	Grafana    GrafanaStatus    `json:"grafana,omitempty"`
+	Loki       LokiStatus       `json:"loki,omitempty"`
+	Promtail   Promtail         `json:"promtail,omitempty"`
+}
+
+type DorisMonitorOprStage string
+
+const (
+	// TODO other stage
+	MnrOprStageComplete DorisMonitorOprStage = "Complete"
+)
+
+type DorisMonitorOprStageStatus string
+
+const (
+	MnrOprStageStatusSucceeded  DorisMonitorOprStageStatus = "succeeded"
+	MnrOprStageStatusFailed     DorisMonitorOprStageStatus = "failed"
+	MnrOprStageStatusInProgress DorisMonitorOprStageStatus = "in progress"
+)
+
+// PrometheusStatus represents the current state of the prometheus
+type PrometheusStatus struct {
+	ServiceRef                  NamespacedName `json:"serviceRef,omitempty"`
+	DorisMonitorComponentStatus `json:",inline"`
+}
+
+// GrafanaStatus represents the current state of the grafana
+type GrafanaStatus struct {
+	ServiceRef                  NamespacedName `json:"serviceRef,omitempty"`
+	DorisMonitorComponentStatus `json:",inline"`
+}
+
+// LokiStatus represents the current state of the loki
+type LokiStatus struct {
+	DorisMonitorComponentStatus `json:",inline"`
+}
+
+// Promtail represents the current state of the promtail
+type Promtail struct {
+	DaemonSetRef NamespacedName            `json:"daemonSetRef,omitempty"`
+	Ready        bool                      `json:"ready,omitempty"`
+	Conditions   []apps.DaemonSetCondition `json:"conditions,omitempty"`
+}
+
+// DorisMonitorComponentStatus defines the status of the doris monitor component
+type DorisMonitorComponentStatus struct {
+	DeploymentRef NamespacedName             `json:"deploymentRef,omitempty"`
+	PVCRef        NamespacedName             `json:"pvcRef,omitempty"`
+	Ready         bool                       `json:"ready,omitempty"`
+	Conditions    []apps.DeploymentCondition `json:"conditions,omitempty"`
 }
 
 func init() {
