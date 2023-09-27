@@ -21,7 +21,7 @@ package transformer
 import "testing"
 
 func TestDumpJavaBasedComponentConf(t *testing.T) {
-	eval := func(configs map[string]string, expected string) {
+	test := func(configs map[string]string, expected string) {
 		result := dumpJavaBasedComponentConf(configs)
 		if result != expected {
 			t.Errorf("Expected:\n%s\n\nGot:\n%s", expected, result)
@@ -29,7 +29,7 @@ func TestDumpJavaBasedComponentConf(t *testing.T) {
 	}
 
 	// normal configs
-	eval(
+	test(
 		map[string]string{
 			"http_port":     "8030",
 			"rpc_port":      "9020",
@@ -41,7 +41,7 @@ sys_log_level=INFO
 JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=75 -XX:MinRAMPercentage=75"`)
 
 	// with java opts
-	eval(
+	test(
 		map[string]string{
 			"http_port":           "8030",
 			"JAVA_OPTS":           "-Djavax.security.auth.useSubjectCredsOnly=false -Xss4m -Xmx8192m -XX:+UseMembar -XX:SurvivorRatio=8",
@@ -52,7 +52,7 @@ JAVA_OPTS_FOR_JDK_9="-Djavax.security.auth.useSubjectCredsOnly=false -XX:Survivo
 http_port=8030`)
 
 	// empty configs
-	eval(
+	test(
 		map[string]string{},
 		`JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=75 -XX:MinRAMPercentage=75"`)
 

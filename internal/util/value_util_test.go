@@ -23,20 +23,23 @@ import (
 	"testing"
 )
 
-func TestMergeMaps(t *testing.T) {
-	m1 := map[string]int{
-		"a": 1,
-		"b": 2,
+func TestStringFallback(t *testing.T) {
+	assert.Equal(t, "foo", StringFallback("foo", "bar"))
+	assert.Equal(t, "bar", StringFallback("", "bar"))
+}
+
+func TestPointerFallback(t *testing.T) {
+	type StringPtr struct {
+		S string
 	}
-	m2 := map[string]int{
-		"b": 3,
-		"c": 4,
+	assert.Equal(t, "foo", PointerFallback(&StringPtr{"foo"}, &StringPtr{"bar"}).S)
+	assert.Equal(t, "bar", PointerFallback(nil, &StringPtr{"bar"}).S)
+}
+
+func TestPointerFallbackAndDeRefer(t *testing.T) {
+	type StringPtr struct {
+		S string
 	}
-	result := MergeMaps(m1, m2)
-	expect := map[string]int{
-		"a": 1,
-		"b": 3,
-		"c": 4,
-	}
-	assert.Equal(t, expect, result)
+	assert.Equal(t, "foo", PointerFallbackAndDeRefer(&StringPtr{"foo"}, &StringPtr{"bar"}, StringPtr{"baz"}).S)
+	assert.Equal(t, "baz", PointerFallbackAndDeRefer(nil, nil, StringPtr{"baz"}).S)
 }
