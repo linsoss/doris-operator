@@ -224,8 +224,8 @@ type DorisClusterStatus struct {
 type DorisClusterOprStage string
 
 const (
-	// TODO other stage
-	OprStageComplete DorisClusterOprStage = "complete"
+	OprStageSqlAccountSecret                      = "create operator sql account secret"
+	OprStageComplete         DorisClusterOprStage = "complete"
 )
 
 // DorisClusterOprStageStatus status of represents DorisCluster operator stage
