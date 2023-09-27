@@ -17,7 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
-	apps "k8s.io/api/apps/v1"
+	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -70,10 +70,6 @@ type DorisClusterSpec struct {
 	// +optional
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
-	// Annotations of Doris cluster pods that will be merged with component annotation settings.
-	// +optional
-	Annotations map[string]string `json:"annotations,omitempty"`
-
 	// Affinity for pod scheduling of Doris cluster.
 	// +optional
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
@@ -88,7 +84,7 @@ type DorisClusterSpec struct {
 
 	// Update strategy of Doris cluster StatefulSet.
 	// +optional
-	StatefulSetUpdateStrategy apps.StatefulSetUpdateStrategyType `json:"statefulSetUpdateStrategy,omitempty"`
+	StatefulSetUpdateStrategy *appv1.StatefulSetUpdateStrategyType `json:"statefulSetUpdateStrategy,omitempty"`
 }
 
 // FESpec contains details of FE members.
@@ -99,7 +95,7 @@ type FESpec struct {
 	// The storageClassName of the persistent volume for TiDB data storage.
 	// Defaults to Kubernetes default storage class.
 	// +optional
-	StorageClassName string `json:"storageClassName,omitempty"`
+	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// Service defines a Kubernetes service of FE
 	Service *FeServiceSpec `json:"service,omitempty"`
@@ -148,22 +144,23 @@ type HostnameIpItem struct {
 // +k8s:openapi-gen=true
 type FeServiceSpec struct {
 	// Type of the real kubernetes service
+	// Only ClusterIP and NodePort support is available.
 	Type corev1.ServiceType `json:"type,omitempty"`
+
+	// Expose the FE query port
+	// Optional: Defaults to 0
+	// +optional
+	QueryPort *int32 `json:"queryPort,omitempty"`
+
+	// Expose the FE http port
+	// Optional: Defaults to 0
+	// +optional
+	HttpPort *int32 `json:"httpPort,omitempty"`
 
 	// ExternalTrafficPolicy of the service
 	// Optional: Defaults to omitted
 	// +optional
 	ExternalTrafficPolicy *corev1.ServiceExternalTrafficPolicyType `json:"externalTrafficPolicy,omitempty"`
-
-	// Expose the FE query port
-	// Optional: Defaults to 0
-	// +optional
-	QueryPort int32 `json:"queryPort,omitempty"`
-
-	// Expose the FE http port
-	// Optional: Defaults to 0
-	// +optional
-	HttpPort int32 `json:"httpPort,omitempty"`
 }
 
 // DorisComponentSpec is the base component spec.
@@ -173,7 +170,7 @@ type DorisComponentSpec struct {
 	BaseImage string `json:"baseImage"`
 
 	// Type of the real kubernetes service
-	Version string `json:"version"`
+	Version string `json:"version,omitempty"`
 
 	// The desired ready replicas
 	// +kubebuilder:validation:Minimum=0
@@ -194,8 +191,45 @@ type DorisComponentSpec struct {
 	// +optional
 	HostAliases []corev1.HostAlias `json:"hostAliases,omitempty"`
 
-	// Additional component spec
-	K8sNativeComponentSpec `json:",inline"`
+	// Specify a Service Account
+	// +optional
+	ServiceAccount string `json:"serviceAccount,omitempty"`
+
+	// Affinity for pod scheduling of Doris cluster.
+	// +optional
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+
+	// Tolerations are applied to Doris cluster pods, allowing pods to be scheduled onto nodes with matching taints.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	// Specify pod priorities of pods in Doris cluster, default to empty.
+	// +optional
+	PriorityClassName string `json:"priorityClassName,omitempty"`
+
+	// Update strategy of Doris cluster StatefulSet.
+	// +optional
+	StatefulSetUpdateStrategy *appv1.StatefulSetUpdateStrategyType `json:"statefulSetUpdateStrategy,omitempty"`
+
+	// Additional environment variables to set in the container
+	// +optional
+	AdditionalEnvs []corev1.EnvVar `json:"additionalEnv,omitempty"`
+
+	// Additional init containers of the component.
+	// +optional
+	AdditionalInitContainers []corev1.Container `json:"additionalInitContainers,omitempty"`
+
+	// Additional containers of the component.
+	// +optional
+	AdditionalContainers []corev1.Container `json:"additionalContainers,omitempty"`
+
+	// Additional volumes of component pod.
+	// +optional
+	AdditionalVolumes []corev1.Volume `json:"additionalVolumes,omitempty"`
+
+	// Additional volume mounts of component pod.
+	// +optional
+	AdditionalVolumeMounts []corev1.VolumeMount `json:"additionalVolumeMounts,omitempty"`
 }
 
 // ########################################
@@ -260,11 +294,11 @@ type BrokerStatus struct {
 
 // DorisComponentStatus represents the current status of a DorisCluster component
 type DorisComponentStatus struct {
-	Image          string                      `json:"image,omitempty"`
-	StatefulSetRef NamespacedName              `json:"statefulSetRef,omitempty"`
-	Members        []string                    `json:"members,omitempty"`
-	ReadyMembers   []string                    `json:"readyMembers,omitempty"`
-	Conditions     []apps.StatefulSetCondition `json:"conditions,omitempty"`
+	Image          string                       `json:"image,omitempty"`
+	StatefulSetRef NamespacedName               `json:"statefulSetRef,omitempty"`
+	Members        []string                     `json:"members,omitempty"`
+	ReadyMembers   []string                     `json:"readyMembers,omitempty"`
+	Conditions     []appv1.StatefulSetCondition `json:"conditions,omitempty"`
 }
 
 func init() {

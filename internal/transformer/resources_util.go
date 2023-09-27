@@ -16,11 +16,13 @@
  * /
  */
 
-package translator
+package transformer
 
 import (
 	"crypto/rand"
 	"fmt"
+	dapi "github.com/al-assad/doris-operator/api/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	"math/big"
 	"sort"
 	"strconv"
@@ -35,6 +37,10 @@ const (
 
 	DorisK8sNameLabelValue      = "doris-cluster"
 	DorisK8sManagedByLabelValue = "doris-operator"
+
+	PrometheusPathAnnoKey   = "prometheus.io/path"
+	PrometheusPortAnnoKey   = "prometheus.io/port"
+	PrometheusScrapeAnnoKey = "prometheus.io/scrape"
 )
 
 // MakeResourceLabels make the k8s label meta for the managed resource
@@ -132,8 +138,8 @@ func dumpCppBasedComponentConf(config map[string]string) string {
 	return strings.Join(lines, "\n")
 }
 
-// GetPortValueFromRawConf can get the port value from the kv config map
-func GetPortValueFromRawConf(config map[string]string, key string, defaultValue int32) int32 {
+// Get the port value from the kv config map
+func getPortValueFromRawConf(config map[string]string, key string, defaultValue int32) int32 {
 	strValue := config[key]
 	if strValue == "" {
 		return defaultValue
@@ -143,4 +149,28 @@ func GetPortValueFromRawConf(config map[string]string, key string, defaultValue 
 		return defaultValue
 	}
 	return int32(intValue)
+}
+
+// Merge HostAlias info in HostnameIpItem into HostAlias slice
+func mergeHostAlias(items []dapi.HostnameIpItem, hostAlias []corev1.HostAlias) []corev1.HostAlias {
+	if len(items) == 0 {
+		return hostAlias
+	}
+	var result = make(map[string]*corev1.HostAlias)
+	for _, item := range items {
+		v, ok := result[item.IP]
+		if !ok {
+			result[item.IP] = &corev1.HostAlias{
+				IP:        item.IP,
+				Hostnames: []string{item.Name},
+			}
+		} else {
+			v.Hostnames = append(v.Hostnames, item.Name)
+		}
+	}
+	newHostAlias := make([]corev1.HostAlias, len(result))
+	for _, value := range result {
+		newHostAlias = append(newHostAlias, *value)
+	}
+	return newHostAlias
 }

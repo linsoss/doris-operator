@@ -16,7 +16,7 @@
  * /
  */
 
-package translator
+package transformer
 
 import "testing"
 

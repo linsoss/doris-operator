@@ -21,7 +21,7 @@ package reconciler
 import (
 	"context"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
-	"github.com/al-assad/doris-operator/internal/translator"
+	"github.com/al-assad/doris-operator/internal/transformer"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -57,7 +57,7 @@ func recFail(stage dapi.DorisClusterOprStage, err error) ClusterStageRecResult {
 // Reconcile secret object that using to store the sql query account info
 // that used by doris-operator.
 func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
-	secretRef := r.CR.GetOprSqlAccountSecretName()
+	secretRef := transformer.GetOprSqlAccountSecretName(r.CR)
 	secret := &corev1.Secret{}
 	secretExists := false
 
@@ -70,7 +70,7 @@ func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
 	}
 	// create secret if not exists
 	if !secretExists {
-		newSecret := translator.MakeOprSqlAccountSecret(r.CR)
+		newSecret := transformer.MakeOprSqlAccountSecret(r.CR)
 		if err := r.Create(r.Ctx, newSecret); err != nil {
 			return recFail(dapi.OprStageSqlAccountSecret, err)
 		}

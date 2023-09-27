@@ -20,8 +20,6 @@ package v1beta1
 
 import (
 	"fmt"
-	"github.com/al-assad/doris-operator/api/v1beta1/defaulting"
-	"github.com/al-assad/doris-operator/internal/translator"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -32,73 +30,42 @@ func (r *DorisCluster) GetNamespacedName() types.NamespacedName {
 	}
 }
 
-func (r *DorisCluster) GetOprSqlAccountSecretName() types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      fmt.Sprintf("%s-opr-account", r.Name),
+func (r *DorisCluster) GetFeImage() string {
+	var version string
+	if r.Spec.FE.Version != "" {
+		version = r.Spec.FE.Version
+	} else {
+		version = r.Spec.Version
 	}
+	return fmt.Sprintf("%s:%s", r.Spec.FE.BaseImage, version)
 }
 
-// ------------ FE resources ------------
-
-func (r *DorisCluster) GetFeComponentLabels() map[string]string {
-	return translator.MakeResourceLabels(r.Name, "fe")
-}
-
-func (r *DorisCluster) GetFeConfigMapName() types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      fmt.Sprintf("%s-fe-config", r.Name),
+func (r *DorisCluster) GetBeImage() string {
+	var version string
+	if r.Spec.BE.Version != "" {
+		version = r.Spec.BE.Version
+	} else {
+		version = r.Spec.Version
 	}
+	return fmt.Sprintf("%s:%s", r.Spec.BE.BaseImage, version)
 }
 
-func (r *DorisCluster) GetFeServiceName() types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      fmt.Sprintf("%s-fe", r.Name),
+func (r *DorisCluster) GetCnImage() string {
+	var version string
+	if r.Spec.CN.Version != "" {
+		version = r.Spec.CN.Version
+	} else {
+		version = r.Spec.Version
 	}
+	return fmt.Sprintf("%s:%s", r.Spec.CN.BaseImage, version)
 }
 
-func (r *DorisCluster) GetFePeerServiceName() types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      fmt.Sprintf("%s-fe-peer", r.Name),
+func (r *DorisCluster) GetBrokerImage() string {
+	var version string
+	if r.Spec.Broker.Version != "" {
+		version = r.Spec.Broker.Version
+	} else {
+		version = r.Spec.Version
 	}
+	return fmt.Sprintf("%s:%s", r.Spec.Broker.BaseImage, version)
 }
-
-func (r *DorisCluster) GetFeStatefulSetName() types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      fmt.Sprintf("%s-fe", r.Name),
-	}
-}
-
-func (r *DorisCluster) GetFeHttpPort() int32 {
-	if r.Spec.FE == nil {
-		return defaulting.DefaultFeHttpPort
-	}
-	return translator.GetPortValueFromRawConf(r.Spec.FE.Configs, "http_port", defaulting.DefaultFeHttpPort)
-}
-
-func (r *DorisCluster) GetFeQueryPort() int32 {
-	if r.Spec.FE == nil {
-		return defaulting.DefaultFeQueryPort
-	}
-	return translator.GetPortValueFromRawConf(r.Spec.FE.Configs, "query_port", defaulting.DefaultFeQueryPort)
-}
-
-func (r *DorisCluster) GetFeRpcPort() int32 {
-	if r.Spec.FE == nil {
-		return defaulting.DefaultFeRpcPort
-	}
-	return translator.GetPortValueFromRawConf(r.Spec.FE.Configs, "query_port", defaulting.DefaultFeRpcPort)
-}
-
-func (r *DorisCluster) GetFeEditLogPort() int32 {
-	if r.Spec.FE == nil {
-		return defaulting.DefaultFeEditLogPort
-	}
-	return translator.GetPortValueFromRawConf(r.Spec.FE.Configs, "edit_log_port", defaulting.DefaultFeEditLogPort)
-}
-
-// ------------ BE resources ------------
