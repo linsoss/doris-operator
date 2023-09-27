@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"math/big"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -129,4 +130,17 @@ func dumpCppBasedComponentConf(config map[string]string) string {
 		lines = append(lines, fmt.Sprintf("%s=%s", key, value))
 	}
 	return strings.Join(lines, "\n")
+}
+
+// GetPortValueFromRawConf can get the port value from the kv config map
+func GetPortValueFromRawConf(config map[string]string, key string, defaultValue int32) int32 {
+	strValue := config[key]
+	if strValue == "" {
+		return defaultValue
+	}
+	intValue, err := strconv.ParseInt(strValue, 10, 32)
+	if err != nil {
+		return defaultValue
+	}
+	return int32(intValue)
 }

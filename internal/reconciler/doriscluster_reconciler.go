@@ -57,7 +57,7 @@ func recFail(stage dapi.DorisClusterOprStage, err error) ClusterStageRecResult {
 // Reconcile secret object that using to store the sql query account info
 // that used by doris-operator.
 func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
-	secretRef := translator.GetOprSqlAccountSecretName(r.Req.NamespacedName)
+	secretRef := r.CR.GetOprSqlAccountSecretName()
 	secret := &corev1.Secret{}
 	secretExists := false
 
@@ -70,7 +70,7 @@ func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
 	}
 	// create secret if not exists
 	if !secretExists {
-		newSecret := translator.MakeOprSqlAccountSecret(r.Req.NamespacedName)
+		newSecret := translator.MakeOprSqlAccountSecret(r.CR)
 		if err := r.Create(r.Ctx, newSecret); err != nil {
 			return recFail(dapi.OprStageSqlAccountSecret, err)
 		}

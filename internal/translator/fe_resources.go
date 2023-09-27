@@ -19,64 +19,130 @@
 package translator
 
 import (
-	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
+	"github.com/al-assad/doris-operator/internal/util"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-const (
-	FEComponentName = "fe"
-)
-
-func GetFEConfigMapName(dorisRef types.NamespacedName) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: dorisRef.Namespace,
-		Name:      fmt.Sprintf("%s-fe-config", dorisRef.Name),
+// MakeOprSqlAccountSecret generates a Secret for the operator SQL account.
+func MakeOprSqlAccountSecret(cr *dapi.DorisCluster) *corev1.Secret {
+	secretRef := cr.GetOprSqlAccountSecretName()
+	secret := &corev1.Secret{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      secretRef.Name,
+			Namespace: secretRef.Namespace,
+			Labels:    MakeResourceLabels(cr.Name, ""),
+		},
+		Type: corev1.SecretTypeOpaque,
+		StringData: map[string]string{
+			"user":     "k8sopr",
+			"password": GenerateRandomDorisPassword(15),
+		},
 	}
+	return secret
 }
 
-func GetFEServiceName(dorisRef types.NamespacedName) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: dorisRef.Namespace,
-		Name:      fmt.Sprintf("%s-fe", dorisRef.Name),
+func MakeFeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.ConfigMap {
+	if cr.Spec.FE == nil {
+		return nil
 	}
-}
-
-func GetFEPeerServiceName(dorisRef types.NamespacedName) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: dorisRef.Namespace,
-		Name:      fmt.Sprintf("%s-fe-peer", dorisRef.Name),
+	configMapRef := cr.GetFeConfigMapName()
+	data := map[string]string{
+		"fe.conf": dumpJavaBasedComponentConf(cr.Spec.FE.Configs),
 	}
-}
-
-func GetFEStatefulSetName(dorisRef types.NamespacedName) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: dorisRef.Namespace,
-		Name:      fmt.Sprintf("%s-fe", dorisRef.Name),
+	// merge hadoop config data
+	if cr.Spec.HadoopConf != nil {
+		data = util.MergeMaps(cr.Spec.HadoopConf.Config, data)
 	}
-}
-
-func genFELabels(dorisRef types.NamespacedName) map[string]string {
-	return MakeResourceLabels(dorisRef.Name, FEComponentName)
-}
-
-// MakeFEConfigMap generates a ConfigMap for the FE component
-func MakeFEConfigMap(dorisRef types.NamespacedName, cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.ConfigMap {
-	configMapRef := GetFEConfigMapName(dorisRef)
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      configMapRef.Name,
 			Namespace: configMapRef.Namespace,
-			Labels:    genFELabels(dorisRef),
+			Labels:    cr.GetFeComponentLabels(),
 		},
-		Data: map[string]string{
-			//"fe.conf": dumpJavaBasedComponentConf(cr.Spec.FE.Configs),
-		},
+		Data: data,
 	}
 	_ = controllerutil.SetOwnerReference(cr, configMap, scheme)
 	return configMap
+}
+
+func MakeFeService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Service {
+	if cr.Spec.FE == nil {
+		return nil
+	}
+	serviceRef := cr.GetFeServiceName()
+	feLabels := cr.GetFeComponentLabels()
+	service := &corev1.Service{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      serviceRef.Name,
+			Namespace: serviceRef.Namespace,
+			Labels:    feLabels,
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: feLabels,
+			Type:     corev1.ServiceTypeClusterIP,
+		},
+	}
+	httpPort := corev1.ServicePort{
+		Name: "http-port",
+		Port: cr.GetFeHttpPort(),
+	}
+	queryPort := corev1.ServicePort{
+		Name: "query-port",
+		Port: cr.GetFeQueryPort(),
+	}
+
+	// When the user specifies a service type
+	if cr.Spec.FE.Service != nil {
+		if cr.Spec.FE.Service.Type != "" {
+			service.Spec.Type = cr.Spec.FE.Service.Type
+		}
+		if cr.Spec.FE.Service.ExternalTrafficPolicy != nil {
+			service.Spec.ExternalTrafficPolicy = *cr.Spec.FE.Service.ExternalTrafficPolicy
+		}
+		if cr.Spec.FE.Service.QueryPort != 0 {
+			httpPort.NodePort = cr.Spec.FE.Service.QueryPort
+		}
+		if cr.Spec.FE.Service.HttpPort != 0 {
+			queryPort.NodePort = cr.Spec.FE.Service.HttpPort
+		}
+	}
+
+	service.Spec.Ports = []corev1.ServicePort{httpPort, queryPort}
+	_ = controllerutil.SetOwnerReference(cr, service, scheme)
+	return service
+}
+
+func MakeFePeerService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Service {
+	if cr.Spec.FE == nil {
+		return nil
+	}
+	serviceRef := cr.GetFePeerServiceName()
+	feLabels := cr.GetFeComponentLabels()
+	service := &corev1.Service{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      serviceRef.Name,
+			Namespace: serviceRef.Namespace,
+			Labels:    feLabels,
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{
+				{
+					Name: "edit-log-port",
+					Port: cr.GetFeEditLogPort(),
+				}, {
+					Name: "rpc-port",
+					Port: cr.GetFeRpcPort(),
+				},
+			},
+			Selector:  feLabels,
+			Type:      corev1.ServiceTypeClusterIP,
+			ClusterIP: "None",
+		},
+	}
+	_ = controllerutil.SetOwnerReference(cr, service, scheme)
+	return service
 }

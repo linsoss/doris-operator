@@ -158,12 +158,12 @@ type FeServiceSpec struct {
 	// Expose the FE query port
 	// Optional: Defaults to 0
 	// +optional
-	QueryPort int `json:"queryPort,omitempty"`
+	QueryPort int32 `json:"queryPort,omitempty"`
 
 	// Expose the FE http port
 	// Optional: Defaults to 0
 	// +optional
-	HttpPort int `json:"httpPort,omitempty"`
+	HttpPort int32 `json:"httpPort,omitempty"`
 }
 
 // DorisComponentSpec is the base component spec.
