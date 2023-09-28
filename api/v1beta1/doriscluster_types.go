@@ -241,10 +241,11 @@ type DorisComponentSpec struct {
 type DorisClusterStatus struct {
 	PrevSpec *DorisClusterSpec `json:"prevSpec,omitempty"`
 
-	Stage              DorisClusterOprStage       `json:"stage,omitempty"`
-	StageStatus        DorisClusterOprStageStatus `json:"stageStatus,omitempty"`
-	LastMessage        string                     `json:"lastMessage,omitempty"`
-	LastTransitionTime metav1.Time                `json:"lastTransitionTime,omitempty"`
+	Stage              DorisClusterOprStage `json:"stage,omitempty"`
+	StageAction        OprStageAction       `json:"stageAction,omitempty"`
+	StageStatus        OprStageStatus       `json:"stageStatus,omitempty"`
+	LastMessage        string               `json:"lastMessage,omitempty"`
+	LastTransitionTime metav1.Time          `json:"lastTransitionTime,omitempty"`
 
 	FE     FEStatus     `json:"fe,omitempty"`
 	BE     BEStatus     `json:"be,omitempty"`
@@ -258,21 +259,13 @@ type DorisClusterStatus struct {
 type DorisClusterOprStage string
 
 const (
-	OprStageSqlAccountSecret DorisClusterOprStage = "operator-sql-account/secret"
-	OprStageFe               DorisClusterOprStage = "fe"
-	OprStageFeConfigmap      DorisClusterOprStage = "fe/configmap"
-	OprStageFeService        DorisClusterOprStage = "fe/service"
-	OprStageFeStatefulSet    DorisClusterOprStage = "fe/statefulset"
+	StageSqlAccountSecret DorisClusterOprStage = "operator-sql-account/secret"
+	StageFe               DorisClusterOprStage = "fe"
+	StageFeConfigmap      DorisClusterOprStage = "fe/configmap"
+	StageFeService        DorisClusterOprStage = "fe/service"
+	StageFeStatefulSet    DorisClusterOprStage = "fe/statefulset"
 
-	OprStageComplete DorisClusterOprStage = "complete"
-)
-
-// DorisClusterOprStageStatus status of represents DorisCluster operator stage
-type DorisClusterOprStageStatus string
-
-const (
-	OprStageStatusSucceeded DorisClusterOprStageStatus = "succeeded"
-	OprStageStatusFailed    DorisClusterOprStageStatus = "failed"
+	StageComplete DorisClusterOprStage = "complete"
 )
 
 // FEStatus represents the current state of Doris FE

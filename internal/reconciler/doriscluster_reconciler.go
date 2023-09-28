@@ -40,82 +40,87 @@ type DorisClusterReconciler struct {
 // ClusterStageRecResult represents the result of a stage reconciliation for DorisCluster
 type ClusterStageRecResult struct {
 	Stage  dapi.DorisClusterOprStage
-	Status dapi.DorisClusterOprStageStatus
+	Status dapi.OprStageStatus
+	Action dapi.OprStageAction
 	Err    error
 }
 
-func recSuccess(stage dapi.DorisClusterOprStage) ClusterStageRecResult {
-	return ClusterStageRecResult{Stage: stage, Status: dapi.OprStageStatusSucceeded, Err: nil}
+func clusterStageSucc(stage dapi.DorisClusterOprStage, action dapi.OprStageAction) ClusterStageRecResult {
+	return ClusterStageRecResult{Stage: stage, Status: dapi.StageResultSucceeded, Action: action}
 }
 
-func recFail(stage dapi.DorisClusterOprStage, err error) ClusterStageRecResult {
-	return ClusterStageRecResult{Stage: stage, Status: dapi.OprStageStatusSucceeded, Err: err}
+func clusterStageFail(stage dapi.DorisClusterOprStage, action dapi.OprStageAction, err error) ClusterStageRecResult {
+	return ClusterStageRecResult{Stage: stage, Status: dapi.StageResultSucceeded, Action: action, Err: err}
 }
 
 // Reconcile secret object that using to store the sql query account info
 // that used by doris-operator.
 func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
 	secretRef := transformer.GetOprSqlAccountSecretName(r.CR)
+	action := dapi.StageActionApply
 	// check if secret exists
 	exists, err := r.Exist(secretRef, &corev1.Secret{})
 	if err != nil {
-		return recFail(dapi.OprStageSqlAccountSecret, err)
+		return clusterStageFail(dapi.StageSqlAccountSecret, action, err)
 	}
 	// create secret if not exists
 	if !exists {
 		newSecret := transformer.MakeOprSqlAccountSecret(r.CR)
 		if err := r.Create(r.Ctx, newSecret); err != nil {
-			return recFail(dapi.OprStageSqlAccountSecret, err)
+			return clusterStageFail(dapi.StageSqlAccountSecret, action, err)
 		}
 	}
-	return recSuccess(dapi.OprStageSqlAccountSecret)
+	return clusterStageSucc(dapi.StageSqlAccountSecret, action)
 }
 
 // Reconcile Doris FE component resources.
 func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 	if r.CR.Spec.FE != nil {
 		// apply resources
+		action := dapi.StageActionApply
 		// fe configmap
 		configMap := transformer.MakeFeConfigMap(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(configMap); err != nil {
-			return recFail(dapi.OprStageFeConfigmap, err)
+			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
 		// fe service
 		service := transformer.MakeFeService(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(service); err != nil {
-			return recFail(dapi.OprStageFeService, err)
+			return clusterStageFail(dapi.StageFeService, action, err)
 		}
 		peerService := transformer.MakeFePeerService(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(peerService); err != nil {
-			return recFail(dapi.OprStageFeService, err)
+			return clusterStageFail(dapi.StageFeService, action, err)
 		}
 		// fe statefulset
 		statefulSet := transformer.MakeFeStatefulSet(r.CR, r.Schema)
 		statefulSet.Annotations[FeConfHashAnnotationKey] = util.MapMd5(configMap.Data)
 		if err := r.CreateOrUpdate(statefulSet); err != nil {
-			return recFail(dapi.OprStageFeStatefulSet, err)
+			return clusterStageFail(dapi.StageFeStatefulSet, action, err)
 		}
+		return clusterStageSucc(dapi.StageFe, action)
 	} else {
 		// delete resources
+		action := dapi.StageActionDelete
 		// fe configmap
 		configMapRef := transformer.GetFeConfigMapName(r.CR)
 		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
-			return recFail(dapi.OprStageFeConfigmap, err)
+			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
 		// fe service
 		serviceRef := transformer.GetFeServiceName(r.CR)
 		if err := r.DeleteWhenExist(serviceRef, &corev1.Service{}); err != nil {
-			return recFail(dapi.OprStageFeConfigmap, err)
+			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
 		peerServiceRef := transformer.GetFePeerServiceName(r.CR)
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
-			return recFail(dapi.OprStageFeConfigmap, err)
+			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
 		// fe statefulset
 		statefulsetRef := transformer.GetFeStatefulSetName(r.CR)
 		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
-			return recFail(dapi.OprStageFeConfigmap, err)
+			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
+		return clusterStageSucc(dapi.StageFe, action)
 	}
-	return recSuccess(dapi.OprStageFe)
 }

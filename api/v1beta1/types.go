@@ -28,3 +28,19 @@ type NamespacedName struct {
 type DorisClusterRef struct {
 	NamespacedName `json:",inline"`
 }
+
+// OprStageAction represents the action type of controller reconcile stage
+type OprStageAction string
+
+const (
+	StageActionApply  OprStageAction = "apply"
+	StageActionDelete OprStageAction = "delete"
+)
+
+// OprStageStatus represents the status of controller stage
+type OprStageStatus string
+
+const (
+	StageResultSucceeded OprStageStatus = "succeeded"
+	StageResultFailed    OprStageStatus = "failed"
+)
