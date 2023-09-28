@@ -19,12 +19,11 @@ package controller
 import (
 	"context"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	"github.com/al-assad/doris-operator/internal/reconciler"
 	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // DorisClusterReconciler reconciles a DorisCluster object
@@ -44,24 +43,29 @@ type DorisClusterReconciler struct {
 //+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
 func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx)
+	recCtx := reconciler.NewReconcileContext(r, ctx)
 
 	// obtain CR and ignore when it has been deleted
 	cr := &dapi.DorisCluster{}
-	if err := r.Get(ctx, req.NamespacedName, cr); err != nil {
-		if errors.IsNotFound(err) {
-			logger.Info("DorisCluster has been deleted")
-			return ctrl.Result{}, nil
-		} else {
-			return ctrl.Result{Requeue: true}, err
-		}
+	crExist, err := recCtx.Exist(req.NamespacedName, cr)
+	if err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
+	if !crExist {
+		recCtx.Log.Info("DorisCluster has been deleted")
+		return ctrl.Result{}, nil
 	}
 	// reconcile CR when the spec of it has been changed
 	crSpecHasChanged := cr.Status.PrevSpec == nil || !reflect.DeepEqual(cr.Spec, *cr.Status.PrevSpec)
 	// TODO reconcile when middle stage fail
 	if crSpecHasChanged {
-		//recDorisCluster(recCtx)
+
+		//rec := reconciler.DorisClusterReconciler{
+		//	ReconcileContext: recCtx,
+		//	CR:               cr}
+
 		cr.Status.PrevSpec = cr.Spec.DeepCopy()
+
 	}
 	// sync the status of CR
 	// TODO sync logic

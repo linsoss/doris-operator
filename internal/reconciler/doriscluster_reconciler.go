@@ -34,7 +34,7 @@ var (
 // DorisClusterReconciler reconciles a DorisCluster object
 type DorisClusterReconciler struct {
 	ReconcileContext
-	cr *dapi.DorisCluster
+	CR *dapi.DorisCluster
 }
 
 // ClusterStageRecResult represents the result of a stage reconciliation for DorisCluster
@@ -55,7 +55,7 @@ func recFail(stage dapi.DorisClusterOprStage, err error) ClusterStageRecResult {
 // Reconcile secret object that using to store the sql query account info
 // that used by doris-operator.
 func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
-	secretRef := transformer.GetOprSqlAccountSecretName(r.cr)
+	secretRef := transformer.GetOprSqlAccountSecretName(r.CR)
 	// check if secret exists
 	exists, err := r.Exist(secretRef, &corev1.Secret{})
 	if err != nil {
@@ -63,8 +63,8 @@ func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
 	}
 	// create secret if not exists
 	if !exists {
-		newSecret := transformer.MakeOprSqlAccountSecret(r.cr)
-		if err := r.Create(r.ctx, newSecret); err != nil {
+		newSecret := transformer.MakeOprSqlAccountSecret(r.CR)
+		if err := r.Create(r.Ctx, newSecret); err != nil {
 			return recFail(dapi.OprStageSqlAccountSecret, err)
 		}
 	}
@@ -73,24 +73,24 @@ func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
 
 // Reconcile Doris FE component resources.
 func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
-	if r.cr.Spec.FE != nil {
+	if r.CR.Spec.FE != nil {
 		// apply resources
 		// fe configmap
-		configMap := transformer.MakeFeConfigMap(r.cr, r.schema)
+		configMap := transformer.MakeFeConfigMap(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(configMap); err != nil {
 			return recFail(dapi.OprStageFeConfigmap, err)
 		}
 		// fe service
-		service := transformer.MakeFeService(r.cr, r.schema)
+		service := transformer.MakeFeService(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(service); err != nil {
 			return recFail(dapi.OprStageFeService, err)
 		}
-		peerService := transformer.MakeFePeerService(r.cr, r.schema)
+		peerService := transformer.MakeFePeerService(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(peerService); err != nil {
 			return recFail(dapi.OprStageFeService, err)
 		}
 		// fe statefulset
-		statefulSet := transformer.MakeFeStatefulSet(r.cr, r.schema)
+		statefulSet := transformer.MakeFeStatefulSet(r.CR, r.Schema)
 		statefulSet.Annotations[FeConfHashAnnotationKey] = util.MapMd5(configMap.Data)
 		if err := r.CreateOrUpdate(statefulSet); err != nil {
 			return recFail(dapi.OprStageFeStatefulSet, err)
@@ -98,21 +98,21 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 	} else {
 		// delete resources
 		// fe configmap
-		configMapRef := transformer.GetFeConfigMapName(r.cr)
+		configMapRef := transformer.GetFeConfigMapName(r.CR)
 		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
 			return recFail(dapi.OprStageFeConfigmap, err)
 		}
 		// fe service
-		serviceRef := transformer.GetFeServiceName(r.cr)
+		serviceRef := transformer.GetFeServiceName(r.CR)
 		if err := r.DeleteWhenExist(serviceRef, &corev1.Service{}); err != nil {
 			return recFail(dapi.OprStageFeConfigmap, err)
 		}
-		peerServiceRef := transformer.GetFePeerServiceName(r.cr)
+		peerServiceRef := transformer.GetFePeerServiceName(r.CR)
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
 			return recFail(dapi.OprStageFeConfigmap, err)
 		}
 		// fe statefulset
-		statefulsetRef := transformer.GetFeStatefulSetName(r.cr)
+		statefulsetRef := transformer.GetFeStatefulSetName(r.CR)
 		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
 			return recFail(dapi.OprStageFeConfigmap, err)
 		}

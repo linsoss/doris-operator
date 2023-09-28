@@ -25,21 +25,30 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"reflect"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
+// ReconcileContext is the context for reconciling CRD.
 type ReconcileContext struct {
 	client.Client
-	schema *runtime.Scheme
-	req    ctrl.Request
-	ctx    context.Context
-	log    logr.Logger
+	Schema *runtime.Scheme
+	Ctx    context.Context
+	Log    logr.Logger
+}
+
+func NewReconcileContext(client client.Client, ctx context.Context) ReconcileContext {
+	return ReconcileContext{
+		Client: client,
+		Schema: client.Scheme(),
+		Ctx:    ctx,
+		Log:    log.FromContext(ctx),
+	}
 }
 
 // Exist checks if the kubernetes object exists.
 func (r *ReconcileContext) Exist(key types.NamespacedName, objType client.Object) (bool, error) {
-	if err := r.Get(r.ctx, key, objType); err != nil {
+	if err := r.Get(r.Ctx, key, objType); err != nil {
 		if errors.IsNotFound(err) {
 			return false, nil
 		}
@@ -55,7 +64,7 @@ func (r *ReconcileContext) DeleteWhenExist(key types.NamespacedName, objType cli
 		return err
 	}
 	if exist {
-		if err := r.Delete(r.ctx, objType); err != nil {
+		if err := r.Delete(r.Ctx, objType); err != nil {
 			return err
 		}
 	}
@@ -66,15 +75,15 @@ func (r *ReconcileContext) DeleteWhenExist(key types.NamespacedName, objType cli
 func (r *ReconcileContext) CreateOrUpdate(obj client.Object) error {
 	key := client.ObjectKeyFromObject(obj)
 	objType := reflect.TypeOf(obj)
-	emptyObj := reflect.New(objType).Elem().Interface().(client.Object)
+	prevObj := reflect.New(objType).Elem().Interface().(client.Object)
 
-	exist, err := r.Exist(key, emptyObj)
+	exist, err := r.Exist(key, prevObj)
 	if err != nil {
 		return err
 	}
 	if !exist {
-		return r.Create(r.ctx, obj)
+		return r.Create(r.Ctx, obj)
 	} else {
-		return r.Update(r.ctx, obj)
+		return r.Update(r.Ctx, obj)
 	}
 }
