@@ -22,9 +22,9 @@ import (
 	"crypto/rand"
 	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
+	"github.com/al-assad/doris-operator/internal/util"
 	corev1 "k8s.io/api/core/v1"
 	"math/big"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -79,11 +79,7 @@ func dumpJavaBasedComponentConf(config map[string]string) string {
 		"-XX:MaxRAMPercentage=%d -XX:InitialRAMPercentage=%d -XX:MinRAMPercentage=%d",
 		JvmRamPercentage, JvmRamPercentage, JvmRamPercentage)
 	// order by key
-	var keys []string
-	for key := range config {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
+	keys := util.MapSortedKeys(config)
 
 	// generate config file content
 	var lines []string
@@ -118,11 +114,7 @@ func dumpJavaBasedComponentConf(config map[string]string) string {
 // Dump the doris component(BE, CN) KV configs into plain text
 func dumpCppBasedComponentConf(config map[string]string) string {
 	// order by key
-	var keys []string
-	for key := range config {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
+	keys := util.MapSortedKeys(config)
 
 	// generate config file content
 	var lines []string

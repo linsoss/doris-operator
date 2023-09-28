@@ -18,6 +18,13 @@
 
 package util
 
+import (
+	"crypto/md5"
+	"encoding/json"
+	"fmt"
+	"sort"
+)
+
 // MergeMaps merges two maps into one,
 // when there is a key conflict, prioritize using the value of m2.
 func MergeMaps[K comparable, V any](m1, m2 map[K]V) map[K]V {
@@ -49,4 +56,31 @@ func MapEqual[K comparable, V comparable](m1, m2 map[K]V) bool {
 		}
 	}
 	return true
+}
+
+// MapSortedKeys returns all sorted keys of a map.
+func MapSortedKeys[K string | int, V any](data map[K]V) []K {
+	keys := make([]K, 0, len(data))
+	for k := range data {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i] < keys[j]
+	})
+	return keys
+}
+
+// MapMd5 returns the md5 string of a map.
+// When the map is empty, return an empty string.
+func MapMd5[K comparable, V any](data map[K]V) string {
+	if len(data) == 0 {
+		return ""
+	}
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return ""
+	}
+	hash := md5.Sum(jsonData)
+	md5String := fmt.Sprintf("%x", hash)
+	return md5String
 }

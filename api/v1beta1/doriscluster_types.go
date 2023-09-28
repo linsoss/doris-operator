@@ -258,17 +258,21 @@ type DorisClusterStatus struct {
 type DorisClusterOprStage string
 
 const (
-	OprStageSqlAccountSecret                      = "create operator sql account secret"
-	OprStageComplete         DorisClusterOprStage = "complete"
+	OprStageSqlAccountSecret DorisClusterOprStage = "operator-sql-account/secret"
+	OprStageFe               DorisClusterOprStage = "fe"
+	OprStageFeConfigmap      DorisClusterOprStage = "fe/configmap"
+	OprStageFeService        DorisClusterOprStage = "fe/service"
+	OprStageFeStatefulSet    DorisClusterOprStage = "fe/statefulset"
+
+	OprStageComplete DorisClusterOprStage = "complete"
 )
 
 // DorisClusterOprStageStatus status of represents DorisCluster operator stage
 type DorisClusterOprStageStatus string
 
 const (
-	OprStageStatusSucceeded  DorisClusterOprStageStatus = "succeeded"
-	OprStageStatusFailed     DorisClusterOprStageStatus = "failed"
-	OprStageStatusInProgress DorisClusterOprStageStatus = "in progress"
+	OprStageStatusSucceeded DorisClusterOprStageStatus = "succeeded"
+	OprStageStatusFailed    DorisClusterOprStageStatus = "failed"
 )
 
 // FEStatus represents the current state of Doris FE

@@ -40,3 +40,45 @@ func TestMergeMaps(t *testing.T) {
 	}
 	assert.Equal(t, expect, result)
 }
+
+func TestMapEqual(t *testing.T) {
+	m1 := map[string]int{
+		"a": 1,
+		"c": 3,
+		"b": 2,
+	}
+	m2 := map[string]int{
+		"c": 3,
+		"b": 2,
+		"a": 1,
+	}
+	assert.True(t, MapEqual(m1, m2))
+	m1 = map[string]int{
+		"a": 1,
+		"b": 2,
+	}
+	m2 = map[string]int{
+		"b": 3,
+	}
+	assert.False(t, MapEqual(m1, m2))
+}
+
+func TestMapSortedKeys(t *testing.T) {
+	m := map[string]int{
+		"a": 1,
+		"c": 3,
+		"b": 2,
+	}
+	assert.Equal(t, []string{"a", "b", "c"}, MapSortedKeys(m))
+}
+
+func TestMapMd5(t *testing.T) {
+	m := map[string]int{
+		"a": 1,
+		"c": 3,
+		"b": 2,
+	}
+	assert.Equal(t, "9e0bf104708effc55357dc36f9426ce7", MapMd5(m))
+	m = make(map[string]int)
+	assert.Equal(t, "", MapMd5(m))
+}

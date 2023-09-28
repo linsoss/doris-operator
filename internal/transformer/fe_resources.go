@@ -169,7 +169,7 @@ func MakeFeService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Servic
 	return service
 }
 
-func MakeFePeerService(cr *dapi.DorisCluster, OprSqlAccount map[string]string, scheme *runtime.Scheme) *corev1.Service {
+func MakeFePeerService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Service {
 	if cr.Spec.FE == nil {
 		return nil
 	}

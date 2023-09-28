@@ -27,8 +27,17 @@ func StringFallback(str string, fallback string) string {
 	}
 }
 
+// ArrayFallback returns the first array if it is not empty, otherwise the second array.
+func ArrayFallback[T any](array []T, fallback []T) []T {
+	if len(array) != 0 {
+		return array
+	} else {
+		return fallback
+	}
+}
+
 // PointerFallback returns the first pointer if it is not nil, otherwise the second pointer.
-func PointerFallback[T interface{}](pointer *T, fallback *T) *T {
+func PointerFallback[T any](pointer *T, fallback *T) *T {
 	if pointer != nil {
 		return pointer
 	} else {
@@ -38,20 +47,11 @@ func PointerFallback[T interface{}](pointer *T, fallback *T) *T {
 
 // PointerFallbackAndDeRefer returns the first pointer if it is not nil, otherwise the second pointer,
 // then dereference the pointer fallback with the defaultValue.
-func PointerFallbackAndDeRefer[T interface{}](pointer *T, fallback *T, defaultValue T) T {
+func PointerFallbackAndDeRefer[T any](pointer *T, fallback *T, defaultValue T) T {
 	result := PointerFallback(pointer, fallback)
 	if result != nil {
 		return *result
 	} else {
 		return defaultValue
-	}
-}
-
-// ArrayFallback returns the first array if it is not empty, otherwise the second array.
-func ArrayFallback[T interface{}](array []T, fallback []T) []T {
-	if len(array) != 0 {
-		return array
-	} else {
-		return fallback
 	}
 }
