@@ -47,34 +47,34 @@ log4j.appender.D.layout=org.apache.log4j.PatternLayout
 log4j.appender.D.layout.ConversionPattern=%-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%n`
 )
 
-func GetBrokerComponentLabels(r *dapi.DorisCluster) map[string]string {
-	return MakeResourceLabels(r.Name, "broker")
+func GetBrokerComponentLabels(dorisClusterKey types.NamespacedName) map[string]string {
+	return MakeResourceLabels(dorisClusterKey.Name, "broker")
+}
+
+func GetBrokerConfigMapKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-broker-config", dorisClusterKey.Name),
+	}
+}
+
+func GetBrokerPeerServiceKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-broker-peer", dorisClusterKey.Name),
+	}
+}
+
+func GetBrokerStatefulSetKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-broker", dorisClusterKey.Name),
+	}
 }
 
 func GetBrokerImage(r *dapi.DorisCluster) string {
 	version := util.StringFallback(r.Spec.Broker.Version, r.Spec.Version)
 	return fmt.Sprintf("%s:%s", r.Spec.Broker.BaseImage, version)
-}
-
-func GetBrokerConfigMapName(cr *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      fmt.Sprintf("%s-broker-config", cr.Name),
-	}
-}
-
-func GetBrokerPeerServiceName(cr *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      fmt.Sprintf("%s-broker-peer", cr.Name),
-	}
-}
-
-func GetBrokerStatefulSetName(r *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      fmt.Sprintf("%s-broker", r.Name),
-	}
 }
 
 func GetBrokerIpcPort(cr *dapi.DorisCluster) int32 {
@@ -88,7 +88,7 @@ func MakeBrokerConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.
 	if cr.Spec.Broker == nil {
 		return nil
 	}
-	configMapRef := GetBrokerConfigMapName(cr)
+	configMapRef := GetBrokerConfigMapKey(cr.ObjKey())
 	data := map[string]string{
 		"apache_hdfs_broker.conf": dumpJavaBasedComponentConf(cr.Spec.Broker.Configs),
 		"log4j.properties":        DefaultBrokerLog4jContent,
@@ -101,7 +101,7 @@ func MakeBrokerConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configMapRef.Name,
 			Namespace: configMapRef.Namespace,
-			Labels:    GetBrokerComponentLabels(cr),
+			Labels:    GetBrokerComponentLabels(cr.ObjKey()),
 		},
 		Data: data,
 	}
@@ -113,8 +113,8 @@ func MakeBrokerPeerService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev
 	if cr.Spec.Broker == nil {
 		return nil
 	}
-	serviceRef := GetBrokerPeerServiceName(cr)
-	brokerLabels := GetBrokerComponentLabels(cr)
+	serviceRef := GetBrokerPeerServiceKey(cr.ObjKey())
+	brokerLabels := GetBrokerComponentLabels(cr.ObjKey())
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceRef.Name,
@@ -137,13 +137,13 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 	if cr.Spec.Broker == nil {
 		return nil
 	}
-	statefulSetRef := GetBrokerStatefulSetName(cr)
-	accountSecretRef := GetOprSqlAccountSecretName(cr)
-	brokerLabels := GetBrokerComponentLabels(cr)
+	statefulSetRef := GetBrokerStatefulSetKey(cr.ObjKey())
+	accountSecretRef := GetOprSqlAccountSecretKey(cr.ObjKey())
+	brokerLabels := GetBrokerComponentLabels(cr.ObjKey())
 
 	// pod template: volumes
 	volumes := []corev1.Volume{
-		{Name: "conf", VolumeSource: util.NewConfigMapVolumeSource(GetBrokerConfigMapName(cr).Name)},
+		{Name: "conf", VolumeSource: util.NewConfigMapVolumeSource(GetBrokerConfigMapKey(cr.ObjKey()).Name)},
 	}
 	// merge addition volumes defined by user
 	volumes = append(volumes, cr.Spec.Broker.AdditionalVolumes...)
@@ -160,7 +160,7 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 			{Name: "ipc-port", ContainerPort: GetBrokerIpcPort(cr)},
 		},
 		Env: []corev1.EnvVar{
-			{Name: "FE_SVC", Value: GetFeServiceName(cr).Name},
+			{Name: "FE_SVC", Value: GetFeServiceKey(cr.ObjKey()).Name},
 			{Name: "FE_QUERY_PORT", Value: strconv.Itoa(int(GetFeQueryPort(cr)))},
 			{Name: "ACC_USER", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "user")},
 			{Name: "ACC_PWD", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "password")},
@@ -225,7 +225,7 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 		},
 		Spec: appv1.StatefulSetSpec{
 			Replicas:       &cr.Spec.Broker.Replicas,
-			ServiceName:    GetBrokerPeerServiceName(cr).Name,
+			ServiceName:    GetBrokerPeerServiceKey(cr.ObjKey()).Name,
 			Selector:       &metav1.LabelSelector{MatchLabels: brokerLabels},
 			Template:       podTemplate,
 			UpdateStrategy: updateStg,

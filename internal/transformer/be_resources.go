@@ -38,41 +38,41 @@ const (
 	DefaultBeBrpcPort             = 8060
 )
 
-func GetBeComponentLabels(r *dapi.DorisCluster) map[string]string {
-	return MakeResourceLabels(r.Name, "be")
+func GetBeComponentLabels(dorisClusterKey types.NamespacedName) map[string]string {
+	return MakeResourceLabels(dorisClusterKey.Name, "be")
+}
+
+func GetBeConfigMapKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-be-config", dorisClusterKey.Name),
+	}
+}
+
+func GetBeServiceKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-be", dorisClusterKey.Name),
+	}
+}
+
+func GetBePeerServiceKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-be-peer", dorisClusterKey.Name),
+	}
+}
+
+func GetBeStatefulSetKey(r *dapi.DorisCluster) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: r.Namespace,
+		Name:      fmt.Sprintf("%s-be", r.Name),
+	}
 }
 
 func GetBeImage(r *dapi.DorisCluster) string {
 	version := util.StringFallback(r.Spec.BE.Version, r.Spec.Version)
 	return fmt.Sprintf("%s:%s", r.Spec.BE.BaseImage, version)
-}
-
-func GetBeConfigMapName(cr *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      fmt.Sprintf("%s-be-config", cr.Name),
-	}
-}
-
-func GetBeServiceName(cr *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      fmt.Sprintf("%s-be", cr.Name),
-	}
-}
-
-func GetBePeerServiceName(cr *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      fmt.Sprintf("%s-be-peer", cr.Name),
-	}
-}
-
-func GetBeStatefulSetName(r *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      fmt.Sprintf("%s-be", r.Name),
-	}
 }
 
 func GetBeHeartbeatServicePort(cr *dapi.DorisCluster) int32 {
@@ -107,7 +107,7 @@ func MakeBeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 	if cr.Spec.BE == nil {
 		return nil
 	}
-	configMapRef := GetBeConfigMapName(cr)
+	configMapRef := GetBeConfigMapKey(cr.ObjKey())
 	data := map[string]string{
 		"be.conf": dumpCppBasedComponentConf(cr.Spec.BE.Configs),
 	}
@@ -119,7 +119,7 @@ func MakeBeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configMapRef.Name,
 			Namespace: configMapRef.Namespace,
-			Labels:    GetBeComponentLabels(cr),
+			Labels:    GetBeComponentLabels(cr.ObjKey()),
 		},
 		Data: data,
 	}
@@ -131,8 +131,8 @@ func MakeBeService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Servic
 	if cr.Spec.BE == nil {
 		return nil
 	}
-	serviceRef := GetBeServiceName(cr)
-	beLabels := GetBeComponentLabels(cr)
+	serviceRef := GetBeServiceKey(cr.ObjKey())
+	beLabels := GetBeComponentLabels(cr.ObjKey())
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceRef.Name,
@@ -158,8 +158,8 @@ func MakeBePeerService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Se
 	if cr.Spec.BE == nil {
 		return nil
 	}
-	serviceRef := GetBePeerServiceName(cr)
-	beLabels := GetBeComponentLabels(cr)
+	serviceRef := GetBePeerServiceKey(cr.ObjKey())
+	beLabels := GetBeComponentLabels(cr.ObjKey())
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceRef.Name,
@@ -185,9 +185,9 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	if cr.Spec.BE == nil {
 		return nil
 	}
-	statefulSetRef := GetBeStatefulSetName(cr)
-	accountSecretRef := GetOprSqlAccountSecretName(cr)
-	beLabels := GetBeComponentLabels(cr)
+	statefulSetRef := GetBeStatefulSetKey(cr)
+	accountSecretRef := GetOprSqlAccountSecretKey(cr.ObjKey())
+	beLabels := GetBeComponentLabels(cr.ObjKey())
 
 	// volume claim template
 	pvcTemplate := corev1.PersistentVolumeClaim{
@@ -208,7 +208,7 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 
 	// pod template: volumes
 	volumes := []corev1.Volume{
-		{Name: "conf", VolumeSource: util.NewConfigMapVolumeSource(GetBeConfigMapName(cr).Name)},
+		{Name: "conf", VolumeSource: util.NewConfigMapVolumeSource(GetBeConfigMapKey(cr.ObjKey()).Name)},
 		{Name: "be-log", VolumeSource: util.NewEmptyDirVolumeSource()},
 	}
 	// merge addition volumes defined by user
@@ -229,7 +229,7 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			{Name: "brpc-port", ContainerPort: GetBeBrpcPort(cr)},
 		},
 		Env: []corev1.EnvVar{
-			{Name: "FE_SVC", Value: GetFeServiceName(cr).Name},
+			{Name: "FE_SVC", Value: GetFeServiceKey(cr.ObjKey()).Name},
 			{Name: "FE_QUERY_PORT", Value: strconv.Itoa(int(GetFeQueryPort(cr)))},
 			{Name: "ACC_USER", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "user")},
 			{Name: "ACC_PWD", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "password")},
@@ -297,7 +297,7 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		},
 		Spec: appv1.StatefulSetSpec{
 			Replicas:             &cr.Spec.BE.Replicas,
-			ServiceName:          GetBePeerServiceName(cr).Name,
+			ServiceName:          GetBePeerServiceKey(cr.ObjKey()).Name,
 			Selector:             &metav1.LabelSelector{MatchLabels: beLabels},
 			VolumeClaimTemplates: []corev1.PersistentVolumeClaim{pvcTemplate},
 			Template:             podTemplate,

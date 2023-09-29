@@ -26,16 +26,16 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-func GetOprSqlAccountSecretName(cr *dapi.DorisCluster) types.NamespacedName {
+func GetOprSqlAccountSecretKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
 	return types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      fmt.Sprintf("%s-opr-account", cr.Name),
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-opr-account", dorisClusterKey.Name),
 	}
 }
 
 // MakeOprSqlAccountSecret generates a Secret for the operator SQL account.
 func MakeOprSqlAccountSecret(cr *dapi.DorisCluster) *corev1.Secret {
-	secretRef := GetOprSqlAccountSecretName(cr)
+	secretRef := GetOprSqlAccountSecretKey(cr.ObjKey())
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      secretRef.Name,

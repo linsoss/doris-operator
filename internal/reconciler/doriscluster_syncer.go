@@ -59,8 +59,8 @@ func (r *DorisClusterSyncer) syncFeStatus(cr *dapi.DorisCluster) error {
 	}
 	feStatus := dapi.FEStatus{}
 	feStatus.Image = transformer.GetFeImage(cr)
-	feStatus.ServiceRef = dapi.NewNamespacedName(transformer.GetFeServiceName(cr))
-	statefulSetRef := transformer.GetFeStatefulSetName(cr)
+	feStatus.ServiceRef = dapi.NewNamespacedName(transformer.GetFeServiceKey(cr.ObjKey()))
+	statefulSetRef := transformer.GetFeStatefulSetKey(cr.ObjKey())
 	feStatus.StatefulSetRef = dapi.NewNamespacedName(statefulSetRef)
 
 	// collect members status via ref statefulset
@@ -71,7 +71,7 @@ func (r *DorisClusterSyncer) syncFeStatus(cr *dapi.DorisCluster) error {
 	if sts != nil {
 		feStatus.Members = r.getComponentMembers(sts)
 		feStatus.Conditions = sts.Status.Conditions
-		readyMembers, err := r.getComponentReadyMembers(cr.Namespace, transformer.GetFeComponentLabels(cr))
+		readyMembers, err := r.getComponentReadyMembers(cr.Namespace, transformer.GetFeComponentLabels(cr.ObjKey()))
 		if err != nil {
 			return err
 		}
@@ -88,7 +88,7 @@ func (r *DorisClusterSyncer) syncBeStatus(cr *dapi.DorisCluster) error {
 	}
 	beStatus := dapi.BEStatus{}
 	beStatus.Image = transformer.GetBeImage(cr)
-	statefulSetRef := transformer.GetBeStatefulSetName(cr)
+	statefulSetRef := transformer.GetBeStatefulSetKey(cr)
 	beStatus.StatefulSetRef = dapi.NewNamespacedName(statefulSetRef)
 	// collect members status via ref statefulset
 	sts := &appv1.StatefulSet{}
@@ -98,7 +98,7 @@ func (r *DorisClusterSyncer) syncBeStatus(cr *dapi.DorisCluster) error {
 	if sts != nil {
 		beStatus.Members = r.getComponentMembers(sts)
 		beStatus.Conditions = sts.Status.Conditions
-		readyMembers, err := r.getComponentReadyMembers(cr.Namespace, transformer.GetBeComponentLabels(cr))
+		readyMembers, err := r.getComponentReadyMembers(cr.Namespace, transformer.GetBeComponentLabels(cr.ObjKey()))
 		if err != nil {
 			return err
 		}
@@ -115,7 +115,7 @@ func (r *DorisClusterSyncer) syncCnStatus(cr *dapi.DorisCluster) error {
 	}
 	cnStatus := dapi.CNStatus{}
 	cnStatus.Image = transformer.GetCnImage(cr)
-	statefulSetRef := transformer.GetCnStatefulSetName(cr)
+	statefulSetRef := transformer.GetCnStatefulSetKey(cr.ObjKey())
 	cnStatus.StatefulSetRef = dapi.NewNamespacedName(statefulSetRef)
 	// collect members status via ref statefulset
 	sts := &appv1.StatefulSet{}
@@ -125,7 +125,7 @@ func (r *DorisClusterSyncer) syncCnStatus(cr *dapi.DorisCluster) error {
 	if sts != nil {
 		cnStatus.Members = r.getComponentMembers(sts)
 		cnStatus.Conditions = sts.Status.Conditions
-		readyMembers, err := r.getComponentReadyMembers(cr.Namespace, transformer.GetCnComponentLabels(cr))
+		readyMembers, err := r.getComponentReadyMembers(cr.Namespace, transformer.GetCnComponentLabels(cr.ObjKey()))
 		if err != nil {
 			return err
 		}
@@ -142,7 +142,7 @@ func (r *DorisClusterSyncer) syncBrokerStatus(cr *dapi.DorisCluster) error {
 	}
 	status := dapi.BrokerStatus{}
 	status.Image = transformer.GetBrokerImage(cr)
-	statefulSetRef := transformer.GetBrokerStatefulSetName(cr)
+	statefulSetRef := transformer.GetBrokerStatefulSetKey(cr.ObjKey())
 	status.StatefulSetRef = dapi.NewNamespacedName(statefulSetRef)
 	// collect members status via ref statefulset
 	sts := &appv1.StatefulSet{}
@@ -152,7 +152,7 @@ func (r *DorisClusterSyncer) syncBrokerStatus(cr *dapi.DorisCluster) error {
 	if sts != nil {
 		status.Members = r.getComponentMembers(sts)
 		status.Conditions = sts.Status.Conditions
-		readyMembers, err := r.getComponentReadyMembers(cr.Namespace, transformer.GetBrokerComponentLabels(cr))
+		readyMembers, err := r.getComponentReadyMembers(cr.Namespace, transformer.GetBrokerComponentLabels(cr.ObjKey()))
 		if err != nil {
 			return err
 		}

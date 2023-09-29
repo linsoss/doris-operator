@@ -20,6 +20,7 @@ import (
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // DorisCluster is the Schema for the doris clusters API
@@ -31,6 +32,18 @@ type DorisCluster struct {
 
 	Spec   DorisClusterSpec   `json:"spec,omitempty"`
 	Status DorisClusterStatus `json:"status,omitempty"`
+
+	objKey *types.NamespacedName `json:"-"`
+}
+
+func (e *DorisCluster) ObjKey() types.NamespacedName {
+	if e.objKey == nil {
+		key := types.NamespacedName{Namespace: e.Namespace, Name: e.Name}
+		e.objKey = &key
+		return key
+	} else {
+		return *e.objKey
+	}
 }
 
 // DorisClusterList contains a list of DorisCluster

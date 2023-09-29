@@ -38,41 +38,41 @@ const (
 	DefaultFeQueryPort   = 9030
 )
 
-func GetFeComponentLabels(r *dapi.DorisCluster) map[string]string {
-	return MakeResourceLabels(r.Name, "fe")
+func GetFeComponentLabels(dorisClusterKey types.NamespacedName) map[string]string {
+	return MakeResourceLabels(dorisClusterKey.Name, "fe")
+}
+
+func GetFeConfigMapKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-fe-config", dorisClusterKey.Name),
+	}
+}
+
+func GetFeServiceKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-fe", dorisClusterKey.Name),
+	}
+}
+
+func GetFePeerServiceKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-fe-peer", dorisClusterKey.Name),
+	}
+}
+
+func GetFeStatefulSetKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-fe", dorisClusterKey.Name),
+	}
 }
 
 func GetFeImage(r *dapi.DorisCluster) string {
 	version := util.StringFallback(r.Spec.FE.Version, r.Spec.Version)
 	return fmt.Sprintf("%s:%s", r.Spec.FE.BaseImage, version)
-}
-
-func GetFeConfigMapName(cr *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      fmt.Sprintf("%s-fe-config", cr.Name),
-	}
-}
-
-func GetFeServiceName(cr *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      fmt.Sprintf("%s-fe", cr.Name),
-	}
-}
-
-func GetFePeerServiceName(cr *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      fmt.Sprintf("%s-fe-peer", cr.Name),
-	}
-}
-
-func GetFeStatefulSetName(r *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      fmt.Sprintf("%s-fe", r.Name),
-	}
 }
 
 func GetFeHttpPort(cr *dapi.DorisCluster) int32 {
@@ -107,7 +107,7 @@ func MakeFeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 	if cr.Spec.FE == nil {
 		return nil
 	}
-	configMapRef := GetFeConfigMapName(cr)
+	configMapRef := GetFeConfigMapKey(cr.ObjKey())
 	data := map[string]string{
 		"fe.conf": dumpJavaBasedComponentConf(cr.Spec.FE.Configs),
 	}
@@ -119,7 +119,7 @@ func MakeFeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configMapRef.Name,
 			Namespace: configMapRef.Namespace,
-			Labels:    GetFeComponentLabels(cr),
+			Labels:    GetFeComponentLabels(cr.ObjKey()),
 		},
 		Data: data,
 	}
@@ -131,8 +131,8 @@ func MakeFeService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Servic
 	if cr.Spec.FE == nil {
 		return nil
 	}
-	serviceRef := GetFeServiceName(cr)
-	feLabels := GetFeComponentLabels(cr)
+	serviceRef := GetFeServiceKey(cr.ObjKey())
+	feLabels := GetFeComponentLabels(cr.ObjKey())
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceRef.Name,
@@ -177,8 +177,8 @@ func MakeFePeerService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Se
 	if cr.Spec.FE == nil {
 		return nil
 	}
-	serviceRef := GetFePeerServiceName(cr)
-	feLabels := GetFeComponentLabels(cr)
+	serviceRef := GetFePeerServiceKey(cr.ObjKey())
+	feLabels := GetFeComponentLabels(cr.ObjKey())
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceRef.Name,
@@ -203,10 +203,10 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	if cr.Spec.FE == nil {
 		return nil
 	}
-	statefulSetRef := GetFeStatefulSetName(cr)
-	configMapRef := GetFeConfigMapName(cr)
-	accountSecretRef := GetOprSqlAccountSecretName(cr)
-	feLabels := GetFeComponentLabels(cr)
+	statefulSetRef := GetFeStatefulSetKey(cr.ObjKey())
+	configMapRef := GetFeConfigMapKey(cr.ObjKey())
+	accountSecretRef := GetOprSqlAccountSecretKey(cr.ObjKey())
+	feLabels := GetFeComponentLabels(cr.ObjKey())
 
 	// volume claim template
 	pvcTemplate := corev1.PersistentVolumeClaim{
@@ -248,7 +248,7 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			{Name: "query-port", ContainerPort: GetFeQueryPort(cr)},
 		},
 		Env: []corev1.EnvVar{
-			{Name: "FE_SVC", Value: GetFeServiceName(cr).Name},
+			{Name: "FE_SVC", Value: GetFeServiceKey(cr.ObjKey()).Name},
 			{Name: "ACC_USER", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "user")},
 			{Name: "ACC_PWD", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "password")},
 		},
@@ -319,7 +319,7 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		},
 		Spec: appv1.StatefulSetSpec{
 			Replicas:             &cr.Spec.FE.Replicas,
-			ServiceName:          GetFePeerServiceName(cr).Name,
+			ServiceName:          GetFePeerServiceKey(cr.ObjKey()).Name,
 			Selector:             &metav1.LabelSelector{MatchLabels: feLabels},
 			VolumeClaimTemplates: []corev1.PersistentVolumeClaim{pvcTemplate},
 			Template:             podTemplate,

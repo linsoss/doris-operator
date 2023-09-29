@@ -31,41 +31,41 @@ import (
 	"strconv"
 )
 
-func GetCnComponentLabels(r *dapi.DorisCluster) map[string]string {
-	return MakeResourceLabels(r.Name, "cn")
+func GetCnComponentLabels(dorisClusterKey types.NamespacedName) map[string]string {
+	return MakeResourceLabels(dorisClusterKey.Name, "cn")
+}
+
+func GetCnConfigMapKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-cn-config", dorisClusterKey.Name),
+	}
+}
+
+func GetCnServiceKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-cn", dorisClusterKey.Name),
+	}
+}
+
+func GetCnPeerServiceKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-cn-peer", dorisClusterKey.Name),
+	}
+}
+
+func GetCnStatefulSetKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-cn", dorisClusterKey.Name),
+	}
 }
 
 func GetCnImage(r *dapi.DorisCluster) string {
 	version := util.StringFallback(r.Spec.CN.Version, r.Spec.Version)
 	return fmt.Sprintf("%s:%s", r.Spec.CN.BaseImage, version)
-}
-
-func GetCnConfigMapName(cr *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      fmt.Sprintf("%s-cn-config", cr.Name),
-	}
-}
-
-func GetCnServiceName(cr *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      fmt.Sprintf("%s-cn", cr.Name),
-	}
-}
-
-func GetCnPeerServiceName(cr *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      fmt.Sprintf("%s-cn-peer", cr.Name),
-	}
-}
-
-func GetCnStatefulSetName(r *dapi.DorisCluster) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      fmt.Sprintf("%s-cn", r.Name),
-	}
 }
 
 func GetCnHeartbeatServicePort(cr *dapi.DorisCluster) int32 {
@@ -100,7 +100,7 @@ func MakeCnConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 	if cr.Spec.CN == nil {
 		return nil
 	}
-	configMapRef := GetCnConfigMapName(cr)
+	configMapRef := GetCnConfigMapKey(cr.ObjKey())
 	data := map[string]string{
 		"be.conf": dumpCppBasedComponentConf(cr.Spec.CN.Configs),
 	}
@@ -112,7 +112,7 @@ func MakeCnConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configMapRef.Name,
 			Namespace: configMapRef.Namespace,
-			Labels:    GetCnComponentLabels(cr),
+			Labels:    GetCnComponentLabels(cr.ObjKey()),
 		},
 		Data: data,
 	}
@@ -124,8 +124,8 @@ func MakeCnService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Servic
 	if cr.Spec.CN == nil {
 		return nil
 	}
-	serviceRef := GetCnServiceName(cr)
-	cnLabels := GetCnComponentLabels(cr)
+	serviceRef := GetCnServiceKey(cr.ObjKey())
+	cnLabels := GetCnComponentLabels(cr.ObjKey())
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceRef.Name,
@@ -151,8 +151,8 @@ func MakeCnPeerService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Se
 	if cr.Spec.CN == nil {
 		return nil
 	}
-	serviceRef := GetCnPeerServiceName(cr)
-	cnLabels := GetCnComponentLabels(cr)
+	serviceRef := GetCnPeerServiceKey(cr.ObjKey())
+	cnLabels := GetCnComponentLabels(cr.ObjKey())
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceRef.Name,
@@ -178,13 +178,13 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	if cr.Spec.CN == nil {
 		return nil
 	}
-	statefulSetRef := GetCnStatefulSetName(cr)
-	accountSecretRef := GetOprSqlAccountSecretName(cr)
-	cnLabels := GetCnComponentLabels(cr)
+	statefulSetRef := GetCnStatefulSetKey(cr.ObjKey())
+	accountSecretRef := GetOprSqlAccountSecretKey(cr.ObjKey())
+	cnLabels := GetCnComponentLabels(cr.ObjKey())
 
 	// pod template: volumes
 	volumes := []corev1.Volume{
-		{Name: "conf", VolumeSource: util.NewConfigMapVolumeSource(GetCnConfigMapName(cr).Name)},
+		{Name: "conf", VolumeSource: util.NewConfigMapVolumeSource(GetCnConfigMapKey(cr.ObjKey()).Name)},
 		{Name: "cn-log", VolumeSource: util.NewEmptyDirVolumeSource()},
 	}
 	// merge addition volumes defined by user
@@ -205,7 +205,7 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			{Name: "brpc-port", ContainerPort: GetCnBrpcPort(cr)},
 		},
 		Env: []corev1.EnvVar{
-			{Name: "FE_SVC", Value: GetFeServiceName(cr).Name},
+			{Name: "FE_SVC", Value: GetFeServiceKey(cr.ObjKey()).Name},
 			{Name: "FE_QUERY_PORT", Value: strconv.Itoa(int(GetFeQueryPort(cr)))},
 			{Name: "ACC_USER", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "user")},
 			{Name: "ACC_PWD", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "password")},
@@ -272,7 +272,7 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		},
 		Spec: appv1.StatefulSetSpec{
 			Replicas:       &cr.Spec.CN.Replicas,
-			ServiceName:    GetCnPeerServiceName(cr).Name,
+			ServiceName:    GetCnPeerServiceKey(cr.ObjKey()).Name,
 			Selector:       &metav1.LabelSelector{MatchLabels: cnLabels},
 			Template:       podTemplate,
 			UpdateStrategy: updateStg,
