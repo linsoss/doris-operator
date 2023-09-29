@@ -143,7 +143,7 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 
 	// pod template: volumes
 	volumes := []corev1.Volume{
-		{Name: "conf", VolumeSource: NewConfigMapVolumeSource(GetBrokerConfigMapName(cr).Name)},
+		{Name: "conf", VolumeSource: util.NewConfigMapVolumeSource(GetBrokerConfigMapName(cr).Name)},
 	}
 	// merge addition volumes defined by user
 	volumes = append(volumes, cr.Spec.Broker.AdditionalVolumes...)
@@ -162,14 +162,14 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 		Env: []corev1.EnvVar{
 			{Name: "FE_SVC", Value: GetFeServiceName(cr).Name},
 			{Name: "FE_QUERY_PORT", Value: strconv.Itoa(int(GetFeQueryPort(cr)))},
-			{Name: "ACC_USER", ValueFrom: NewEnvVarSecretSource(accountSecretRef.Name, "user")},
-			{Name: "ACC_PWD", ValueFrom: NewEnvVarSecretSource(accountSecretRef.Name, "password")},
+			{Name: "ACC_USER", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "user")},
+			{Name: "ACC_PWD", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "password")},
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: "conf", MountPath: "/opt/apache-doris/broker/conf"},
 		},
 		ReadinessProbe: &corev1.Probe{
-			ProbeHandler:     NewTcpSocketProbeHandler(GetBrokerIpcPort(cr)),
+			ProbeHandler:     util.NewTcpSocketProbeHandler(GetBrokerIpcPort(cr)),
 			TimeoutSeconds:   1,
 			PeriodSeconds:    5,
 			SuccessThreshold: 1,

@@ -184,8 +184,8 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 
 	// pod template: volumes
 	volumes := []corev1.Volume{
-		{Name: "conf", VolumeSource: NewConfigMapVolumeSource(GetCnConfigMapName(cr).Name)},
-		{Name: "cn-log", VolumeSource: NewEmptyDirVolumeSource()},
+		{Name: "conf", VolumeSource: util.NewConfigMapVolumeSource(GetCnConfigMapName(cr).Name)},
+		{Name: "cn-log", VolumeSource: util.NewEmptyDirVolumeSource()},
 	}
 	// merge addition volumes defined by user
 	volumes = append(volumes, cr.Spec.CN.AdditionalVolumes...)
@@ -207,15 +207,15 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		Env: []corev1.EnvVar{
 			{Name: "FE_SVC", Value: GetFeServiceName(cr).Name},
 			{Name: "FE_QUERY_PORT", Value: strconv.Itoa(int(GetFeQueryPort(cr)))},
-			{Name: "ACC_USER", ValueFrom: NewEnvVarSecretSource(accountSecretRef.Name, "user")},
-			{Name: "ACC_PWD", ValueFrom: NewEnvVarSecretSource(accountSecretRef.Name, "password")},
+			{Name: "ACC_USER", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "user")},
+			{Name: "ACC_PWD", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "password")},
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: "conf", MountPath: "/etc/apache-doris/be/"},
 			{Name: "cn-log", MountPath: "/opt/apache-doris/be/log"},
 		},
 		ReadinessProbe: &corev1.Probe{
-			ProbeHandler:     NewTcpSocketProbeHandler(GetCnHeartbeatServicePort(cr)),
+			ProbeHandler:     util.NewTcpSocketProbeHandler(GetCnHeartbeatServicePort(cr)),
 			TimeoutSeconds:   1,
 			PeriodSeconds:    5,
 			SuccessThreshold: 1,

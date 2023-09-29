@@ -49,6 +49,32 @@ type ClusterStageRecResult struct {
 	Err    error
 }
 
+func (r *ClusterStageRecResult) Error() string {
+	if r.Err != nil {
+		return r.Err.Error()
+	} else {
+		return ""
+	}
+}
+
+// Reconcile all sub components
+func (r *DorisClusterReconciler) Reconcile() ClusterStageRecResult {
+	stages := []func() ClusterStageRecResult{
+		r.recOprAccountSecret,
+		r.recFeResources,
+		r.recBeResources,
+		r.recCnResources,
+		r.recBrokerResources,
+	}
+	for _, fn := range stages {
+		result := fn()
+		if result.Err != nil {
+			return result
+		}
+	}
+	return ClusterStageRecResult{Stage: dapi.StageComplete, Status: dapi.StageResultSucceeded}
+}
+
 func clusterStageSucc(stage dapi.DorisClusterOprStage, action dapi.OprStageAction) ClusterStageRecResult {
 	return ClusterStageRecResult{Stage: stage, Status: dapi.StageResultSucceeded, Action: action}
 }
@@ -57,7 +83,7 @@ func clusterStageFail(stage dapi.DorisClusterOprStage, action dapi.OprStageActio
 	return ClusterStageRecResult{Stage: stage, Status: dapi.StageResultSucceeded, Action: action, Err: err}
 }
 
-// Reconcile secret object that using to store the sql query account info
+// reconcile secret object that using to store the sql query account info
 // that used by doris-operator.
 func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
 	secretRef := transformer.GetOprSqlAccountSecretName(r.CR)
@@ -77,7 +103,7 @@ func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
 	return clusterStageSucc(dapi.StageSqlAccountSecret, action)
 }
 
-// Reconcile Doris FE component resources.
+// reconcile Doris FE component resources.
 func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 
 	// apply resources
@@ -134,7 +160,7 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 	return util.Elvis(r.CR.Spec.FE != nil, applyRes, deleteRes)()
 }
 
-// Reconcile Doris BE component resources.
+// reconcile Doris BE component resources.
 func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 
 	// apply resources
@@ -191,7 +217,7 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 	return util.Elvis(r.CR.Spec.BE != nil, applyRes, deleteRes)()
 }
 
-// Reconcile Doris CN component resources.
+// reconcile Doris CN component resources.
 func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 
 	// apply resources

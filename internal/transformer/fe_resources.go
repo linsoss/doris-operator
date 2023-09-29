@@ -227,8 +227,8 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 
 	// pod template: volumes
 	volumes := []corev1.Volume{
-		{Name: "conf", VolumeSource: NewConfigMapVolumeSource(configMapRef.Name)},
-		{Name: "fe-log", VolumeSource: NewEmptyDirVolumeSource()},
+		{Name: "conf", VolumeSource: util.NewConfigMapVolumeSource(configMapRef.Name)},
+		{Name: "fe-log", VolumeSource: util.NewEmptyDirVolumeSource()},
 	}
 	// merge addition volumes defined by user
 	volumes = append(volumes, cr.Spec.FE.AdditionalVolumes...)
@@ -249,8 +249,8 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		},
 		Env: []corev1.EnvVar{
 			{Name: "FE_SVC", Value: GetFeServiceName(cr).Name},
-			{Name: "ACC_USER", ValueFrom: NewEnvVarSecretSource(accountSecretRef.Name, "user")},
-			{Name: "ACC_PWD", ValueFrom: NewEnvVarSecretSource(accountSecretRef.Name, "password")},
+			{Name: "ACC_USER", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "user")},
+			{Name: "ACC_PWD", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "password")},
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: "conf", MountPath: "/etc/apache-doris/fe/"},
@@ -258,7 +258,7 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			{Name: "fe-log", MountPath: "/opt/apache-doris/fe/log"},
 		},
 		ReadinessProbe: &corev1.Probe{
-			ProbeHandler:        NewTcpSocketProbeHandler(GetFeQueryPort(cr)),
+			ProbeHandler:        util.NewTcpSocketProbeHandler(GetFeQueryPort(cr)),
 			InitialDelaySeconds: 3,
 			TimeoutSeconds:      1,
 			PeriodSeconds:       5,

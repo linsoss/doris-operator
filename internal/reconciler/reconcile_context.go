@@ -20,6 +20,7 @@ package reconciler
 
 import (
 	"context"
+	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -57,6 +58,17 @@ func (r *ReconcileContext) Exist(key types.NamespacedName, objType client.Object
 	return true, nil
 }
 
+// Find finds the kubernetes object, when it does not exist, the obj pointer will be set to nil.
+func (r *ReconcileContext) Find(key types.NamespacedName, obj client.Object) error {
+	err := r.Get(r.Ctx, key, obj)
+	if errors.IsNotFound(err) {
+		obj = nil
+		return nil
+	} else {
+		return err
+	}
+}
+
 // DeleteWhenExist deletes the kubernetes object if it exists.
 func (r *ReconcileContext) DeleteWhenExist(key types.NamespacedName, objType client.Object) error {
 	exist, err := r.Exist(key, objType)
@@ -86,4 +98,19 @@ func (r *ReconcileContext) CreateOrUpdate(obj client.Object) error {
 	} else {
 		return r.Update(r.Ctx, obj)
 	}
+}
+
+// FindRefDorisAutoScaler finds the DorisAutoscaler CR that refer to the DorisCluster CR.
+// A DorisCluster CR can only be bound to one additional DorisAutoScaler CR.
+func (r *ReconcileContext) FindRefDorisAutoScaler(dorisClusterRef client.ObjectKey) (*dapi.DorisAutoscaler, error) {
+	crList := &dapi.DorisAutoscalerList{}
+	if err := r.List(r.Ctx, crList, &client.ListOptions{Namespace: dorisClusterRef.Namespace}); err != nil {
+		return nil, err
+	}
+	for _, item := range crList.Items {
+		if item.Spec.Cluster == dorisClusterRef.Name {
+			return &item, nil
+		}
+	}
+	return nil, nil
 }

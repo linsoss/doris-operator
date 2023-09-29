@@ -20,6 +20,8 @@ import (
 	"context"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	"github.com/al-assad/doris-operator/internal/reconciler"
+	"github.com/al-assad/doris-operator/internal/util"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -47,30 +49,49 @@ func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// obtain CR and skip reconciling process when it has been deleted
 	cr := &dapi.DorisCluster{}
-	crExist, err := recCtx.Exist(req.NamespacedName, cr)
-	if err != nil {
+	if err := recCtx.Find(req.NamespacedName, cr); err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
-	if !crExist {
+	if cr == nil {
 		recCtx.Log.Info("DorisCluster has been deleted")
 		return ctrl.Result{}, nil
 	}
-	// reconcile CR when the spec of it has been changed
+
+	// reconcile the sub resource of CR under the following conditions:
+	//   it was created for the first time,
+	//   or the spec of it has been changed,
+	//   or the previous reconcile stage has not been completed
 	crSpecHasChanged := cr.Status.PrevSpec == nil || !reflect.DeepEqual(cr.Spec, *cr.Status.PrevSpec)
-	// TODO reconcile when middle stage fail
-	if crSpecHasChanged {
-
-		//rec := reconciler.DorisClusterReconciler{
-		//	ReconcileContext: recCtx,
-		//	CR:               cr}
-
-		cr.Status.PrevSpec = cr.Spec.DeepCopy()
-
+	crRecStageNotComplete := cr.Status.Stage != dapi.StageComplete
+	var recErr error
+	if crSpecHasChanged || crRecStageNotComplete {
+		rec := reconciler.DorisClusterReconciler{ReconcileContext: recCtx, CR: cr}
+		recResult := rec.Reconcile()
+		cr.Status.Stage = recResult.Stage
+		cr.Status.StageStatus = recResult.Status
+		cr.Status.StageAction = recResult.Action
+		cr.Status.LastMessage = recResult.Error()
+		cr.Status.LastTransitionTime = metav1.Now()
+		recErr = recResult.Err
 	}
-	// sync the status of CR
-	// TODO sync logic
 
-	return ctrl.Result{}, nil
+	// sync the status of CR
+	sync := reconciler.DorisClusterSyncer{ReconcileContext: recCtx, CR: cr}
+	syncErr := sync.Sync()
+	// update status
+	updateErr := r.Status().Update(ctx, cr)
+
+	// merge error at different reconcile phases
+	mergedErr := util.MergeErrorsWithTag(map[string]error{
+		"reconcile":     recErr,
+		"sync":          syncErr,
+		"update-status": updateErr,
+	})
+	if mergedErr != nil {
+		return ctrl.Result{Requeue: true}, nil
+	} else {
+		return ctrl.Result{}, nil
+	}
 }
 
 // SetupWithManager sets up the controller with the Manager.

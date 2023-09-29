@@ -16,11 +16,20 @@ limitations under the License.
 
 package v1beta1
 
+import "k8s.io/apimachinery/pkg/types"
+
 // NamespacedName is the name and namespace of the kubernetes object
 // +k8s:openapi-gen=true
 type NamespacedName struct {
 	Name      string `json:"name"`
 	Namespace string `json:"namespace"`
+}
+
+func NewNamespacedName(name types.NamespacedName) NamespacedName {
+	return NamespacedName{
+		Name:      name.Name,
+		Namespace: name.Namespace,
+	}
 }
 
 // OprStageAction represents the action type of controller reconcile stage

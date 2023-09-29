@@ -16,7 +16,7 @@
  * /
  */
 
-package transformer
+package util
 
 import (
 	corev1 "k8s.io/api/core/v1"
@@ -55,4 +55,13 @@ func NewTcpSocketProbeHandler(tcpPort int32) corev1.ProbeHandler {
 			Port: intstr.FromInt(int(tcpPort)),
 		},
 	}
+}
+
+func IsPodReady(pod corev1.Pod) bool {
+	for _, condition := range pod.Status.Conditions {
+		if condition.Type == "Ready" && condition.Status == "True" {
+			return true
+		}
+	}
+	return false
 }
