@@ -17,7 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
+	acv2 "k8s.io/api/autoscaling/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // DorisAutoscaler is the Schema for the Doris cluster autoscaling API
@@ -26,9 +28,20 @@ import (
 type DorisAutoscaler struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              DorisAutoscalerSpec   `json:"spec,omitempty"`
+	Status            DorisAutoscalerStatus `json:"status,omitempty"`
 
-	Spec   DorisAutoscalerSpec   `json:"spec,omitempty"`
-	Status DorisAutoscalerStatus `json:"status,omitempty"`
+	objKey *types.NamespacedName `json:"-"`
+}
+
+func (e *DorisAutoscaler) ObjKey() types.NamespacedName {
+	if e.objKey == nil {
+		key := types.NamespacedName{Namespace: e.Namespace, Name: e.Name}
+		e.objKey = &key
+		return key
+	} else {
+		return *e.objKey
+	}
 }
 
 // DorisAutoscalerList contains a list of DorisAutoscaler
@@ -49,10 +62,10 @@ type DorisAutoscalerSpec struct {
 // CNAutoscalerSpec contains autoscaling details of CN components.
 type CNAutoscalerSpec struct {
 	// The range of replicas for automatic scaling
-	Replicas *ReplicasRange `json:"replicas,omitempty"`
+	Replicas ReplicasRange `json:"replicas,omitempty"`
 
 	// The metric rules for automatic scaling
-	Rules *CNAutoscalerRules `json:"rules,omitempty"`
+	Rules CNAutoscalerRules `json:"rules,omitempty"`
 
 	// ScalePeriodSeconds indicates the length of time in the past for which the k8s HPA scale policy must hold true
 	// Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#scaling-policies
@@ -77,52 +90,52 @@ type CNAutoscalerRules struct {
 }
 
 type ReplicasRange struct {
-	Max int32 `json:"max,omitempty"`
-	Min int32 `json:"min,omitempty"`
+	Max int32  `json:"max,omitempty"`
+	Min *int32 `json:"min,omitempty"`
 }
 
 type UtilizationThresholdRange struct {
-	Max int32 `json:"max,omitempty"`
-	Min int32 `json:"min,omitempty"`
+	Max *int32 `json:"max,omitempty"`
+	Min *int32 `json:"min,omitempty"`
 }
 
 type ScalePeriodSeconds struct {
-	ScaleUp   int `json:"scaleUp,omitempty"`
-	ScaleDown int `json:"scaleDown,omitempty"`
+	ScaleUp   *int32 `json:"scaleUp,omitempty"`
+	ScaleDown *int32 `json:"scaleDown,omitempty"`
 }
 
 // DorisAutoscalerStatus defines the observed state of DorisAutoscaler
 type DorisAutoscalerStatus struct {
-	CN *CNAutoscalerStatus `json:"cn,omitempty"`
+	PrevSpec   *DorisAutoscalerSpec `json:"prevSpec,omitempty"`
+	ClusterRef NamespacedName       `json:"clusterRef,omitempty"`
+	CN         CNAutoscalerStatus   `json:"cn,omitempty"`
 }
 
 // CNAutoscalerStatus defines the observed state of CN autoscaler
 type CNAutoscalerStatus struct {
-	ClusterRef         NamespacedName `json:"clusterRef,omitempty"`
 	Phase              AutoScalePhase `json:"stage,omitempty"`
 	LastTransitionTime metav1.Time    `json:"lastTransitionTime,omitempty"`
 	LastMessage        string         `json:"message,omitempty"`
-	// Scale up HPA reference
-	// +nullable
-	ScaleUp *AutoScalerRef `json:"scaleUp,omitempty"`
-	// Scale down HPA reference
-	// +nullable
-	ScaleDown *AutoScalerRef `json:"scaleDown,omitempty"`
+
+	ScaleUpHpaRef   *AutoScalerRef                      `json:"scaleUpHpa,omitempty"`
+	ScaleUpStatus   *acv2.HorizontalPodAutoscalerStatus `json:"scaleUpHpaStatus,omitempty"`
+	ScaleDownHpaRef *AutoScalerRef                      `json:"scaleDown,omitempty"`
+	ScaleDownStatus *acv2.HorizontalPodAutoscalerStatus `json:"scaleDownHpaStatus,omitempty"`
 }
 
 // AutoScalePhase is the current state of autoscaler
 type AutoScalePhase string
 
 const (
-	AutoScalePhasePending  AutoScalePhase = "pending"
-	AutoScalePhaseUpdating AutoScalePhase = "updating"
-	AutoScalPhaseCompleted AutoScalePhase = "completed"
+	AutoScalePhasePending   AutoScalePhase = "pending"
+	AutoScalePhaseUpdating  AutoScalePhase = "reconciling"
+	AutoScalePhaseCompleted AutoScalePhase = "completed"
 )
 
 // AutoScalerRef identifies a K8s HPA resource.
 type AutoScalerRef struct {
-	*NamespacedName  `json:",inline"`
-	*metav1.TypeMeta `json:",inline"`
+	NamespacedName  `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
 }
 
 func init() {

@@ -18,13 +18,14 @@ package controller
 
 import (
 	"context"
+	corev1 "k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	alassadgithubiov1beta1 "github.com/al-assad/doris-operator/api/v1beta1"
+	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 )
 
 // DorisInitializerReconciler reconciles a DorisInitializer object
@@ -36,16 +37,12 @@ type DorisInitializerReconciler struct {
 //+kubebuilder:rbac:groups=al-assad.github.io,resources=dorisinitializers,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=al-assad.github.io,resources=dorisinitializers/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=al-assad.github.io,resources=dorisinitializers/finalizers,verbs=update
+//+kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the DorisInitializer object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.15.0/pkg/reconcile
+// todo
+//+kubebuilder:rbac:groups=core,resources=jobs,verbs=get;list;watch;create;update;patch;delete
+
 func (r *DorisInitializerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
@@ -57,6 +54,8 @@ func (r *DorisInitializerReconciler) Reconcile(ctx context.Context, req ctrl.Req
 // SetupWithManager sets up the controller with the Manager.
 func (r *DorisInitializerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&alassadgithubiov1beta1.DorisInitializer{}).
+		For(&dapi.DorisInitializer{}).
+		Owns(&corev1.ConfigMap{}).
+		//Owns(&corev1.Job{}).
 		Complete(r)
 }

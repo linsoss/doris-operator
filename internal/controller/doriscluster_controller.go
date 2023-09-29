@@ -58,6 +58,7 @@ func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		recCtx.Log.Info("DorisCluster has been deleted")
 		return ctrl.Result{}, nil
 	}
+	rec := reconciler.DorisClusterReconciler{ReconcileContext: recCtx, CR: cr}
 
 	// reconcile the sub resource of CR under the following conditions:
 	//   it was created for the first time,
@@ -67,19 +68,16 @@ func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	crRecStageNotComplete := cr.Status.Stage != dapi.StageComplete
 	var recErr error
 	if crSpecHasChanged || crRecStageNotComplete {
-		rec := reconciler.DorisClusterReconciler{ReconcileContext: recCtx, CR: cr}
 		recResult := rec.Reconcile()
+		recErr = recResult.Err
 		cr.Status.Stage = recResult.Stage
 		cr.Status.StageStatus = recResult.Status
 		cr.Status.StageAction = recResult.Action
 		cr.Status.LastMessage = recResult.Error()
 		cr.Status.LastTransitionTime = metav1.Now()
-		recErr = recResult.Err
 	}
-
 	// sync the status of CR
-	sync := reconciler.DorisClusterSyncer{ReconcileContext: recCtx, CR: cr}
-	syncErr := sync.Sync()
+	syncErr := rec.Sync()
 	// update status
 	updateErr := r.Status().Update(ctx, cr)
 
@@ -90,7 +88,7 @@ func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		"update-status": updateErr,
 	})
 	if mergedErr != nil {
-		return ctrl.Result{Requeue: true}, nil
+		return ctrl.Result{Requeue: true}, mergedErr
 	} else {
 		return ctrl.Result{}, nil
 	}

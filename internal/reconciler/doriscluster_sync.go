@@ -29,14 +29,8 @@ import (
 	"strconv"
 )
 
-// DorisClusterSyncer sync the status of a DorisCluster object
-type DorisClusterSyncer struct {
-	ReconcileContext
-	CR *dapi.DorisCluster
-}
-
 // Sync all sub components status.
-func (r *DorisClusterSyncer) Sync() error {
+func (r *DorisClusterReconciler) Sync() error {
 	syncs := []func(cr *dapi.DorisCluster) error{
 		r.syncFeStatus,
 		r.syncBeStatus,
@@ -53,7 +47,7 @@ func (r *DorisClusterSyncer) Sync() error {
 }
 
 // sync FE status
-func (r *DorisClusterSyncer) syncFeStatus(cr *dapi.DorisCluster) error {
+func (r *DorisClusterReconciler) syncFeStatus(cr *dapi.DorisCluster) error {
 	if cr.Spec.FE == nil && cr.Status.Stage == dapi.StageComplete {
 		return nil
 	}
@@ -82,7 +76,7 @@ func (r *DorisClusterSyncer) syncFeStatus(cr *dapi.DorisCluster) error {
 }
 
 // sync BE status
-func (r *DorisClusterSyncer) syncBeStatus(cr *dapi.DorisCluster) error {
+func (r *DorisClusterReconciler) syncBeStatus(cr *dapi.DorisCluster) error {
 	if cr.Spec.BE == nil && cr.Status.Stage == dapi.StageComplete {
 		return nil
 	}
@@ -109,7 +103,7 @@ func (r *DorisClusterSyncer) syncBeStatus(cr *dapi.DorisCluster) error {
 }
 
 // sync CN status
-func (r *DorisClusterSyncer) syncCnStatus(cr *dapi.DorisCluster) error {
+func (r *DorisClusterReconciler) syncCnStatus(cr *dapi.DorisCluster) error {
 	if cr.Spec.CN == nil && cr.Status.Stage == dapi.StageComplete {
 		return nil
 	}
@@ -136,7 +130,7 @@ func (r *DorisClusterSyncer) syncCnStatus(cr *dapi.DorisCluster) error {
 }
 
 // sync Broker status
-func (r *DorisClusterSyncer) syncBrokerStatus(cr *dapi.DorisCluster) error {
+func (r *DorisClusterReconciler) syncBrokerStatus(cr *dapi.DorisCluster) error {
 	if cr.Spec.Broker == nil && cr.Status.Stage == dapi.StageComplete {
 		return nil
 	}
@@ -162,7 +156,7 @@ func (r *DorisClusterSyncer) syncBrokerStatus(cr *dapi.DorisCluster) error {
 	return nil
 }
 
-func (r *DorisClusterSyncer) getComponentMembers(sts *appv1.StatefulSet) []string {
+func (r *DorisClusterReconciler) getComponentMembers(sts *appv1.StatefulSet) []string {
 	replicas := sts.Status.Replicas
 	members := make([]string, replicas)
 	for i := 0; i < int(replicas); i++ {
@@ -171,7 +165,7 @@ func (r *DorisClusterSyncer) getComponentMembers(sts *appv1.StatefulSet) []strin
 	return members
 }
 
-func (r *DorisClusterSyncer) getComponentReadyMembers(namespace string, componentLabels map[string]string) ([]string, error) {
+func (r *DorisClusterReconciler) getComponentReadyMembers(namespace string, componentLabels map[string]string) ([]string, error) {
 	readyMembers := make([]string, 0)
 	podList := &corev1.PodList{}
 	listOptions := &client.ListOptions{

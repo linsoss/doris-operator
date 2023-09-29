@@ -19,6 +19,7 @@
 package util
 
 import (
+	acv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -53,6 +54,19 @@ func NewTcpSocketProbeHandler(tcpPort int32) corev1.ProbeHandler {
 	return corev1.ProbeHandler{
 		TCPSocket: &corev1.TCPSocketAction{
 			Port: intstr.FromInt(int(tcpPort)),
+		},
+	}
+}
+
+func NewResourceAvgUtilizationMetricSpec(name corev1.ResourceName, avgUnit *int32) acv2.MetricSpec {
+	return acv2.MetricSpec{
+		Type: acv2.ResourceMetricSourceType,
+		Resource: &acv2.ResourceMetricSource{
+			Name: name,
+			Target: acv2.MetricTarget{
+				Type:               acv2.UtilizationMetricType,
+				AverageUtilization: avgUnit,
+			},
 		},
 	}
 }
