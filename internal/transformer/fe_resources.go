@@ -270,7 +270,6 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	mainContainer.Env = append(mainContainer.Env, cr.Spec.FE.AdditionalEnvs...)
 	mainContainer.VolumeMounts = append(mainContainer.VolumeMounts, cr.Spec.FE.AdditionalVolumeMounts...)
 	containers := append([]corev1.Container{mainContainer}, cr.Spec.FE.AdditionalContainers...)
-	initContainers := cr.Spec.FE.AdditionalInitContainers
 
 	// pod template: host alias
 	var hostAlias []corev1.HostAlias
@@ -292,7 +291,6 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		},
 		Spec: corev1.PodSpec{
 			Volumes:            volumes,
-			InitContainers:     initContainers,
 			Containers:         containers,
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			ServiceAccountName: util.StringFallback(cr.Spec.FE.ServiceAccount, cr.Spec.ServiceAccount),

@@ -180,7 +180,6 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 	mainContainer.Env = append(mainContainer.Env, cr.Spec.Broker.AdditionalEnvs...)
 	mainContainer.VolumeMounts = append(mainContainer.VolumeMounts, cr.Spec.Broker.AdditionalVolumeMounts...)
 	containers := append([]corev1.Container{mainContainer}, cr.Spec.Broker.AdditionalContainers...)
-	initContainers := cr.Spec.Broker.AdditionalInitContainers
 
 	// pod template: host alias
 	var hostAlias []corev1.HostAlias
@@ -197,7 +196,6 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 		},
 		Spec: corev1.PodSpec{
 			Volumes:            volumes,
-			InitContainers:     initContainers,
 			Containers:         containers,
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			ServiceAccountName: util.StringFallback(cr.Spec.Broker.ServiceAccount, cr.Spec.ServiceAccount),

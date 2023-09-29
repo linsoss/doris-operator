@@ -29,9 +29,8 @@ import (
 type DorisCluster struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   DorisClusterSpec   `json:"spec,omitempty"`
-	Status DorisClusterStatus `json:"status,omitempty"`
+	Spec              DorisClusterSpec   `json:"spec,omitempty"`
+	Status            DorisClusterStatus `json:"status,omitempty"`
 
 	objKey *types.NamespacedName `json:"-"`
 }
@@ -227,10 +226,6 @@ type DorisComponentSpec struct {
 	// Additional environment variables to set in the container
 	// +optional
 	AdditionalEnvs []corev1.EnvVar `json:"additionalEnv,omitempty"`
-
-	// Additional init containers of the component.
-	// +optional
-	AdditionalInitContainers []corev1.Container `json:"additionalInitContainers,omitempty"`
 
 	// Additional containers of the component.
 	// +optional

@@ -530,13 +530,6 @@ func (in *DorisComponentSpec) DeepCopyInto(out *DorisComponentSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	if in.AdditionalInitContainers != nil {
-		in, out := &in.AdditionalInitContainers, &out.AdditionalInitContainers
-		*out = make([]corev1.Container, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
-		}
-	}
 	if in.AdditionalContainers != nil {
 		in, out := &in.AdditionalContainers, &out.AdditionalContainers
 		*out = make([]corev1.Container, len(*in))
