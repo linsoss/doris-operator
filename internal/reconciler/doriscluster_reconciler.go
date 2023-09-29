@@ -258,3 +258,52 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 
 	return util.Elvis(r.CR.Spec.CN != nil, applyRes, deleteRes)()
 }
+
+// Reconcile Doris Broker component resources.
+func (r *DorisClusterReconciler) recBrokerResources() ClusterStageRecResult {
+
+	// apply resources
+	applyRes := func() ClusterStageRecResult {
+		action := dapi.StageActionApply
+		// broker configmap
+		configMap := transformer.MakeBrokerConfigMap(r.CR, r.Schema)
+		if err := r.CreateOrUpdate(configMap); err != nil {
+			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
+		}
+		// broker service
+		peerService := transformer.MakeBrokerPeerService(r.CR, r.Schema)
+		if err := r.CreateOrUpdate(peerService); err != nil {
+			return clusterStageFail(dapi.StageBrokerService, action, err)
+		}
+		// broker statefulset
+		statefulSet := transformer.MakeBrokerStatefulSet(r.CR, r.Schema)
+		statefulSet.Annotations[BrokerConfHashAnnotationKey] = util.MapMd5(configMap.Data)
+		if err := r.CreateOrUpdate(statefulSet); err != nil {
+			return clusterStageFail(dapi.StageBrokerStatefulSet, action, err)
+		}
+		return clusterStageSucc(dapi.StageBroker, action)
+	}
+
+	// delete resources
+	deleteRes := func() ClusterStageRecResult {
+		action := dapi.StageActionDelete
+		// broker configmap
+		configMapRef := transformer.GetBrokerConfigMapName(r.CR)
+		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
+			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
+		}
+		// broker service
+		peerServiceRef := transformer.GetBrokerPeerServiceName(r.CR)
+		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
+			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
+		}
+		// broker statefulset
+		statefulsetRef := transformer.GetBrokerStatefulSetName(r.CR)
+		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
+			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
+		}
+		return clusterStageSucc(dapi.StageBroker, action)
+	}
+
+	return util.Elvis(r.CR.Spec.Broker != nil, applyRes, deleteRes)()
+}
