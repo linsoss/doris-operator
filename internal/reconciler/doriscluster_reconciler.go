@@ -135,9 +135,9 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 	// delete resources
 	deleteRes := func() ClusterStageRecResult {
 		action := dapi.StageActionDelete
-		// fe configmap
-		configMapRef := transformer.GetFeConfigMapName(r.CR)
-		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
+		// fe statefulset
+		statefulsetRef := transformer.GetFeStatefulSetName(r.CR)
+		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
 		// fe service
@@ -149,9 +149,9 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
-		// fe statefulset
-		statefulsetRef := transformer.GetFeStatefulSetName(r.CR)
-		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
+		// fe configmap
+		configMapRef := transformer.GetFeConfigMapName(r.CR)
+		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
 			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
 		return clusterStageSucc(dapi.StageFe, action)
@@ -192,9 +192,9 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 	// delete resources
 	deleteRes := func() ClusterStageRecResult {
 		action := dapi.StageActionDelete
-		// be configmap
-		configMapRef := transformer.GetBeConfigMapName(r.CR)
-		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
+		// be statefulset
+		statefulsetRef := transformer.GetBeStatefulSetName(r.CR)
+		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageBeConfigmap, action, err)
 		}
 		// be service
@@ -206,9 +206,9 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageBeConfigmap, action, err)
 		}
-		// be statefulset
-		statefulsetRef := transformer.GetBeStatefulSetName(r.CR)
-		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
+		// be configmap
+		configMapRef := transformer.GetBeConfigMapName(r.CR)
+		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
 			return clusterStageFail(dapi.StageBeConfigmap, action, err)
 		}
 		return clusterStageSucc(dapi.StageBe, action)
@@ -260,9 +260,9 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 	// delete resources
 	deleteRes := func() ClusterStageRecResult {
 		action := dapi.StageActionDelete
-		// cn configmap
-		configMapRef := transformer.GetCnConfigMapName(r.CR)
-		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
+		// cn statefulset
+		statefulsetRef := transformer.GetCnStatefulSetName(r.CR)
+		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageCnConfigmap, action, err)
 		}
 		// cn service
@@ -274,9 +274,9 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageCnConfigmap, action, err)
 		}
-		// cn statefulset
-		statefulsetRef := transformer.GetCnStatefulSetName(r.CR)
-		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
+		// cn configmap
+		configMapRef := transformer.GetCnConfigMapName(r.CR)
+		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
 			return clusterStageFail(dapi.StageCnConfigmap, action, err)
 		}
 		return clusterStageSucc(dapi.StageCn, action)
@@ -313,9 +313,9 @@ func (r *DorisClusterReconciler) recBrokerResources() ClusterStageRecResult {
 	// delete resources
 	deleteRes := func() ClusterStageRecResult {
 		action := dapi.StageActionDelete
-		// broker configmap
-		configMapRef := transformer.GetBrokerConfigMapName(r.CR)
-		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
+		// broker statefulset
+		statefulsetRef := transformer.GetBrokerStatefulSetName(r.CR)
+		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
 		}
 		// broker service
@@ -323,9 +323,9 @@ func (r *DorisClusterReconciler) recBrokerResources() ClusterStageRecResult {
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
 		}
-		// broker statefulset
-		statefulsetRef := transformer.GetBrokerStatefulSetName(r.CR)
-		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
+		// broker configmap
+		configMapRef := transformer.GetBrokerConfigMapName(r.CR)
+		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
 			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
 		}
 		return clusterStageSucc(dapi.StageBroker, action)
