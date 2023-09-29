@@ -27,15 +27,7 @@ spec:
           spec:
             properties:
               cluster:
-                properties:
-                  name:
-                    type: string
-                  namespace:
-                    type: string
-                required:
-                - name
-                - namespace
-                type: object
+                type: string
               enableLoki:
                 type: boolean
               grafana:
@@ -155,6 +147,16 @@ spec:
             type: object
           status:
             properties:
+              clusterRef:
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
               grafana:
                 properties:
                   conditions:
@@ -267,15 +269,7 @@ spec:
               prevSpec:
                 properties:
                   cluster:
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    required:
-                    - name
-                    - namespace
-                    type: object
+                    type: string
                   enableLoki:
                     type: boolean
                   grafana:

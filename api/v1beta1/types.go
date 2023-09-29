@@ -23,12 +23,6 @@ type NamespacedName struct {
 	Namespace string `json:"namespace"`
 }
 
-// DorisClusterRef is the reference to DorisCluster.
-// +k8s:openapi-gen=true
-type DorisClusterRef struct {
-	NamespacedName `json:",inline"`
-}
-
 // OprStageAction represents the action type of controller reconcile stage
 type OprStageAction string
 

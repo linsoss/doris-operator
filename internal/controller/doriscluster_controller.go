@@ -43,9 +43,9 @@ type DorisClusterReconciler struct {
 //+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
 func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	recCtx := reconciler.NewReconcileContext(r, ctx)
+	recCtx := reconciler.NewReconcileContext(r.Client, r.Scheme, ctx)
 
-	// obtain CR and ignore when it has been deleted
+	// obtain CR and skip reconciling process when it has been deleted
 	cr := &dapi.DorisCluster{}
 	crExist, err := recCtx.Exist(req.NamespacedName, cr)
 	if err != nil {

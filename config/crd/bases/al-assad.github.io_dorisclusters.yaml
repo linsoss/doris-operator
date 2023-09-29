@@ -20895,6 +20895,8 @@ spec:
                 type: object
               stage:
                 type: string
+              stageAction:
+                type: string
               stageStatus:
                 type: string
             type: object

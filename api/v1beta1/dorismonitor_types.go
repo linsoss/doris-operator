@@ -44,8 +44,8 @@ type DorisMonitorList struct {
 // DorisMonitorSpec defines the desired state of DorisMonitor
 // +k8s:openapi-gen=true
 type DorisMonitorSpec struct {
-	// Reference of the target DorisCluster
-	Cluster *DorisClusterRef `json:"cluster"`
+	// Name of the target DorisCluster
+	Cluster string `json:"cluster"`
 
 	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`
 	Grafana    *GrafanaSpec    `json:"grafana,omitempty"`
@@ -162,6 +162,7 @@ type MonitorServiceSpec struct {
 // DorisMonitorStatus defines the observed state of DorisMonitor
 // +k8s:openapi-gen=true
 type DorisMonitorStatus struct {
+	ClusterRef         NamespacedName             `json:"clusterRef,omitempty"`
 	PrevSpec           *DorisMonitorSpec          `json:"prevSpec,omitempty"`
 	Stage              DorisMonitorOprStage       `json:"stage,omitempty"`
 	StageStatus        DorisMonitorOprStageStatus `json:"stageStatus,omitempty"`

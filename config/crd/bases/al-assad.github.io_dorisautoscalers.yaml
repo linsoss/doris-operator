@@ -27,27 +27,9 @@ spec:
           spec:
             properties:
               cluster:
-                properties:
-                  name:
-                    type: string
-                  namespace:
-                    type: string
-                required:
-                - name
-                - namespace
-                type: object
+                type: string
               cn:
                 properties:
-                  cluster:
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    required:
-                    - name
-                    - namespace
-                    type: object
                   disableScaleDown:
                     type: boolean
                   replicas:
@@ -87,8 +69,6 @@ spec:
                       scaleUp:
                         type: integer
                     type: object
-                required:
-                - cluster
                 type: object
             required:
             - cluster
@@ -97,6 +77,16 @@ spec:
             properties:
               cn:
                 properties:
+                  clusterRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
                   lastTransitionTime:
                     format: date-time
                     type: string

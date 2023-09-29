@@ -22,16 +22,6 @@ import (
 	"fmt"
 )
 
-func (r *DorisCluster) GetCnImage() string {
-	var version string
-	if r.Spec.CN.Version != "" {
-		version = r.Spec.CN.Version
-	} else {
-		version = r.Spec.Version
-	}
-	return fmt.Sprintf("%s:%s", r.Spec.CN.BaseImage, version)
-}
-
 func (r *DorisCluster) GetBrokerImage() string {
 	var version string
 	if r.Spec.Broker.Version != "" {

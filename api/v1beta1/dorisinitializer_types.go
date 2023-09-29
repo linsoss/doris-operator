@@ -44,8 +44,8 @@ type DorisInitializerList struct {
 // DorisInitializerSpec defines the desired state of doris initializer Job
 // +k8s:openapi-gen=true
 type DorisInitializerSpec struct {
-	// Reference of the target DorisCluster
-	Cluster *DorisClusterRef `json:"cluster"`
+	// name of the target DorisCluster at the same namespace
+	Cluster string `json:"cluster"`
 
 	// Image tags of the python-sql executor container
 	Image string `json:"image"`
@@ -86,6 +86,9 @@ type DorisInitializerSpec struct {
 // DorisInitializerStatus defines the observed state of DorisInitializer
 // +k8s:openapi-gen=true
 type DorisInitializerStatus struct {
+	// Reference of the target DorisCluster
+	ClusterRef NamespacedName `json:"clusterRef,omitempty"`
+	// Initialize phase
 	Phase InitializePhase `json:"phase,omitempty"`
 	// Last time the condition transit from one Phase to another.
 	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`

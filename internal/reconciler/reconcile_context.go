@@ -37,10 +37,10 @@ type ReconcileContext struct {
 	Log    logr.Logger
 }
 
-func NewReconcileContext(client client.Client, ctx context.Context) ReconcileContext {
+func NewReconcileContext(client client.Client, schema *runtime.Scheme, ctx context.Context) ReconcileContext {
 	return ReconcileContext{
 		Client: client,
-		Schema: client.Scheme(),
+		Schema: schema,
 		Ctx:    ctx,
 		Log:    log.FromContext(ctx),
 	}

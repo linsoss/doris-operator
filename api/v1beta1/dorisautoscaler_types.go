@@ -41,16 +41,13 @@ type DorisAutoscalerList struct {
 
 // DorisAutoscalerSpec defines the desired state of DorisAutoscaler
 type DorisAutoscalerSpec struct {
-	// Reference of the target DorisCluster
-	Cluster *DorisClusterRef  `json:"cluster"`
+	// name of the target DorisCluster
+	Cluster string            `json:"cluster"`
 	CN      *CNAutoscalerSpec `json:"cn,omitempty"`
 }
 
 // CNAutoscalerSpec contains autoscaling details of CN components.
 type CNAutoscalerSpec struct {
-	// Reference of the target DorisCluster
-	Cluster *DorisClusterRef `json:"cluster"`
-
 	// The range of replicas for automatic scaling
 	Replicas *ReplicasRange `json:"replicas,omitempty"`
 
@@ -101,6 +98,7 @@ type DorisAutoscalerStatus struct {
 
 // CNAutoscalerStatus defines the observed state of CN autoscaler
 type CNAutoscalerStatus struct {
+	ClusterRef         NamespacedName `json:"clusterRef,omitempty"`
 	Phase              AutoScalePhase `json:"stage,omitempty"`
 	LastTransitionTime metav1.Time    `json:"lastTransitionTime,omitempty"`
 	LastMessage        string         `json:"message,omitempty"`
