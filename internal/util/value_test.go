@@ -43,3 +43,18 @@ func TestPointerFallbackAndDeRefer(t *testing.T) {
 	assert.Equal(t, "foo", PointerFallbackAndDeRefer(&StringPtr{"foo"}, &StringPtr{"bar"}, StringPtr{"baz"}).S)
 	assert.Equal(t, "baz", PointerFallbackAndDeRefer(nil, nil, StringPtr{"baz"}).S)
 }
+
+func TestElvis(t *testing.T) {
+	// normal value
+	assert.Equal(t, "foo", Elvis(true, "foo", "bar"))
+	assert.Equal(t, "bar", Elvis(false, "foo", "bar"))
+
+	// function value
+	fn1 := func() string {
+		return "foo"
+	}
+	fn2 := func() string {
+		return "bar"
+	}
+	assert.Equal(t, "foo", Elvis(true, fn1, fn2)())
+}

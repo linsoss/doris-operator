@@ -25,6 +25,7 @@ import (
 	"github.com/al-assad/doris-operator/internal/util"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -78,8 +79,9 @@ func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
 
 // Reconcile Doris FE component resources.
 func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
-	if r.CR.Spec.FE != nil {
-		// apply resources
+
+	// apply resources
+	applyRes := func() ClusterStageRecResult {
 		action := dapi.StageActionApply
 		// fe configmap
 		configMap := transformer.MakeFeConfigMap(r.CR, r.Schema)
@@ -102,8 +104,10 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 			return clusterStageFail(dapi.StageFeStatefulSet, action, err)
 		}
 		return clusterStageSucc(dapi.StageFe, action)
-	} else {
-		// delete resources
+	}
+
+	// delete resources
+	deleteRes := func() ClusterStageRecResult {
 		action := dapi.StageActionDelete
 		// fe configmap
 		configMapRef := transformer.GetFeConfigMapName(r.CR)
@@ -126,12 +130,15 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 		}
 		return clusterStageSucc(dapi.StageFe, action)
 	}
+
+	return util.Elvis(r.CR.Spec.FE != nil, applyRes, deleteRes)()
 }
 
 // Reconcile Doris BE component resources.
 func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
-	if r.CR.Spec.BE != nil {
-		// apply resources
+
+	// apply resources
+	applyRes := func() ClusterStageRecResult {
 		action := dapi.StageActionApply
 		// be configmap
 		configMap := transformer.MakeBeConfigMap(r.CR, r.Schema)
@@ -154,8 +161,10 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 			return clusterStageFail(dapi.StageBeStatefulSet, action, err)
 		}
 		return clusterStageSucc(dapi.StageBe, action)
-	} else {
-		// delete resources
+	}
+
+	// delete resources
+	deleteRes := func() ClusterStageRecResult {
 		action := dapi.StageActionDelete
 		// be configmap
 		configMapRef := transformer.GetBeConfigMapName(r.CR)
@@ -178,12 +187,15 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 		}
 		return clusterStageSucc(dapi.StageBe, action)
 	}
+
+	return util.Elvis(r.CR.Spec.BE != nil, applyRes, deleteRes)()
 }
 
 // Reconcile Doris CN component resources.
 func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
-	if r.CR.Spec.CN != nil {
-		// apply resources
+
+	// apply resources
+	applyRes := func() ClusterStageRecResult {
 		action := dapi.StageActionApply
 		// cn configmap
 		configMap := transformer.MakeCnConfigMap(r.CR, r.Schema)
@@ -203,15 +215,24 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 		// cn statefulset
 		statefulSet := transformer.MakeCnStatefulSet(r.CR, r.Schema)
 		statefulSet.Annotations[CnConfHashAnnotationKey] = util.MapMd5(configMap.Data)
-		// todo when the corresponding DorisAutoScaler resource exists,
+		// when the corresponding DorisAutoScaler resource exists,
 		// the replica of statefulset would not be overridden
-
+		autoScaler, err := r.FindRefDorisAutoScaler(client.ObjectKeyFromObject(r.CR))
+		if err != nil {
+			return clusterStageFail(dapi.StageCnStatefulSet, action, err)
+		}
+		if autoScaler != nil {
+			statefulSet.Spec.Replicas = nil
+		}
 		if err := r.CreateOrUpdate(statefulSet); err != nil {
 			return clusterStageFail(dapi.StageCnStatefulSet, action, err)
 		}
+
 		return clusterStageSucc(dapi.StageCn, action)
-	} else {
-		// delete resources
+	}
+
+	// delete resources
+	deleteRes := func() ClusterStageRecResult {
 		action := dapi.StageActionDelete
 		// cn configmap
 		configMapRef := transformer.GetCnConfigMapName(r.CR)
@@ -234,4 +255,6 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 		}
 		return clusterStageSucc(dapi.StageCn, action)
 	}
+
+	return util.Elvis(r.CR.Spec.CN != nil, applyRes, deleteRes)()
 }

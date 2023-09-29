@@ -20,7 +20,6 @@ import (
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 // DorisCluster is the Schema for the doris clusters API
@@ -309,11 +308,4 @@ type DorisComponentStatus struct {
 
 func init() {
 	SchemeBuilder.Register(&DorisCluster{}, &DorisClusterList{})
-}
-
-func (r *DorisCluster) GetNamespacedName() types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      r.Name,
-	}
 }

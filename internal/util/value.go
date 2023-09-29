@@ -55,3 +55,12 @@ func PointerFallbackAndDeRefer[T any](pointer *T, fallback *T, defaultValue T) T
 		return defaultValue
 	}
 }
+
+// Elvis is a Groovy-like elvis expression.
+func Elvis[T any](condition bool, leftValue T, rightValue T) T {
+	if condition {
+		return leftValue
+	} else {
+		return rightValue
+	}
+}
