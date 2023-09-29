@@ -20,6 +20,7 @@ import (
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // DorisCluster is the Schema for the doris clusters API
@@ -109,7 +110,7 @@ type BESpec struct {
 	// The storageClassName of the persistent volume for TiDB data storage.
 	// Defaults to Kubernetes default storage class.
 	// +optional
-	StorageClassName string `json:"storageClassName,omitempty"`
+	StorageClassName *string `json:"storageClassName,omitempty"`
 }
 
 // CNSpec contains details of CN members.
@@ -264,6 +265,14 @@ const (
 	StageFeConfigmap      DorisClusterOprStage = "fe/configmap"
 	StageFeService        DorisClusterOprStage = "fe/service"
 	StageFeStatefulSet    DorisClusterOprStage = "fe/statefulset"
+	StageBe               DorisClusterOprStage = "be"
+	StageBeConfigmap      DorisClusterOprStage = "be/configmap"
+	StageBeService        DorisClusterOprStage = "be/service"
+	StageBeStatefulSet    DorisClusterOprStage = "be/statefulset"
+	StageCn               DorisClusterOprStage = "cn"
+	StageCnConfigmap      DorisClusterOprStage = "cn/configmap"
+	StageCnService        DorisClusterOprStage = "cn/service"
+	StageCnStatefulSet    DorisClusterOprStage = "cn/statefulset"
 
 	StageComplete DorisClusterOprStage = "complete"
 )
@@ -300,4 +309,11 @@ type DorisComponentStatus struct {
 
 func init() {
 	SchemeBuilder.Register(&DorisCluster{}, &DorisClusterList{})
+}
+
+func (r *DorisCluster) GetNamespacedName() types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: r.Namespace,
+		Name:      r.Name,
+	}
 }

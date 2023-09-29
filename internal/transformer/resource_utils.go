@@ -54,6 +54,15 @@ func MakeResourceLabels(dorisName string, component string) map[string]string {
 	return labels
 }
 
+// MakePrometheusAnnotations make the prometheus discovery annotations
+func MakePrometheusAnnotations(path string, port int32) map[string]string {
+	return map[string]string{
+		PrometheusPathAnnoKey:   path,
+		PrometheusPortAnnoKey:   strconv.Itoa(int(port)),
+		PrometheusScrapeAnnoKey: "true",
+	}
+}
+
 const DorisPasswordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-=_+[]{}"
 
 func GenerateRandomDorisPassword(length int) string {

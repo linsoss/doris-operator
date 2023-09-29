@@ -20,35 +20,7 @@ package v1beta1
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/types"
 )
-
-func (r *DorisCluster) GetNamespacedName() types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      r.Name,
-	}
-}
-
-func (r *DorisCluster) GetFeImage() string {
-	var version string
-	if r.Spec.FE.Version != "" {
-		version = r.Spec.FE.Version
-	} else {
-		version = r.Spec.Version
-	}
-	return fmt.Sprintf("%s:%s", r.Spec.FE.BaseImage, version)
-}
-
-func (r *DorisCluster) GetBeImage() string {
-	var version string
-	if r.Spec.BE.Version != "" {
-		version = r.Spec.BE.Version
-	} else {
-		version = r.Spec.Version
-	}
-	return fmt.Sprintf("%s:%s", r.Spec.BE.BaseImage, version)
-}
 
 func (r *DorisCluster) GetCnImage() string {
 	var version string

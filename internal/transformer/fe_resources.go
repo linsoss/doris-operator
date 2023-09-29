@@ -27,7 +27,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"strconv"
 )
@@ -41,6 +40,11 @@ const (
 
 func GetFeComponentLabels(r *dapi.DorisCluster) map[string]string {
 	return MakeResourceLabels(r.Name, "fe")
+}
+
+func GetFeImage(r *dapi.DorisCluster) string {
+	version := util.StringFallback(r.Spec.FE.Version, r.Spec.Version)
+	return fmt.Sprintf("%s:%s", r.Spec.FE.BaseImage, version)
 }
 
 func GetFeConfigMapName(cr *dapi.DorisCluster) types.NamespacedName {
@@ -183,20 +187,11 @@ func MakeFePeerService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Se
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
-				{
-					Name: "http-port",
-					Port: GetFeHttpPort(cr),
-				},
-				{
-					Name: "edit-log-port",
-					Port: GetFeEditLogPort(cr),
-				}, {
-					Name: "rpc-port",
-					Port: GetFeRpcPort(cr),
-				},
+				{Name: "http-port", Port: GetFeHttpPort(cr)},
+				{Name: "edit-log-port", Port: GetFeEditLogPort(cr)},
+				{Name: "rpc-port", Port: GetFeRpcPort(cr)},
 			},
 			Selector:  feLabels,
-			Type:      corev1.ServiceTypeClusterIP,
 			ClusterIP: "None",
 		},
 	}
@@ -209,6 +204,8 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		return nil
 	}
 	statefulSetRef := GetFeStatefulSetName(cr)
+	configMapRef := GetFeConfigMapName(cr)
+	accountSecretRef := GetOprSqlAccountSecretName(cr)
 	feLabels := GetFeComponentLabels(cr)
 
 	// volume claim template
@@ -230,89 +227,38 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 
 	// pod template: volumes
 	volumes := []corev1.Volume{
-		{
-			Name: "conf",
-			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{LocalObjectReference: corev1.LocalObjectReference{Name: GetFeConfigMapName(cr).Name}}},
-		},
-		{
-			Name: "fe-log",
-			VolumeSource: corev1.VolumeSource{
-				EmptyDir: &corev1.EmptyDirVolumeSource{
-					Medium: corev1.StorageMediumDefault,
-				}},
-		}}
+		{Name: "conf", VolumeSource: NewConfigMapVolumeSource(configMapRef.Name)},
+		{Name: "fe-log", VolumeSource: NewEmptyDirVolumeSource()},
+	}
 	// merge addition volumes defined by user
 	volumes = append(volumes, cr.Spec.FE.AdditionalVolumes...)
 
 	// pod template: main container
 	mainContainer := corev1.Container{
 		Name:            "fe",
-		Image:           cr.GetFeImage(),
+		Image:           GetFeImage(cr),
 		ImagePullPolicy: cr.Spec.ImagePullPolicy,
 		Resources: corev1.ResourceRequirements{
 			Requests: cr.Spec.FE.Requests,
 		},
 		Ports: []corev1.ContainerPort{
-			{
-				Name:          "http-port",
-				ContainerPort: GetFeHttpPort(cr),
-			},
-			{
-				Name:          "edit-log-port",
-				ContainerPort: GetFeEditLogPort(cr),
-			},
-			{
-				Name:          "rpc-port",
-				ContainerPort: GetFeRpcPort(cr),
-			},
-			{
-				Name:          "query-port",
-				ContainerPort: GetFeQueryPort(cr),
-			},
+			{Name: "http-port", ContainerPort: GetFeHttpPort(cr)},
+			{Name: "edit-log-port", ContainerPort: GetFeEditLogPort(cr)},
+			{Name: "rpc-port", ContainerPort: GetFeRpcPort(cr)},
+			{Name: "query-port", ContainerPort: GetFeQueryPort(cr)},
 		},
 		Env: []corev1.EnvVar{
-			{
-				Name:  "FE_SVC",
-				Value: GetFeServiceName(cr).Name,
-			},
-			{
-				Name: "ACC_USER",
-				ValueFrom: &corev1.EnvVarSource{
-					SecretKeyRef: &corev1.SecretKeySelector{
-						LocalObjectReference: corev1.LocalObjectReference{Name: GetOprSqlAccountSecretName(cr).Name},
-						Key:                  "user",
-					}},
-			},
-			{
-				Name: "ACC_PWD",
-				ValueFrom: &corev1.EnvVarSource{
-					SecretKeyRef: &corev1.SecretKeySelector{
-						LocalObjectReference: corev1.LocalObjectReference{Name: GetOprSqlAccountSecretName(cr).Name},
-						Key:                  "password",
-					}},
-			},
+			{Name: "FE_SVC", Value: GetFeServiceName(cr).Name},
+			{Name: "ACC_USER", ValueFrom: NewEnvVarSecretSource(accountSecretRef.Name, "user")},
+			{Name: "ACC_PWD", ValueFrom: NewEnvVarSecretSource(accountSecretRef.Name, "password")},
 		},
 		VolumeMounts: []corev1.VolumeMount{
-			{
-				Name:      "conf",
-				MountPath: "/etc/apache-doris/fe/",
-			},
-			{
-				Name:      "fe-meta",
-				MountPath: "/opt/apache-doris/fe/doris-meta",
-			},
-			{
-				Name:      "fe-log",
-				MountPath: "/opt/apache-doris/fe/log",
-			},
+			{Name: "conf", MountPath: "/etc/apache-doris/fe/"},
+			{Name: "fe-meta", MountPath: "/opt/apache-doris/fe/doris-meta"},
+			{Name: "fe-log", MountPath: "/opt/apache-doris/fe/log"},
 		},
 		ReadinessProbe: &corev1.Probe{
-			ProbeHandler: corev1.ProbeHandler{
-				TCPSocket: &corev1.TCPSocketAction{
-					Port: intstr.FromInt(int(GetFeQueryPort(cr))),
-				},
-			},
+			ProbeHandler:        NewTcpSocketProbeHandler(GetFeQueryPort(cr)),
 			InitialDelaySeconds: 3,
 			TimeoutSeconds:      1,
 			PeriodSeconds:       5,
@@ -360,8 +306,7 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	// update strategy
 	updateStg := appv1.StatefulSetUpdateStrategy{
 		Type: util.PointerFallbackAndDeRefer(
-			cr.Spec.FE.StatefulSetUpdateStrategy,
-			cr.Spec.StatefulSetUpdateStrategy,
+			cr.Spec.FE.StatefulSetUpdateStrategy, cr.Spec.StatefulSetUpdateStrategy,
 			appv1.RollingUpdateStatefulSetStrategyType),
 	}
 
