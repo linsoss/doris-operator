@@ -18,13 +18,10 @@ package controller
 
 import (
 	"context"
+	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	"github.com/al-assad/doris-operator/internal/reconciler"
 	"github.com/al-assad/doris-operator/internal/util"
 	acv2 "k8s.io/api/autoscaling/v2"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"reflect"
-
-	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -44,54 +41,46 @@ type DorisAutoscalerReconciler struct {
 func (r *DorisAutoscalerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	recCtx := reconciler.NewReconcileContext(r.Client, r.Scheme, ctx)
 
-	// obtain CR and skip reconciling process when it has been deleted
+	// obtain CR
 	cr := &dapi.DorisAutoscaler{}
 	if err := recCtx.Find(req.NamespacedName, cr); err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
+	// skip reconciling process when it has been deleted
 	if cr == nil {
 		recCtx.Log.Info("DorisAutoscaler has been deleted")
 		return ctrl.Result{}, nil
 	}
 	rec := reconciler.DorisAutoScalerReconciler{ReconcileContext: recCtx, CR: cr}
 
-	// reconcile the sub resource of CR when the spec of it has been changed,
-	// or the previous reconcile phase has not been completed.
+	// reconcile the sub resources
+	curSpecHash := util.Md5HashOr(cr.Spec, "")
+	preRecNotCompleted := cr.Status.CN.Phase != dapi.AutoScalePhaseCompleted
+	specHasChanged := cr.Status.LastApplySpecHash == nil || *cr.Status.LastApplySpecHash != curSpecHash
+
 	var recErr error
-	if cr.Status.PrevSpec == nil || !reflect.DeepEqual(cr.Spec, *cr.Status.PrevSpec) || cr.Status.CN.Phase != dapi.AutoScalePhaseCompleted {
-		recErr = rec.Reconcile()
-		if recErr == nil {
-			cr.Status.CN.Phase = dapi.AutoScalePhaseCompleted
-		} else {
-			cr.Status.CN.LastMessage = recErr.Error()
-			// recovery the phase of CR
-			switch recErr.(type) {
-			case *reconciler.DorisClusterNotExist:
-				cr.Status.CN.Phase = dapi.AutoScalePhasePending
-			case *reconciler.ClusterAlreadyBoundAutoscaler:
-				cr.Status.CN.Phase = dapi.AutoScalePhasePending
-			default:
-				cr.Status.CN.Phase = dapi.AutoScalePhaseUpdating
-			}
+	if preRecNotCompleted || specHasChanged {
+		recRes, err := rec.Reconcile()
+		recErr = err
+		cr.Status.CN.AutoscalerRecStatus = recRes
+		// when reconcile succeed, update the last apply sepc hash
+		if err == nil {
+			cr.Status.LastApplySpecHash = &curSpecHash
 		}
-		cr.Status.CN.LastTransitionTime = metav1.Now()
 	}
 	// sync the status of CR
-	syncErr := rec.Sync()
-	// update status
+	syncRes, syncErr := rec.Sync()
+	cr.Status.CN.CNAutoscalerSyncStatus = syncRes
+	// update the status of CR
 	updateErr := r.Status().Update(ctx, cr)
 
-	// merge error at different reconcile phases
-	mergedErr := util.MergeErrorsWithTag(map[string]error{
-		"reconcile":     recErr,
-		"sync":          syncErr,
-		"update-status": updateErr,
-	})
-	if mergedErr != nil {
-		return ctrl.Result{Requeue: true}, mergedErr
-	} else {
-		return ctrl.Result{}, nil
+	// merged error as result
+	errSet := StCtrlErrSet{
+		Rec:    recErr,
+		Sync:   syncErr,
+		Update: updateErr,
 	}
+	return errSet.AsResult()
 }
 
 // SetupWithManager sets up the controller with the Manager.

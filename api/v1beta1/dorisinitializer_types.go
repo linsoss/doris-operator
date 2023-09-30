@@ -20,6 +20,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // DorisInitializer is the Schema for the doris initializers API
@@ -28,9 +29,9 @@ import (
 type DorisInitializer struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   DorisInitializerSpec   `json:"spec,omitempty"`
-	Status DorisInitializerStatus `json:"status,omitempty"`
+	Spec              DorisInitializerSpec   `json:"spec,omitempty"`
+	Status            DorisInitializerStatus `json:"status,omitempty"`
+	objKey            *types.NamespacedName  `json:"-"`
 }
 
 // DorisInitializerList contains a list of DorisInitializer
@@ -59,6 +60,9 @@ type DorisInitializerSpec struct {
 	// +optional
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 
+	// MaxRetry of the Doris initializer Job
+	MaxRetry *int32 `json:"maxRetry"`
+
 	// Specify a Service Account
 	// +optional
 	ServiceAccount string `json:"serviceAccount,omitempty"`
@@ -86,29 +90,28 @@ type DorisInitializerSpec struct {
 // DorisInitializerStatus defines the observed state of DorisInitializer
 // +k8s:openapi-gen=true
 type DorisInitializerStatus struct {
-	// Reference of the target DorisCluster
-	ClusterRef NamespacedName `json:"clusterRef,omitempty"`
+	PrevSpecHash *string `json:"prevSpecHash,omitempty"`
 	// Initialize phase
 	Phase InitializePhase `json:"phase,omitempty"`
-	// Last time the condition transit from one Phase to another.
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
 	// +optional
-	Reason string `json:"reason,omitempty"`
-	// +optional
-	Message string `json:"message,omitempty"`
+	ReconcileMessage string `json:"message,omitempty"`
 	// +optional
 	JobRef NamespacedName `json:"jobRef,omitempty"`
 	// +nullable
 	JobStatus *batchv1.JobStatus `json:",inline"`
 }
 
+type DorisInitializerRecStageStatus struct {
+}
+
 type InitializePhase string
 
 const (
-	InitializePhasePending   InitializePhase = "pending"
-	InitializePhaseRunning   InitializePhase = "running"
-	InitializePhaseCompleted InitializePhase = "completed"
-	InitializePhaseFailed    InitializePhase = "failed"
+	InitializePhasePending     InitializePhase = "pending"
+	InitializePhaseReconciling InitializePhase = "reconciling"
+	InitializePhaseRunning     InitializePhase = "running"
+	InitializePhaseCompleted   InitializePhase = "completed"
+	InitializePhaseFailed      InitializePhase = "failed"
 )
 
 func init() {

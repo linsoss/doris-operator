@@ -64,6 +64,9 @@ spec:
                   pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                   x-kubernetes-int-or-string: true
                 type: object
+              maxRetry:
+                format: int32
+                type: integer
               requests:
                 additionalProperties:
                   anyOf:
@@ -95,6 +98,7 @@ spec:
             required:
             - cluster
             - image
+            - maxRetry
             type: object
           status:
             nullable: true
@@ -102,16 +106,6 @@ spec:
               active:
                 format: int32
                 type: integer
-              clusterRef:
-                properties:
-                  name:
-                    type: string
-                  namespace:
-                    type: string
-                required:
-                - name
-                - namespace
-                type: object
               completedIndexes:
                 type: string
               completionTime:
@@ -153,18 +147,15 @@ spec:
                 - name
                 - namespace
                 type: object
-              lastTransitionTime:
-                format: date-time
-                type: string
               message:
                 type: string
               phase:
                 type: string
+              prevSpecHash:
+                type: string
               ready:
                 format: int32
                 type: integer
-              reason:
-                type: string
               startTime:
                 format: date-time
                 type: string

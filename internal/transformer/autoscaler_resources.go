@@ -34,8 +34,8 @@ const (
 	DefaultHpaPeriodSeconds int32 = 60
 )
 
-func GetCnAutoscalerLabels(dorisAutoScalerKey types.NamespacedName) map[string]string {
-	return MakeResourceLabels(dorisAutoScalerKey.Name, "cn-autoscaler")
+func GetCnAutoscalerLabels(dorisClusterName string) map[string]string {
+	return MakeResourceLabels(dorisClusterName, "cn-autoscaler")
 }
 
 func GetCnScaleUpHpaKey(dorisAutoScalerKey types.NamespacedName) types.NamespacedName {
@@ -99,7 +99,7 @@ func MakeCnScaleUpHpa(cr *dapi.DorisAutoscaler, scheme *runtime.Scheme) *acv2.Ho
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: hpaRef.Namespace,
 			Name:      hpaRef.Name,
-			Labels:    GetCnAutoscalerLabels(cr.ObjKey()),
+			Labels:    GetCnAutoscalerLabels(cr.Spec.Cluster),
 		},
 		Spec: acv2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: acv2.CrossVersionObjectReference{
@@ -164,7 +164,7 @@ func MakeCnScaleDownHpa(cr *dapi.DorisAutoscaler, scheme *runtime.Scheme) *acv2.
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: hpaRef.Namespace,
 			Name:      hpaRef.Name,
-			Labels:    GetCnAutoscalerLabels(cr.ObjKey()),
+			Labels:    GetCnAutoscalerLabels(cr.Spec.Cluster),
 		},
 		Spec: acv2.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: acv2.CrossVersionObjectReference{

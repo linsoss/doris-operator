@@ -71,14 +71,3 @@ func TestMapSortedKeys(t *testing.T) {
 	}
 	assert.Equal(t, []string{"a", "b", "c"}, MapSortedKeys(m))
 }
-
-func TestMapMd5(t *testing.T) {
-	m := map[string]int{
-		"a": 1,
-		"c": 3,
-		"b": 2,
-	}
-	assert.Equal(t, "9e0bf104708effc55357dc36f9426ce7", MapMd5(m))
-	m = make(map[string]int)
-	assert.Equal(t, "", MapMd5(m))
-}

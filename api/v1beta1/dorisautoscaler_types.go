@@ -30,18 +30,7 @@ type DorisAutoscaler struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	Spec              DorisAutoscalerSpec   `json:"spec,omitempty"`
 	Status            DorisAutoscalerStatus `json:"status,omitempty"`
-
-	objKey *types.NamespacedName `json:"-"`
-}
-
-func (e *DorisAutoscaler) ObjKey() types.NamespacedName {
-	if e.objKey == nil {
-		key := types.NamespacedName{Namespace: e.Namespace, Name: e.Name}
-		e.objKey = &key
-		return key
-	} else {
-		return *e.objKey
-	}
+	objKey            *types.NamespacedName `json:"-"`
 }
 
 // DorisAutoscalerList contains a list of DorisAutoscaler
@@ -106,30 +95,35 @@ type ScalePeriodSeconds struct {
 
 // DorisAutoscalerStatus defines the observed state of DorisAutoscaler
 type DorisAutoscalerStatus struct {
-	PrevSpec   *DorisAutoscalerSpec `json:"prevSpec,omitempty"`
-	ClusterRef NamespacedName       `json:"clusterRef,omitempty"`
-	CN         CNAutoscalerStatus   `json:"cn,omitempty"`
+	LastApplySpecHash *string            `json:"lastApplySpecHash,omitempty"`
+	ClusterRef        NamespacedName     `json:"clusterRef,omitempty"`
+	CN                CNAutoscalerStatus `json:"cn,omitempty"`
 }
 
 // CNAutoscalerStatus defines the observed state of CN autoscaler
 type CNAutoscalerStatus struct {
-	Phase              AutoScalePhase `json:"stage,omitempty"`
-	LastTransitionTime metav1.Time    `json:"lastTransitionTime,omitempty"`
-	LastMessage        string         `json:"message,omitempty"`
+	AutoscalerRecStatus    `json:",inline"`
+	CNAutoscalerSyncStatus `json:",inline"`
+}
 
+type AutoscalerRecStatus struct {
+	Phase   AutoScaleRecPhase `json:"phase,omitempty"`
+	Message string            `json:"Message,omitempty"`
+}
+
+type CNAutoscalerSyncStatus struct {
 	ScaleUpHpaRef   *AutoScalerRef                      `json:"scaleUpHpa,omitempty"`
 	ScaleUpStatus   *acv2.HorizontalPodAutoscalerStatus `json:"scaleUpHpaStatus,omitempty"`
 	ScaleDownHpaRef *AutoScalerRef                      `json:"scaleDown,omitempty"`
 	ScaleDownStatus *acv2.HorizontalPodAutoscalerStatus `json:"scaleDownHpaStatus,omitempty"`
 }
 
-// AutoScalePhase is the current state of autoscaler
-type AutoScalePhase string
+// AutoScaleRecPhase is the current reconciling state of autoscaler
+type AutoScaleRecPhase string
 
 const (
-	AutoScalePhasePending   AutoScalePhase = "pending"
-	AutoScalePhaseUpdating  AutoScalePhase = "reconciling"
-	AutoScalePhaseCompleted AutoScalePhase = "completed"
+	AutoScalePhaseFailed    AutoScaleRecPhase = "failed"
+	AutoScalePhaseCompleted AutoScaleRecPhase = "completed"
 )
 
 // AutoScalerRef identifies a K8s HPA resource.

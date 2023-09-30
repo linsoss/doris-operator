@@ -31,6 +31,10 @@ import (
 	"strconv"
 )
 
+const (
+	CnProbeTimeoutSec = 200
+)
+
 func GetCnComponentLabels(dorisClusterKey types.NamespacedName) map[string]string {
 	return MakeResourceLabels(dorisClusterKey.Name, "cn")
 }
@@ -180,11 +184,12 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	}
 	statefulSetRef := GetCnStatefulSetKey(cr.ObjKey())
 	accountSecretRef := GetOprSqlAccountSecretKey(cr.ObjKey())
+	configMapRef := GetCnConfigMapKey(cr.ObjKey())
 	cnLabels := GetCnComponentLabels(cr.ObjKey())
 
 	// pod template: volumes
 	volumes := []corev1.Volume{
-		{Name: "conf", VolumeSource: util.NewConfigMapVolumeSource(GetCnConfigMapKey(cr.ObjKey()).Name)},
+		{Name: "conf", VolumeSource: util.NewConfigMapVolumeSource(configMapRef.Name)},
 		{Name: "cn-log", VolumeSource: util.NewEmptyDirVolumeSource()},
 	}
 	// merge addition volumes defined by user
@@ -209,6 +214,7 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			{Name: "FE_QUERY_PORT", Value: strconv.Itoa(int(GetFeQueryPort(cr)))},
 			{Name: "ACC_USER", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "user")},
 			{Name: "ACC_PWD", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "password")},
+			{Name: "CN_PROBE_TIMEOUT", Value: strconv.Itoa(CnProbeTimeoutSec)},
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: "conf", MountPath: "/etc/apache-doris/be/"},

@@ -23,9 +23,7 @@ import (
 	"github.com/al-assad/doris-operator/internal/util"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -49,11 +47,12 @@ type DorisClusterReconciler struct {
 func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	recCtx := reconciler.NewReconcileContext(r.Client, r.Scheme, ctx)
 
-	// obtain CR and skip reconciling process when it has been deleted
+	// obtain CR
 	cr := &dapi.DorisCluster{}
 	if err := recCtx.Find(req.NamespacedName, cr); err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
+	// skip reconciling process when it has been deleted
 	if cr == nil {
 		recCtx.Log.Info("DorisCluster has been deleted")
 		return ctrl.Result{}, nil
@@ -64,34 +63,32 @@ func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	//   it was created for the first time,
 	//   or the spec of it has been changed,
 	//   or the previous reconcile stage has not been completed
-	crSpecHasChanged := cr.Status.PrevSpec == nil || !reflect.DeepEqual(cr.Spec, *cr.Status.PrevSpec)
-	crRecStageNotComplete := cr.Status.Stage != dapi.StageComplete
+	curSpecHash := util.Md5HashOr(cr.Spec, "")
+	specHasChanged := cr.Status.LastApplySpecHash == nil || *cr.Status.LastApplySpecHash != curSpecHash
+	preStageNotCompleted := cr.Status.Stage != dapi.StageComplete
+
 	var recErr error
-	if crSpecHasChanged || crRecStageNotComplete {
-		recResult := rec.Reconcile()
-		recErr = recResult.Err
-		cr.Status.Stage = recResult.Stage
-		cr.Status.StageStatus = recResult.Status
-		cr.Status.StageAction = recResult.Action
-		cr.Status.LastMessage = recResult.Error()
-		cr.Status.LastTransitionTime = metav1.Now()
+	if preStageNotCompleted || specHasChanged {
+		recRes := rec.Reconcile()
+		recErr = recRes.Err
+		cr.Status.DorisClusterRecStatus = recRes.AsDorisClusterRecStatus()
+		if recRes.Stage == dapi.StageComplete {
+			cr.Status.LastApplySpecHash = &curSpecHash
+		}
 	}
 	// sync the status of CR
-	syncErr := rec.Sync()
+	syncRes, syncErr := rec.Sync()
+	cr.Status.DorisClusterSyncStatus = syncRes
 	// update status
 	updateErr := r.Status().Update(ctx, cr)
 
 	// merge error at different reconcile phases
-	mergedErr := util.MergeErrorsWithTag(map[string]error{
-		"reconcile":     recErr,
-		"sync":          syncErr,
-		"update-status": updateErr,
-	})
-	if mergedErr != nil {
-		return ctrl.Result{Requeue: true}, mergedErr
-	} else {
-		return ctrl.Result{}, nil
+	errSet := StCtrlErrSet{
+		Rec:    recErr,
+		Sync:   syncErr,
+		Update: updateErr,
 	}
+	return errSet.AsResult()
 }
 
 // SetupWithManager sets up the controller with the Manager.

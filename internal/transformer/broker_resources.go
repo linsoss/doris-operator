@@ -21,6 +21,7 @@ package transformer
 import (
 	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
+	"github.com/al-assad/doris-operator/internal/template"
 	"github.com/al-assad/doris-operator/internal/util"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -32,20 +33,11 @@ import (
 )
 
 const (
-	DefaultBrokerIpcPort = 8000
-
-	DefaultBrokerLog4jContent = `log4j.rootLogger=debug,stdout,D
-log4j.appender.stdout=org.apache.log4j.ConsoleAppender
-log4j.appender.stdout.Target=System.out
-log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
-log4j.appender.stdout.layout.ConversionPattern=[%-5p] %d{yyyy-MM-dd HH:mm:ss,SSS} method:%l%n%m%n
-log4j.appender.D=org.apache.log4j.DailyRollingFileAppender
-log4j.appender.D.File=${BROKER_LOG_DIR}/apache_hdfs_broker.log
-log4j.appender.D.Append=true
-log4j.appender.D.Threshold=INFO
-log4j.appender.D.layout=org.apache.log4j.PatternLayout
-log4j.appender.D.layout.ConversionPattern=%-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%n`
+	DefaultBrokerIpcPort  = 8000
+	BrokerProbeTimeoutSec = 100
 )
+
+var DefaultBrokerLog4jContent = template.ReadOrPanic("broker/log4j.properties")
 
 func GetBrokerComponentLabels(dorisClusterKey types.NamespacedName) map[string]string {
 	return MakeResourceLabels(dorisClusterKey.Name, "broker")
@@ -164,6 +156,7 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 			{Name: "FE_QUERY_PORT", Value: strconv.Itoa(int(GetFeQueryPort(cr)))},
 			{Name: "ACC_USER", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "user")},
 			{Name: "ACC_PWD", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "password")},
+			{Name: "PROBE_TIMEOUT", Value: strconv.Itoa(BrokerProbeTimeoutSec)},
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: "conf", MountPath: "/opt/apache-doris/broker/conf"},

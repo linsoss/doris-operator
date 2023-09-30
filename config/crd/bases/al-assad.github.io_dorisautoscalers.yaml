@@ -89,10 +89,9 @@ spec:
                 type: object
               cn:
                 properties:
-                  lastTransitionTime:
-                    format: date-time
+                  Message:
                     type: string
-                  message:
+                  phase:
                     type: string
                   scaleDown:
                     properties:
@@ -686,60 +685,9 @@ spec:
                     required:
                     - desiredReplicas
                     type: object
-                  stage:
-                    type: string
                 type: object
-              prevSpec:
-                properties:
-                  cluster:
-                    type: string
-                  cn:
-                    properties:
-                      disableScaleDown:
-                        type: boolean
-                      replicas:
-                        properties:
-                          max:
-                            format: int32
-                            type: integer
-                          min:
-                            format: int32
-                            type: integer
-                        type: object
-                      rules:
-                        properties:
-                          cpu:
-                            properties:
-                              max:
-                                format: int32
-                                type: integer
-                              min:
-                                format: int32
-                                type: integer
-                            type: object
-                          memory:
-                            properties:
-                              max:
-                                format: int32
-                                type: integer
-                              min:
-                                format: int32
-                                type: integer
-                            type: object
-                        type: object
-                      scalePeriodSeconds:
-                        properties:
-                          scaleDown:
-                            format: int32
-                            type: integer
-                          scaleUp:
-                            format: int32
-                            type: integer
-                        type: object
-                    type: object
-                required:
-                - cluster
-                type: object
+              lastApplySpecHash:
+                type: string
             type: object
         type: object
     served: true

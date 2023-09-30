@@ -58,3 +58,12 @@ func TestElvis(t *testing.T) {
 	}
 	assert.Equal(t, "foo", Elvis(true, fn1, fn2)())
 }
+
+func TestMd5Hash(t *testing.T) {
+	m := map[string]int{
+		"a": 1,
+		"c": 3,
+		"b": 2,
+	}
+	assert.Equal(t, "9e0bf104708effc55357dc36f9426ce7", Md5HashOr(m, ""))
+}

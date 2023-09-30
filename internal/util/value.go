@@ -18,6 +18,12 @@
 
 package util
 
+import (
+	"crypto/md5"
+	"encoding/json"
+	"fmt"
+)
+
 // StringFallback returns the first string if it is not empty, otherwise the second string.
 func StringFallback(str string, fallback string) string {
 	if str != "" {
@@ -56,6 +62,14 @@ func PointerFallbackAndDeRefer[T any](pointer *T, fallback *T, defaultValue T) T
 	}
 }
 
+func PointerDeRefer[T any](pointer *T, defaultValue T) T {
+	if pointer != nil {
+		return *pointer
+	} else {
+		return defaultValue
+	}
+}
+
 // Elvis is a Groovy-like elvis expression.
 func Elvis[T any](condition bool, leftValue T, rightValue T) T {
 	if condition {
@@ -63,4 +77,27 @@ func Elvis[T any](condition bool, leftValue T, rightValue T) T {
 	} else {
 		return rightValue
 	}
+}
+
+// Md5Hash returns the md5 hash of the given object base on json marshal.
+func Md5Hash(obj any) (string, error) {
+	if obj == nil {
+		return "", nil
+	}
+	bytes, err := json.Marshal(obj)
+	if err != nil {
+		return "", err
+	}
+	hashStr := fmt.Sprintf("%x", md5.Sum(bytes))
+	return hashStr, nil
+}
+
+// Md5HashOr returns the md5 hash of the given object base on json marshal.
+// when error occurs, return the fallback string.
+func Md5HashOr(obj any, fallback string) string {
+	hash, err := Md5Hash(obj)
+	if err != nil {
+		return fallback
+	}
+	return hash
 }

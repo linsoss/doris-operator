@@ -30,130 +30,129 @@ import (
 )
 
 // Sync all sub components status.
-func (r *DorisClusterReconciler) Sync() error {
-	syncs := []func(cr *dapi.DorisCluster) error{
-		r.syncFeStatus,
-		r.syncBeStatus,
-		r.syncCnStatus,
-		r.syncBrokerStatus,
+func (r *DorisClusterReconciler) Sync() (dapi.DorisClusterSyncStatus, error) {
+	syncRes := dapi.DorisClusterSyncStatus{}
+	errCtr := util.MultiError{}
+	// todo modified to execute code in parallel
+	sync(r.syncFeStatus, errCtr, func(s dapi.FEStatus) { syncRes.FE = s })
+	sync(r.syncBeStatus, errCtr, func(s dapi.BEStatus) { syncRes.BE = s })
+	sync(r.syncCnStatus, errCtr, func(s dapi.CNStatus) { syncRes.CN = s })
+	sync(r.syncBrokerStatus, errCtr, func(s dapi.BrokerStatus) { syncRes.Broker = s })
+	return syncRes, errCtr.Dry()
+}
+
+func sync[T any](syncFn func() (T, error), errCtr util.MultiError, rightFn func(t T)) {
+	status, err := syncFn()
+	if err != nil {
+		errCtr.Collect(err)
 	}
-	errs := make([]error, 0)
-	for _, sync := range syncs {
-		err := sync(r.CR)
-		errs = append(errs, err)
-		return util.MergeErrors(errs...)
-	}
-	return nil
+	rightFn(status)
 }
 
 // sync FE status
-func (r *DorisClusterReconciler) syncFeStatus(cr *dapi.DorisCluster) error {
-	if cr.Spec.FE == nil && cr.Status.Stage == dapi.StageComplete {
-		return nil
+func (r *DorisClusterReconciler) syncFeStatus() (dapi.FEStatus, error) {
+	if r.CR.Spec.FE == nil {
+		return dapi.FEStatus{}, nil
 	}
-	feStatus := dapi.FEStatus{}
-	feStatus.Image = transformer.GetFeImage(cr)
-	feStatus.ServiceRef = dapi.NewNamespacedName(transformer.GetFeServiceKey(cr.ObjKey()))
-	statefulSetRef := transformer.GetFeStatefulSetKey(cr.ObjKey())
+	feStatus := util.PointerDeRefer(r.CR.Status.FE.DeepCopy(), dapi.FEStatus{})
+	feStatus.Image = transformer.GetFeImage(r.CR)
+	feStatus.ServiceRef = dapi.NewNamespacedName(transformer.GetFeServiceKey(r.CR.ObjKey()))
+	statefulSetRef := transformer.GetFeStatefulSetKey(r.CR.ObjKey())
 	feStatus.StatefulSetRef = dapi.NewNamespacedName(statefulSetRef)
 
 	// collect members status via ref statefulset
 	sts := &appv1.StatefulSet{}
 	if err := r.Find(statefulSetRef, sts); err != nil {
-		return err
+		return feStatus, err
 	}
 	if sts != nil {
 		feStatus.Members = r.getComponentMembers(sts)
 		feStatus.Conditions = sts.Status.Conditions
-		readyMembers, err := r.getComponentReadyMembers(cr.Namespace, transformer.GetFeComponentLabels(cr.ObjKey()))
+		readyMembers, err := r.getComponentReadyMembers(r.CR.Namespace, transformer.GetFeComponentLabels(r.CR.ObjKey()))
 		if err != nil {
-			return err
+			return feStatus, err
 		}
 		feStatus.ReadyMembers = readyMembers
 	}
-	cr.Status.FE = feStatus
-	return nil
+	return feStatus, nil
 }
 
 // sync BE status
-func (r *DorisClusterReconciler) syncBeStatus(cr *dapi.DorisCluster) error {
-	if cr.Spec.BE == nil && cr.Status.Stage == dapi.StageComplete {
-		return nil
+func (r *DorisClusterReconciler) syncBeStatus() (dapi.BEStatus, error) {
+	if r.CR.Spec.BE == nil {
+		return dapi.BEStatus{}, nil
 	}
-	beStatus := dapi.BEStatus{}
-	beStatus.Image = transformer.GetBeImage(cr)
-	statefulSetRef := transformer.GetBeStatefulSetKey(cr)
+	beStatus := util.PointerDeRefer(r.CR.Status.BE.DeepCopy(), dapi.BEStatus{})
+	beStatus.Image = transformer.GetBeImage(r.CR)
+	statefulSetRef := transformer.GetBeStatefulSetKey(r.CR)
 	beStatus.StatefulSetRef = dapi.NewNamespacedName(statefulSetRef)
 	// collect members status via ref statefulset
 	sts := &appv1.StatefulSet{}
 	if err := r.Find(statefulSetRef, sts); err != nil {
-		return err
+		return beStatus, err
 	}
 	if sts != nil {
 		beStatus.Members = r.getComponentMembers(sts)
 		beStatus.Conditions = sts.Status.Conditions
-		readyMembers, err := r.getComponentReadyMembers(cr.Namespace, transformer.GetBeComponentLabels(cr.ObjKey()))
+		readyMembers, err := r.getComponentReadyMembers(r.CR.Namespace, transformer.GetBeComponentLabels(r.CR.ObjKey()))
 		if err != nil {
-			return err
+			return beStatus, err
 		}
 		beStatus.ReadyMembers = readyMembers
 	}
-	cr.Status.BE = beStatus
-	return nil
+	return beStatus, nil
 }
 
 // sync CN status
-func (r *DorisClusterReconciler) syncCnStatus(cr *dapi.DorisCluster) error {
-	if cr.Spec.CN == nil && cr.Status.Stage == dapi.StageComplete {
-		return nil
+func (r *DorisClusterReconciler) syncCnStatus() (dapi.CNStatus, error) {
+	if r.CR.Spec.CN == nil {
+		return dapi.CNStatus{}, nil
 	}
-	cnStatus := dapi.CNStatus{}
-	cnStatus.Image = transformer.GetCnImage(cr)
-	statefulSetRef := transformer.GetCnStatefulSetKey(cr.ObjKey())
+	cnStatus := util.PointerDeRefer(r.CR.Status.CN.DeepCopy(), dapi.CNStatus{})
+	cnStatus.Image = transformer.GetCnImage(r.CR)
+	statefulSetRef := transformer.GetCnStatefulSetKey(r.CR.ObjKey())
 	cnStatus.StatefulSetRef = dapi.NewNamespacedName(statefulSetRef)
 	// collect members status via ref statefulset
 	sts := &appv1.StatefulSet{}
 	if err := r.Find(statefulSetRef, sts); err != nil {
-		return err
+		return cnStatus, err
 	}
 	if sts != nil {
 		cnStatus.Members = r.getComponentMembers(sts)
 		cnStatus.Conditions = sts.Status.Conditions
-		readyMembers, err := r.getComponentReadyMembers(cr.Namespace, transformer.GetCnComponentLabels(cr.ObjKey()))
+		readyMembers, err := r.getComponentReadyMembers(r.CR.Namespace, transformer.GetCnComponentLabels(r.CR.ObjKey()))
 		if err != nil {
-			return err
+			return cnStatus, err
 		}
 		cnStatus.ReadyMembers = readyMembers
 	}
-	cr.Status.CN = cnStatus
-	return nil
+	return cnStatus, nil
 }
 
 // sync Broker status
-func (r *DorisClusterReconciler) syncBrokerStatus(cr *dapi.DorisCluster) error {
-	if cr.Spec.Broker == nil && cr.Status.Stage == dapi.StageComplete {
-		return nil
+func (r *DorisClusterReconciler) syncBrokerStatus() (dapi.BrokerStatus, error) {
+	if r.CR.Spec.Broker == nil {
+		return dapi.BrokerStatus{}, nil
 	}
-	status := dapi.BrokerStatus{}
-	status.Image = transformer.GetBrokerImage(cr)
-	statefulSetRef := transformer.GetBrokerStatefulSetKey(cr.ObjKey())
+	status := util.PointerDeRefer(r.CR.Status.Broker.DeepCopy(), dapi.BrokerStatus{})
+	status.Image = transformer.GetBrokerImage(r.CR)
+	statefulSetRef := transformer.GetBrokerStatefulSetKey(r.CR.ObjKey())
 	status.StatefulSetRef = dapi.NewNamespacedName(statefulSetRef)
 	// collect members status via ref statefulset
 	sts := &appv1.StatefulSet{}
 	if err := r.Find(statefulSetRef, sts); err != nil {
-		return err
+		return status, err
 	}
 	if sts != nil {
 		status.Members = r.getComponentMembers(sts)
 		status.Conditions = sts.Status.Conditions
-		readyMembers, err := r.getComponentReadyMembers(cr.Namespace, transformer.GetBrokerComponentLabels(cr.ObjKey()))
+		readyMembers, err := r.getComponentReadyMembers(r.CR.Namespace, transformer.GetBrokerComponentLabels(r.CR.ObjKey()))
 		if err != nil {
-			return err
+			return status, err
 		}
 		status.ReadyMembers = readyMembers
 	}
-	cr.Status.Broker = status
-	return nil
+	return status, nil
 }
 
 func (r *DorisClusterReconciler) getComponentMembers(sts *appv1.StatefulSet) []string {

@@ -36,6 +36,8 @@ const (
 	DefaultBePort                 = 9060
 	DefaultBeWebserverPort        = 8040
 	DefaultBeBrpcPort             = 8060
+
+	BeProbeTimeoutSec = 200
 )
 
 func GetBeComponentLabels(dorisClusterKey types.NamespacedName) map[string]string {
@@ -233,6 +235,7 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			{Name: "FE_QUERY_PORT", Value: strconv.Itoa(int(GetFeQueryPort(cr)))},
 			{Name: "ACC_USER", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "user")},
 			{Name: "ACC_PWD", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "password")},
+			{Name: "BE_PROBE_TIMEOUT", Value: strconv.Itoa(BeProbeTimeoutSec)},
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: "conf", MountPath: "/etc/apache-doris/be/"},

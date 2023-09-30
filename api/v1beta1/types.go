@@ -47,3 +47,33 @@ const (
 	StageResultSucceeded OprStageStatus = "succeeded"
 	StageResultFailed    OprStageStatus = "failed"
 )
+
+func (e *DorisCluster) ObjKey() types.NamespacedName {
+	if e.objKey == nil {
+		key := types.NamespacedName{Namespace: e.Namespace, Name: e.Name}
+		e.objKey = &key
+		return key
+	} else {
+		return *e.objKey
+	}
+}
+
+func (e *DorisAutoscaler) ObjKey() types.NamespacedName {
+	if e.objKey == nil {
+		key := types.NamespacedName{Namespace: e.Namespace, Name: e.Name}
+		e.objKey = &key
+		return key
+	} else {
+		return *e.objKey
+	}
+}
+
+func (e *DorisInitializer) ObjKey() types.NamespacedName {
+	if e.objKey == nil {
+		key := types.NamespacedName{Namespace: e.Namespace, Name: e.Name}
+		e.objKey = &key
+		return key
+	} else {
+		return *e.objKey
+	}
+}

@@ -33,30 +33,12 @@ type DorisAutoScalerReconciler struct {
 	CR *dapi.DorisAutoscaler
 }
 
-type DorisClusterNotExist struct {
-	ClusterRef types.NamespacedName
-}
-
-type ClusterAlreadyBoundAutoscaler struct {
-	AutoScaler types.NamespacedName
-}
-
-func (r *DorisClusterNotExist) Error() string {
-	return fmt.Sprintf("target DorisCluster not exist [name=%s][namespace=%s]",
-		r.ClusterRef.Name, r.ClusterRef.Name)
-}
-
-func (r *ClusterAlreadyBoundAutoscaler) Error() string {
-	return fmt.Sprintf("target DorisCluster already bound another DorisAutoscaler [name=%s][namespace=%s]",
-		r.AutoScaler.Name, r.AutoScaler.Name)
-}
-
 type hpaType = acv2.HorizontalPodAutoscaler
 
 // Reconcile hpa resources
-func (r *DorisAutoScalerReconciler) Reconcile() error {
+func (r *DorisAutoScalerReconciler) Reconcile() (dapi.AutoscalerRecStatus, error) {
 	if r.CR.Spec.Cluster == "" {
-		return nil
+		return dapi.AutoscalerRecStatus{}, nil
 	}
 
 	// delete cn auto scaler
@@ -82,7 +64,8 @@ func (r *DorisAutoScalerReconciler) Reconcile() error {
 			return err
 		}
 		if !exist {
-			return &DorisClusterNotExist{clusterRef}
+			return fmt.Errorf("target DorisCluster[name=%s][namespace=%s] not exist",
+				clusterRef.Name, clusterRef.Name)
 		}
 		// check if target DorisCluster already bound another DorisAutoscaler
 		bound, bErr := r.FindRefDorisAutoScaler(clusterRef)
@@ -90,7 +73,8 @@ func (r *DorisAutoScalerReconciler) Reconcile() error {
 			return err
 		}
 		if bound != nil {
-			return &ClusterAlreadyBoundAutoscaler{bound.ObjKey()}
+			return fmt.Errorf("target DorisCluster already bound another DorisAutoscaler[name=%s][namespace=%s]",
+				bound.Name, bound.Name)
 		}
 		// apply hpa resources
 		if cnUpHpa := transformer.MakeCnScaleUpHpa(r.CR, r.Schema); cnUpHpa != nil {
@@ -106,11 +90,18 @@ func (r *DorisAutoScalerReconciler) Reconcile() error {
 		return nil
 	}
 
-	return util.Elvis(r.CR.Spec.CN != nil, applyHpa, deleteHpa)()
+	if err := util.Elvis(r.CR.Spec.CN != nil, applyHpa, deleteHpa)(); err != nil {
+		return dapi.AutoscalerRecStatus{
+			Phase:   dapi.AutoScalePhaseFailed,
+			Message: err.Error(),
+		}, err
+	}
+	return dapi.AutoscalerRecStatus{Phase: dapi.AutoScalePhaseCompleted}, nil
 }
 
 // Sync status of hpa resources
-func (r *DorisAutoScalerReconciler) Sync() error {
+func (r *DorisAutoScalerReconciler) Sync() (dapi.CNAutoscalerSyncStatus, error) {
+	status := util.PointerDeRefer(r.CR.Status.CN.CNAutoscalerSyncStatus.DeepCopy(), dapi.CNAutoscalerSyncStatus{})
 
 	syncCnUpHpa := func() error {
 		hpaRef := transformer.GetCnScaleUpHpaKey(r.CR.ObjKey())
@@ -119,11 +110,11 @@ func (r *DorisAutoScalerReconciler) Sync() error {
 			return nil
 		}
 		if hpa != nil {
-			r.CR.Status.CN.ScaleUpHpaRef = &dapi.AutoScalerRef{
+			status.ScaleUpHpaRef = &dapi.AutoScalerRef{
 				NamespacedName: dapi.NewNamespacedName(hpaRef),
 				TypeMeta:       hpa.TypeMeta,
 			}
-			r.CR.Status.CN.ScaleUpStatus = &hpa.Status
+			status.ScaleUpStatus = &hpa.Status
 		}
 		return nil
 	}
@@ -135,16 +126,16 @@ func (r *DorisAutoScalerReconciler) Sync() error {
 			return nil
 		}
 		if hpa != nil {
-			r.CR.Status.CN.ScaleDownHpaRef = &dapi.AutoScalerRef{
+			status.ScaleDownHpaRef = &dapi.AutoScalerRef{
 				NamespacedName: dapi.NewNamespacedName(hpaRef),
 				TypeMeta:       hpa.TypeMeta,
 			}
-			r.CR.Status.CN.ScaleDownStatus = &hpa.Status
+			status.ScaleDownStatus = &hpa.Status
 		}
 		return nil
 	}
 
 	cnUpErr := syncCnUpHpa()
 	cnDownErr := syncCnDownHpa()
-	return util.MergeErrors(cnUpErr, cnDownErr)
+	return status, util.MergeErrors(cnUpErr, cnDownErr)
 }

@@ -19,9 +19,6 @@
 package util
 
 import (
-	"crypto/md5"
-	"encoding/json"
-	"fmt"
 	"sort"
 )
 
@@ -68,19 +65,4 @@ func MapSortedKeys[K string | int, V any](data map[K]V) []K {
 		return keys[i] < keys[j]
 	})
 	return keys
-}
-
-// MapMd5 returns the md5 string of a map.
-// When the map is empty, return an empty string.
-func MapMd5[K comparable, V any](data map[K]V) string {
-	if len(data) == 0 {
-		return ""
-	}
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		return ""
-	}
-	hash := md5.Sum(jsonData)
-	md5String := fmt.Sprintf("%x", hash)
-	return md5String
 }

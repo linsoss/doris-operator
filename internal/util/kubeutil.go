@@ -34,9 +34,7 @@ func NewEmptyDirVolumeSource() corev1.VolumeSource {
 func NewConfigMapVolumeSource(configMapName string) corev1.VolumeSource {
 	return corev1.VolumeSource{
 		ConfigMap: &corev1.ConfigMapVolumeSource{
-			LocalObjectReference: corev1.LocalObjectReference{
-				Name: configMapName,
-			},
+			LocalObjectReference: corev1.LocalObjectReference{Name: configMapName},
 		},
 	}
 }

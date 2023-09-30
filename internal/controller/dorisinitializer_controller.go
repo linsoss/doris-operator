@@ -18,14 +18,15 @@ package controller
 
 import (
 	"context"
+	"github.com/al-assad/doris-operator/internal/reconciler"
+	"github.com/al-assad/doris-operator/internal/util"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 
+	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 )
 
 // DorisInitializerReconciler reconciles a DorisInitializer object
@@ -39,12 +40,27 @@ type DorisInitializerReconciler struct {
 //+kubebuilder:rbac:groups=al-assad.github.io,resources=dorisinitializers/finalizers,verbs=update
 //+kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
-
-// todo
-//+kubebuilder:rbac:groups=core,resources=jobs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
 
 func (r *DorisInitializerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	recCtx := reconciler.NewReconcileContext(r.Client, r.Scheme, ctx)
+
+	// obtain DorisInitializerReconciler CR and skip reconciling process when it has been deleted
+	cr := &dapi.DorisInitializer{}
+	if err := recCtx.Find(req.NamespacedName, cr); err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
+	if cr == nil {
+		recCtx.Log.Info("DorisInitializer has been deleted")
+		return ctrl.Result{}, nil
+	}
+
+	// re-apply resources when spec has been changed
+	curSpecHash := util.Md5HashOr(cr.Spec, "")
+	specHasChanged := cr.Status.PrevSpecHash == nil || *cr.Status.PrevSpecHash != curSpecHash
+	if specHasChanged {
+
+	}
 
 	// TODO(user): your logic here
 
@@ -56,6 +72,6 @@ func (r *DorisInitializerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&dapi.DorisInitializer{}).
 		Owns(&corev1.ConfigMap{}).
-		//Owns(&corev1.Job{}).
+		Owns(&batchv1.Job{}).
 		Complete(r)
 }

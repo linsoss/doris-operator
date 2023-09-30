@@ -49,12 +49,16 @@ type ClusterStageRecResult struct {
 	Err    error
 }
 
-func (r *ClusterStageRecResult) Error() string {
-	if r.Err != nil {
-		return r.Err.Error()
-	} else {
-		return ""
+func (r *ClusterStageRecResult) AsDorisClusterRecStatus() dapi.DorisClusterRecStatus {
+	res := dapi.DorisClusterRecStatus{
+		Stage:       r.Stage,
+		StageStatus: r.Status,
+		StageAction: r.Action,
 	}
+	if r.Err != nil {
+		res.LastMessage = r.Err.Error()
+	}
+	return res
 }
 
 // Reconcile all sub components
@@ -125,7 +129,7 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 		}
 		// fe statefulset
 		statefulSet := transformer.MakeFeStatefulSet(r.CR, r.Schema)
-		statefulSet.Annotations[FeConfHashAnnotationKey] = util.MapMd5(configMap.Data)
+		statefulSet.Annotations[FeConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(statefulSet); err != nil {
 			return clusterStageFail(dapi.StageFeStatefulSet, action, err)
 		}
@@ -182,7 +186,7 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 		}
 		// be statefulset
 		statefulSet := transformer.MakeBeStatefulSet(r.CR, r.Schema)
-		statefulSet.Annotations[BeConfHashAnnotationKey] = util.MapMd5(configMap.Data)
+		statefulSet.Annotations[BeConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(statefulSet); err != nil {
 			return clusterStageFail(dapi.StageBeStatefulSet, action, err)
 		}
@@ -240,7 +244,7 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 
 		// cn statefulset
 		statefulSet := transformer.MakeCnStatefulSet(r.CR, r.Schema)
-		statefulSet.Annotations[CnConfHashAnnotationKey] = util.MapMd5(configMap.Data)
+		statefulSet.Annotations[CnConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		// when the corresponding DorisAutoScaler resource exists,
 		// the replica of statefulset would not be overridden
 		autoScaler, err := r.FindRefDorisAutoScaler(client.ObjectKeyFromObject(r.CR))
@@ -303,7 +307,7 @@ func (r *DorisClusterReconciler) recBrokerResources() ClusterStageRecResult {
 		}
 		// broker statefulset
 		statefulSet := transformer.MakeBrokerStatefulSet(r.CR, r.Schema)
-		statefulSet.Annotations[BrokerConfHashAnnotationKey] = util.MapMd5(configMap.Data)
+		statefulSet.Annotations[BrokerConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(statefulSet); err != nil {
 			return clusterStageFail(dapi.StageBrokerStatefulSet, action, err)
 		}

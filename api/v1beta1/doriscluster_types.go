@@ -29,20 +29,9 @@ import (
 type DorisCluster struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              DorisClusterSpec   `json:"spec,omitempty"`
-	Status            DorisClusterStatus `json:"status,omitempty"`
-
-	objKey *types.NamespacedName `json:"-"`
-}
-
-func (e *DorisCluster) ObjKey() types.NamespacedName {
-	if e.objKey == nil {
-		key := types.NamespacedName{Namespace: e.Namespace, Name: e.Name}
-		e.objKey = &key
-		return key
-	} else {
-		return *e.objKey
-	}
+	Spec              DorisClusterSpec      `json:"spec,omitempty"`
+	Status            DorisClusterStatus    `json:"status,omitempty"`
+	objKey            *types.NamespacedName `json:"-"`
 }
 
 // DorisClusterList contains a list of DorisCluster
@@ -247,20 +236,25 @@ type DorisComponentSpec struct {
 // DorisClusterStatus defines the observed state of DorisCluster
 // +k8s:openapi-gen=true
 type DorisClusterStatus struct {
-	PrevSpec *DorisClusterSpec `json:"prevSpec,omitempty"`
+	LastApplySpecHash      *string `json:"lastApplySpecHash,omitempty"`
+	DorisClusterRecStatus  `json:",inline"`
+	DorisClusterSyncStatus `json:",inline"`
 
-	Stage              DorisClusterOprStage `json:"stage,omitempty"`
-	StageAction        OprStageAction       `json:"stageAction,omitempty"`
-	StageStatus        OprStageStatus       `json:"stageStatus,omitempty"`
-	LastMessage        string               `json:"lastMessage,omitempty"`
-	LastTransitionTime metav1.Time          `json:"lastTransitionTime,omitempty"`
+	// TODO Status indicates that the cluster is fully ready or able to provide external sql query service.
+}
 
+type DorisClusterRecStatus struct {
+	Stage       DorisClusterOprStage `json:"stage,omitempty"`
+	StageAction OprStageAction       `json:"stageAction,omitempty"`
+	StageStatus OprStageStatus       `json:"stageStatus,omitempty"`
+	LastMessage string               `json:"lastMessage,omitempty"`
+}
+
+type DorisClusterSyncStatus struct {
 	FE     FEStatus     `json:"fe,omitempty"`
 	BE     BEStatus     `json:"be,omitempty"`
 	CN     CNStatus     `json:"cn,omitempty"`
 	Broker BrokerStatus `json:"broker,omitempty"`
-
-	// TODO Status indicates that the cluster is fully ready or able to provide external sql query service.
 }
 
 // DorisClusterOprStage represents DorisCluster operator stage

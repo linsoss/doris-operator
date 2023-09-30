@@ -36,6 +36,19 @@ func (e *MultiError) Error() string {
 	return strings.Join(errStrs, "; ")
 }
 
+func (e *MultiError) Collect(err error) {
+	if err != nil {
+		e.Errors = append(e.Errors, err)
+	}
+}
+
+func (e *MultiError) Dry() error {
+	if len(e.Errors) == 0 {
+		return nil
+	}
+	return e
+}
+
 // MergeErrors merges multiple errors into one.
 func MergeErrors(errs ...error) *MultiError {
 	errorList := make([]error, 0, len(errs))
