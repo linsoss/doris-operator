@@ -85,7 +85,7 @@ func MakePrometheusConfigMap(cr *dapi.DorisMonitor, scheme *runtime.Scheme) (*co
 	if err != nil {
 		return nil, util.MergeErrors(fmt.Errorf("fail to parse prometheus.conf template"), err)
 	}
-	// merge hadoop config data
+
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configMapRef.Name,
@@ -191,7 +191,9 @@ func MakePrometheusDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *ap
 		"--web.enable-lifecycle",
 	}
 	if cr.Spec.Prometheus.RetentionTime != nil {
-		promArgs = append(promArgs, fmt.Sprintf("--storage.tsdb.retention.time=%s", cr.Spec.Prometheus.RetentionTime))
+		promArgs = append(promArgs,
+			fmt.Sprintf("--storage.tsdb.retention.time=%s", *cr.Spec.Prometheus.RetentionTime),
+		)
 	}
 
 	// pod template
@@ -200,15 +202,13 @@ func MakePrometheusDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *ap
 			Labels: labels,
 		},
 		Spec: corev1.PodSpec{
-			ServiceAccountName: DorisMonitorAccountName,
+			ServiceAccountName: MonitorNamespacedAccountName,
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			Volumes: []corev1.Volume{
 				{
 					Name: "prometheus-config",
-					VolumeSource: corev1.VolumeSource{
-						ConfigMap: &corev1.ConfigMapVolumeSource{
-							LocalObjectReference: corev1.LocalObjectReference{Name: configMapRef.Name},
-							Items:                []corev1.KeyToPath{{Key: "prometheus.yml", Path: "prometheus.yml"}}}},
+					VolumeSource: util.NewConfigMapItemsVolumeSource(
+						configMapRef.Name, map[string]string{"prometheus.yml": "prometheus.yml"}),
 				}, {
 					Name: "prometheus-data",
 					VolumeSource: corev1.VolumeSource{
@@ -234,6 +234,13 @@ func MakePrometheusDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *ap
 					PeriodSeconds:    5,
 					SuccessThreshold: 1,
 					FailureThreshold: 120,
+				},
+				LivenessProbe: &corev1.Probe{
+					ProbeHandler:     util.NewHttpGetProbeHandler("/-/ready", 9090),
+					TimeoutSeconds:   1,
+					PeriodSeconds:    5,
+					SuccessThreshold: 1,
+					FailureThreshold: 30,
 				},
 			}},
 		},

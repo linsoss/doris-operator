@@ -65,7 +65,7 @@ func GetPromtailDaemonSetKey(monitorKey types.NamespacedName) types.NamespacedNa
 }
 
 func MakePromtailConfigMap(cr *dapi.DorisMonitor, scheme *runtime.Scheme) (*corev1.ConfigMap, error) {
-	if cr.Spec.Cluster == "" {
+	if cr.Spec.Cluster == "" || cr.Spec.DisableLoki {
 		return nil, nil
 	}
 	clusterRef := types.NamespacedName{
@@ -87,7 +87,7 @@ func MakePromtailConfigMap(cr *dapi.DorisMonitor, scheme *runtime.Scheme) (*core
 	if err != nil {
 		return nil, util.MergeErrors(fmt.Errorf("fail to parse promtail.conf template"), err)
 	}
-	// merge hadoop config data
+
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configMapRef.Name,
@@ -103,7 +103,7 @@ func MakePromtailConfigMap(cr *dapi.DorisMonitor, scheme *runtime.Scheme) (*core
 }
 
 func MakePromtailDaemonSet(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.DaemonSet {
-	if cr.Spec.Cluster == "" {
+	if cr.Spec.Cluster == "" || cr.Spec.DisableLoki {
 		return nil
 	}
 	clusterRef := types.NamespacedName{
@@ -119,7 +119,7 @@ func MakePromtailDaemonSet(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1
 			Labels: labels,
 		},
 		Spec: corev1.PodSpec{
-			ServiceAccountName: DorisMonitorAccountName,
+			ServiceAccountName: MonitorNamespacedAccountName,
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			Volumes: []corev1.Volume{
 				{

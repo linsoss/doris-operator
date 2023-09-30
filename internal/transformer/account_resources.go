@@ -22,9 +22,12 @@ import (
 	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
+
+// Operator Doris SQL account resources
 
 func GetOprSqlAccountSecretKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
 	return types.NamespacedName{
@@ -51,6 +54,66 @@ func MakeOprSqlAccountSecret(cr *dapi.DorisCluster) *corev1.Secret {
 	return secret
 }
 
+// Doris Monitor RBAC resources
+
 const (
-	DorisMonitorAccountName = "doris-monitor"
+	MonitorClusterRoleName           = "doris-monitor"
+	MonitorNamespacedRoleBindingName = "doris-monitor-binding"
+	MonitorNamespacedAccountName     = "doris-monitor"
 )
+
+func MakeMonitorGlobalRole() *rbacv1.ClusterRole {
+	clusterRole := &rbacv1.ClusterRole{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   MonitorClusterRoleName,
+			Labels: MakeResourceLabels("", "monitor"),
+		},
+		Rules: []rbacv1.PolicyRule{
+			{
+				APIGroups: []string{""},
+				Resources: []string{"nodes", "nodes/proxy", "services", "endpoints", "pods"},
+				Verbs:     []string{"get", "list", "watch"},
+			}, {
+				APIGroups: []string{"extensions"},
+				Resources: []string{"ingresses"},
+				Verbs:     []string{"get", "list", "watch"},
+			}, {
+				NonResourceURLs: []string{"/metrics"},
+				Verbs:           []string{"get"},
+			},
+		},
+	}
+	return clusterRole
+}
+
+func MakeMonitorNamespacedAccount(namespace string) *corev1.ServiceAccount {
+	account := &corev1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      MonitorNamespacedAccountName,
+			Namespace: namespace,
+			Labels:    MakeResourceLabels("", "monitor"),
+		},
+	}
+	return account
+}
+
+func MakeMonitorNamespacedRoleBinding(namespace string) *rbacv1.RoleBinding {
+	roleBinding := &rbacv1.RoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      MonitorNamespacedRoleBindingName,
+			Namespace: namespace,
+			Labels:    MakeResourceLabels("", "monitor"),
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind:     "ClusterRole",
+			APIGroup: "rbac.authorization.k8s.io",
+			Name:     MonitorClusterRoleName,
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind:      "ServiceAccount",
+			Name:      MonitorNamespacedAccountName,
+			Namespace: namespace,
+		}},
+	}
+	return roleBinding
+}

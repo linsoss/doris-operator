@@ -53,9 +53,9 @@ type DorisMonitorSpec struct {
 	Loki       *LokiSpec       `json:"loki,omitempty"`
 	Promtail   *PromtailSpec   `json:"promtail,omitempty"`
 
-	// EnableLoki to enable Loki for log collection
-	// Default to true
-	EnableLoki bool `json:"enableLoki,omitempty"`
+	// DisableLoki to disable Loki for log collection
+	// Default to false
+	DisableLoki bool `json:"enableLoki,omitempty"`
 
 	// ImagePullPolicy of DorisMonitor Pods
 	// +optional
@@ -129,7 +129,7 @@ type LokiSpec struct {
 	// Loki chunks retention time
 	// When it is empty, do not enable retention deletion of Loki.
 	// +optional
-	RetentionTime string `json:"retentionTime,omitempty"`
+	RetentionTime *string `json:"retentionTime,omitempty"`
 
 	// +optional
 	corev1.ResourceRequirements `json:",inline"`
