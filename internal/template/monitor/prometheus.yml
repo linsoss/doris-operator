@@ -1,0 +1,217 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+
+  # collect fe metrics
+  - job_name: doris-fe
+    honor_labels: true
+    scrape_interval: 15s
+    scheme: http
+    kubernetes_sd_configs:
+      - api_server: null
+        role: pod
+        namespaces:
+          names:
+            - {{.Namespace}}
+    tls_config:
+      insecure_skip_verify: true
+    relabel_configs:
+      - source_labels:
+          - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+        action: keep
+        regex: "true"
+      # filter label: namespace
+      - source_labels:
+          - __meta_kubernetes_namespace
+        action: keep
+        regex: {{.Namespace}}
+      # filter label: app.kubernetes.io/name
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_name
+        action: keep
+        regex: doris-cluster
+      # filter label: app.kubernetes.io/instance
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+        action: keep
+        regex: {{.Name}}
+      # filter label: app.kubernetes.io/component
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_component
+        action: keep
+        regex: fe
+      # merge identity label
+      - action: replace
+        regex: (.+);(.+);(.+);(.+)
+        replacement: $1.$2-fe-peer.$3:$4
+        target_label: __address__
+        source_labels:
+          - __meta_kubernetes_pod_name
+          - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+          - __meta_kubernetes_namespace
+          - __meta_kubernetes_pod_annotation_prometheus_io_port
+
+      # format namespace label
+      - source_labels:
+          - __meta_kubernetes_namespace
+        action: replace
+        target_label: kubernetes_namespace
+      # format pod-name label
+      - source_labels:
+          - __meta_kubernetes_pod_name
+        action: replace
+        target_label: instance
+      # format app.kubernetes.io/instance label
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+        action: replace
+        target_label: cluster
+      # format app.kubernetes.io/component label
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_component
+        action: replace
+        target_label: component
+
+  # collect be metrics
+  - job_name: doris-be
+    honor_labels: true
+    scrape_interval: 15s
+    scheme: http
+    kubernetes_sd_configs:
+      - api_server: null
+        role: pod
+        namespaces:
+          names:
+            - {{.Namespace}}
+    tls_config:
+      insecure_skip_verify: true
+    relabel_configs:
+      - source_labels:
+          - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+        action: keep
+        regex: "true"
+      # filter label: namespace
+      - source_labels:
+          - __meta_kubernetes_namespace
+        action: keep
+        regex: {{.Namespace}}
+      # filter label: app.kubernetes.io/name
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_name
+        action: keep
+        regex: doris-cluster
+      # filter label: app.kubernetes.io/instance
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+        action: keep
+        regex: {{.Name}}
+      # filter label: app.kubernetes.io/component
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_component
+        action: keep
+        regex: be
+
+      # merge identity label
+      - action: replace
+        regex: (.+);(.+);(.+);(.+)
+        replacement: $1.$2-be-peer.$3:$4
+        target_label: __address__
+        source_labels:
+          - __meta_kubernetes_pod_name
+          - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+          - __meta_kubernetes_namespace
+          - __meta_kubernetes_pod_annotation_prometheus_io_port
+
+      # format namespace label
+      - source_labels:
+          - __meta_kubernetes_namespace
+        action: replace
+        target_label: kubernetes_namespace
+      # format pod-name label
+      - source_labels:
+          - __meta_kubernetes_pod_name
+        action: replace
+        target_label: instance
+      # format app.kubernetes.io/instance label
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+        action: replace
+        target_label: cluster
+      # format app.kubernetes.io/component label
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_component
+        action: replace
+        target_label: component
+
+  # collect be metrics
+  - job_name: doris-cn
+    honor_labels: true
+    scrape_interval: 15s
+    scheme: http
+    kubernetes_sd_configs:
+      - api_server: null
+        role: pod
+        namespaces:
+          names:
+            - {{.Namespace}}
+    tls_config:
+      insecure_skip_verify: true
+    relabel_configs:
+      - source_labels:
+          - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+        action: keep
+        regex: "true"
+      # filter label: namespace
+      - source_labels:
+          - __meta_kubernetes_namespace
+        action: keep
+        regex: {{.Namespace}}
+      # filter label: app.kubernetes.io/name
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_name
+        action: keep
+        regex: doris-cluster
+      # filter label: app.kubernetes.io/instance
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+        action: keep
+        regex: {{.Name}}
+      # filter label: app.kubernetes.io/component
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_component
+        action: keep
+        regex: cn
+
+      # merge identity label
+      - action: replace
+        regex: (.+);(.+);(.+);(.+)
+        replacement: $1.$2-cn-peer.$3:$4
+        target_label: __address__
+        source_labels:
+          - __meta_kubernetes_pod_name
+          - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+          - __meta_kubernetes_namespace
+          - __meta_kubernetes_pod_annotation_prometheus_io_port
+
+      # format namespace label
+      - source_labels:
+          - __meta_kubernetes_namespace
+        target_label: kubernetes_namespace
+        action: replace
+      # format pod-name label
+      - source_labels:
+          - __meta_kubernetes_pod_name
+        action: replace
+        target_label: instance
+      # format app.kubernetes.io/instance label
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+        action: replace
+        target_label: cluster
+      # format app.kubernetes.io/component label
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_component
+        action: replace
+        target_label: component

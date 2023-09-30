@@ -71,6 +71,7 @@ spec:
                       externalTrafficPolicy:
                         type: string
                       httpPort:
+                        format: int32
                         type: integer
                       type:
                         type: string
@@ -90,6 +91,45 @@ spec:
                   type: object
                   x-kubernetes-map-type: atomic
                 type: array
+              loki:
+                properties:
+                  claims:
+                    items:
+                      properties:
+                        name:
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
+                  image:
+                    type: string
+                  limits:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    type: object
+                  requests:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    type: object
+                  retentionTime:
+                    type: string
+                  storageClassName:
+                    type: string
+                required:
+                - image
+                type: object
               prometheus:
                 properties:
                   claims:
@@ -129,12 +169,48 @@ spec:
                       externalTrafficPolicy:
                         type: string
                       httpPort:
+                        format: int32
                         type: integer
                       type:
                         type: string
                     type: object
                   storageClassName:
                     type: string
+                required:
+                - image
+                type: object
+              promtail:
+                properties:
+                  claims:
+                    items:
+                      properties:
+                        name:
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
+                  image:
+                    type: string
+                  limits:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    type: object
+                  requests:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    type: object
                 required:
                 - image
                 type: object
@@ -147,16 +223,6 @@ spec:
             type: object
           status:
             properties:
-              clusterRef:
-                properties:
-                  name:
-                    type: string
-                  namespace:
-                    type: string
-                required:
-                - name
-                - namespace
-                type: object
               grafana:
                 properties:
                   conditions:
@@ -214,10 +280,9 @@ spec:
                     - namespace
                     type: object
                 type: object
-              lastMessage:
+              lastApplySpecHash:
                 type: string
-              lastTransitionTime:
-                format: date-time
+              lastMessage:
                 type: string
               loki:
                 properties:
@@ -265,127 +330,6 @@ spec:
                     type: object
                   ready:
                     type: boolean
-                type: object
-              prevSpec:
-                properties:
-                  cluster:
-                    type: string
-                  enableLoki:
-                    type: boolean
-                  grafana:
-                    properties:
-                      adminPassword:
-                        type: string
-                      adminUser:
-                        type: string
-                      claims:
-                        items:
-                          properties:
-                            name:
-                              type: string
-                          required:
-                          - name
-                          type: object
-                        type: array
-                        x-kubernetes-list-map-keys:
-                        - name
-                        x-kubernetes-list-type: map
-                      image:
-                        type: string
-                      limits:
-                        additionalProperties:
-                          anyOf:
-                          - type: integer
-                          - type: string
-                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                          x-kubernetes-int-or-string: true
-                        type: object
-                      requests:
-                        additionalProperties:
-                          anyOf:
-                          - type: integer
-                          - type: string
-                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                          x-kubernetes-int-or-string: true
-                        type: object
-                      service:
-                        properties:
-                          externalTrafficPolicy:
-                            type: string
-                          httpPort:
-                            type: integer
-                          type:
-                            type: string
-                        type: object
-                      storageClassName:
-                        type: string
-                    required:
-                    - image
-                    type: object
-                  imagePullPolicy:
-                    type: string
-                  imagePullSecrets:
-                    items:
-                      properties:
-                        name:
-                          type: string
-                      type: object
-                      x-kubernetes-map-type: atomic
-                    type: array
-                  prometheus:
-                    properties:
-                      claims:
-                        items:
-                          properties:
-                            name:
-                              type: string
-                          required:
-                          - name
-                          type: object
-                        type: array
-                        x-kubernetes-list-map-keys:
-                        - name
-                        x-kubernetes-list-type: map
-                      image:
-                        type: string
-                      limits:
-                        additionalProperties:
-                          anyOf:
-                          - type: integer
-                          - type: string
-                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                          x-kubernetes-int-or-string: true
-                        type: object
-                      requests:
-                        additionalProperties:
-                          anyOf:
-                          - type: integer
-                          - type: string
-                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                          x-kubernetes-int-or-string: true
-                        type: object
-                      retentionTime:
-                        type: string
-                      service:
-                        properties:
-                          externalTrafficPolicy:
-                            type: string
-                          httpPort:
-                            type: integer
-                          type:
-                            type: string
-                        type: object
-                      storageClassName:
-                        type: string
-                    required:
-                    - image
-                    type: object
-                  serviceAccount:
-                    type: string
-                  storageClassName:
-                    type: string
-                required:
-                - cluster
                 type: object
               prometheus:
                 properties:
@@ -479,6 +423,8 @@ spec:
                     type: boolean
                 type: object
               stage:
+                type: string
+              stageAction:
                 type: string
               stageStatus:
                 type: string

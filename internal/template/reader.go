@@ -19,7 +19,9 @@
 package template
 
 import (
+	"bytes"
 	"embed"
+	"html/template"
 	"k8s.io/klog/v2"
 )
 
@@ -41,4 +43,23 @@ func ReadOrPanic(path string) string {
 		panic(err)
 	}
 	return string(data)
+}
+
+func NewTemplateOrPanic(name string, path string) *template.Template {
+	fileContent := ReadOrPanic(path)
+	tmpl, err := template.New(name).Parse(fileContent)
+	if err != nil {
+		klog.Error("Fail to parse template: " + path)
+		panic(err)
+	}
+	return tmpl
+}
+
+func ExecTemplate(tmpl *template.Template, data any) (string, error) {
+	var buf bytes.Buffer
+	err := tmpl.Execute(&buf, data)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }

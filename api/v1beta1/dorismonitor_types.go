@@ -20,6 +20,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // DorisMonitor is the Schema for the Doris cluster monitors API
@@ -28,9 +29,9 @@ import (
 type DorisMonitor struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   DorisMonitorSpec   `json:"spec,omitempty"`
-	Status DorisMonitorStatus `json:"status,omitempty"`
+	Spec              DorisMonitorSpec      `json:"spec,omitempty"`
+	Status            DorisMonitorStatus    `json:"status,omitempty"`
+	objKey            *types.NamespacedName `json:"-"`
 }
 
 // DorisMonitorList contains a list of DorisMonitor
@@ -49,6 +50,8 @@ type DorisMonitorSpec struct {
 
 	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`
 	Grafana    *GrafanaSpec    `json:"grafana,omitempty"`
+	Loki       *LokiSpec       `json:"loki,omitempty"`
+	Promtail   *PromtailSpec   `json:"promtail,omitempty"`
 
 	// EnableLoki to enable Loki for log collection
 	// Default to true
@@ -66,7 +69,7 @@ type DorisMonitorSpec struct {
 	// StorageClassName of the persistent volume for monitor data storage.
 	// Kubernetes default storage class is used if not setting this field.
 	// +optional
-	StorageClassName string `json:"storageClassName,omitempty"`
+	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// Specify a Service Account
 	// +optional
@@ -81,7 +84,7 @@ type PrometheusSpec struct {
 
 	// Prometheus data retention time
 	// +optional
-	RetentionTime string `json:"retentionTime,omitempty"`
+	RetentionTime *string `json:"retentionTime,omitempty"`
 
 	// Service defines a Kubernetes service of Prometheus
 	// +optional
@@ -147,11 +150,12 @@ type PromtailSpec struct {
 // +k8s:openapi-gen=true
 type MonitorServiceSpec struct {
 	// Type of the real kubernetes service
+	// Only ClusterIP and NodePort support is available.
 	Type corev1.ServiceType `json:"type,omitempty"`
 
 	// Expose the http query port of prometheus or grafana
 	// Optional: Defaults to 0
-	HttpPort int `json:"httpPort,omitempty"`
+	HttpPort *int32 `json:"httpPort,omitempty"`
 
 	// ExternalTrafficPolicy of the service
 	// Optional: Defaults to omitted
@@ -162,13 +166,19 @@ type MonitorServiceSpec struct {
 // DorisMonitorStatus defines the observed state of DorisMonitor
 // +k8s:openapi-gen=true
 type DorisMonitorStatus struct {
-	ClusterRef         NamespacedName             `json:"clusterRef,omitempty"`
-	PrevSpec           *DorisMonitorSpec          `json:"prevSpec,omitempty"`
-	Stage              DorisMonitorOprStage       `json:"stage,omitempty"`
-	StageStatus        DorisMonitorOprStageStatus `json:"stageStatus,omitempty"`
-	LastMessage        string                     `json:"lastMessage,omitempty"`
-	LastTransitionTime metav1.Time                `json:"lastTransitionTime,omitempty"`
+	LastApplySpecHash      *string `json:"lastApplySpecHash,omitempty"`
+	DorisMonitorRecStatus  `json:",inline"`
+	DorisMonitorSyncStatus `json:",inline"`
+}
 
+type DorisMonitorRecStatus struct {
+	Stage       DorisMonitorOprStage       `json:"stage,omitempty"`
+	StageStatus DorisMonitorOprStageStatus `json:"stageStatus,omitempty"`
+	StageAction OprStageAction             `json:"stageAction,omitempty"`
+	LastMessage string                     `json:"lastMessage,omitempty"`
+}
+
+type DorisMonitorSyncStatus struct {
 	Prometheus PrometheusStatus `json:"prometheus,omitempty"`
 	Grafana    GrafanaStatus    `json:"grafana,omitempty"`
 	Loki       LokiStatus       `json:"loki,omitempty"`
@@ -179,15 +189,14 @@ type DorisMonitorOprStage string
 
 const (
 	// TODO other stage
-	MnrOprStageComplete DorisMonitorOprStage = "Complete"
+	MnrOprStageComplete DorisMonitorOprStage = "completed"
 )
 
 type DorisMonitorOprStageStatus string
 
 const (
-	MnrOprStageStatusSucceeded  DorisMonitorOprStageStatus = "succeeded"
-	MnrOprStageStatusFailed     DorisMonitorOprStageStatus = "failed"
-	MnrOprStageStatusInProgress DorisMonitorOprStageStatus = "in progress"
+	MnrOprStageResultSucceeded DorisMonitorOprStageStatus = "succeeded"
+	MnrOprStageResultFailed    DorisMonitorOprStageStatus = "failed"
 )
 
 // PrometheusStatus represents the current state of the prometheus

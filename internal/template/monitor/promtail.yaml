@@ -1,0 +1,88 @@
+server:
+  log_level: info
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+clients:
+  - url: http://{{.LokiName}}.{{.LokiNamespace}}:3100/loki/api/v1/push
+
+positions:
+  filename: /run/promtail/positions.yaml
+
+scrape_configs:
+  # See also https://github.com/grafana/loki/blob/master/production/ksonnet/promtail/scrape_config.libsonnet for reference
+  - job_name: kubernetes-pods
+    pipeline_stages:
+      - cri: { }
+    kubernetes_sd_configs:
+      - role: pod
+        # replace to target namespace
+        namespaces:
+          names:
+            - {{.ClusterNamespace}}
+    relabel_configs:
+
+      # filter label: namespace
+      - source_labels:
+          - __meta_kubernetes_namespace
+        action: keep
+        regex: {{.ClusterNamespace}}
+      # filter label: app.kubernetes.io/name
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_name
+        action: keep
+        regex: doris-cluster
+      # filter label: app.kubernetes.io/instance
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+        action: keep
+        regex: {{.ClusterName}}
+
+      # format namespace label
+      - source_labels:
+          - __meta_kubernetes_namespace
+        action: replace
+        target_label: namespace
+
+      # format app.kubernetes.io/instance label
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+        action: replace
+        target_label: cluster
+
+      # format app.kubernetes.io/component label
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_component
+        action: replace
+        target_label: component
+
+      # format pod-name label
+      - source_labels:
+          - __meta_kubernetes_pod_name
+        action: replace
+        target_label: instance
+
+      # format filename
+      - action: replace
+        replacement: /var/log/pods/*$1/*.log
+        separator: /
+        source_labels:
+          - __meta_kubernetes_pod_uid
+          - __meta_kubernetes_pod_container_name
+        target_label: __path__
+      - action: replace
+        regex: true/(.*)
+        replacement: /var/log/pods/*$1/*.log
+        separator: /
+        source_labels:
+          - __meta_kubernetes_pod_annotationpresent_kubernetes_io_config_hash
+          - __meta_kubernetes_pod_annotation_kubernetes_io_config_hash
+          - __meta_kubernetes_pod_container_name
+        target_label: __path__
+
+
+limits_config:
+
+
+tracing:
+  enabled: false

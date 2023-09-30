@@ -50,3 +50,7 @@ func MakeOprSqlAccountSecret(cr *dapi.DorisCluster) *corev1.Secret {
 	}
 	return secret
 }
+
+const (
+	DorisMonitorAccountName = "doris-monitor"
+)

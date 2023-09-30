@@ -19,12 +19,10 @@ package controller
 import (
 	"context"
 
+	alassadgithubiov1beta1 "github.com/al-assad/doris-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	alassadgithubiov1beta1 "github.com/al-assad/doris-operator/api/v1beta1"
 )
 
 // DorisMonitorReconciler reconciles a DorisMonitor object
@@ -36,19 +34,15 @@ type DorisMonitorReconciler struct {
 //+kubebuilder:rbac:groups=al-assad.github.io,resources=dorismonitors,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=al-assad.github.io,resources=dorismonitors/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=al-assad.github.io,resources=dorismonitors/finalizers,verbs=update
+//+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the DorisMonitor object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.15.0/pkg/reconcile
+// todo create account?
+
 func (r *DorisMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
-
 	// TODO(user): your logic here
 
 	return ctrl.Result{}, nil

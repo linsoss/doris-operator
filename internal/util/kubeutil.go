@@ -40,6 +40,27 @@ func NewConfigMapVolumeSource(configMapName string) corev1.VolumeSource {
 	}
 }
 
+func NewConfigMapItemsVolumeSource(configMapName string, items map[string]string) corev1.VolumeSource {
+	var kps []corev1.KeyToPath
+	for k, v := range items {
+		kps = append(kps, corev1.KeyToPath{Key: k, Path: v})
+	}
+	return corev1.VolumeSource{
+		ConfigMap: &corev1.ConfigMapVolumeSource{
+			LocalObjectReference: corev1.LocalObjectReference{Name: configMapName},
+			Items:                kps,
+		},
+	}
+}
+
+func NewHostPathVolumeSource(path string) corev1.VolumeSource {
+	return corev1.VolumeSource{
+		HostPath: &corev1.HostPathVolumeSource{
+			Path: path,
+		},
+	}
+}
+
 func NewEnvVarSecretSource(secretName string, key string) *corev1.EnvVarSource {
 	return &corev1.EnvVarSource{
 		SecretKeyRef: &corev1.SecretKeySelector{
@@ -53,6 +74,16 @@ func NewTcpSocketProbeHandler(tcpPort int32) corev1.ProbeHandler {
 	return corev1.ProbeHandler{
 		TCPSocket: &corev1.TCPSocketAction{
 			Port: intstr.FromInt(int(tcpPort)),
+		},
+	}
+}
+
+func NewHttpGetProbeHandler(path string, httpPort int32) corev1.ProbeHandler {
+	return corev1.ProbeHandler{
+		HTTPGet: &corev1.HTTPGetAction{
+			Path:   path,
+			Port:   intstr.FromInt(int(httpPort)),
+			Scheme: corev1.URISchemeHTTP,
 		},
 	}
 }

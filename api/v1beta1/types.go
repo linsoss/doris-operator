@@ -77,3 +77,13 @@ func (e *DorisInitializer) ObjKey() types.NamespacedName {
 		return *e.objKey
 	}
 }
+
+func (e *DorisMonitor) ObjKey() types.NamespacedName {
+	if e.objKey == nil {
+		key := types.NamespacedName{Namespace: e.Namespace, Name: e.Name}
+		e.objKey = &key
+		return key
+	} else {
+		return *e.objKey
+	}
+}
