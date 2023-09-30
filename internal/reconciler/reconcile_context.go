@@ -114,3 +114,18 @@ func (r *ReconcileContext) FindRefDorisAutoScaler(dorisClusterRef client.ObjectK
 	}
 	return nil, nil
 }
+
+// FindRefDorisInitializer finds the DorisInitializer CR that refer to the DorisCluster CR.
+// A DorisCluster CR can only be bound to one additional DorisInitializer CR.
+func (r *ReconcileContext) FindRefDorisInitializer(dorisClusterRef client.ObjectKey) (*dapi.DorisInitializer, error) {
+	crList := &dapi.DorisInitializerList{}
+	if err := r.List(r.Ctx, crList, &client.ListOptions{Namespace: dorisClusterRef.Namespace}); err != nil {
+		return nil, err
+	}
+	for _, item := range crList.Items {
+		if item.Spec.Cluster == dorisClusterRef.Name {
+			return &item, nil
+		}
+	}
+	return nil, nil
+}

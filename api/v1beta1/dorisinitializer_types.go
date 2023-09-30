@@ -90,28 +90,36 @@ type DorisInitializerSpec struct {
 // DorisInitializerStatus defines the observed state of DorisInitializer
 // +k8s:openapi-gen=true
 type DorisInitializerStatus struct {
-	PrevSpecHash *string `json:"prevSpecHash,omitempty"`
-	// Initialize phase
-	Phase InitializePhase `json:"phase,omitempty"`
-	// +optional
-	ReconcileMessage string `json:"message,omitempty"`
-	// +optional
-	JobRef NamespacedName `json:"jobRef,omitempty"`
-	// +nullable
-	JobStatus *batchv1.JobStatus `json:",inline"`
+	LastApplySpecHash          *string `json:"LastApplySpecHash,omitempty"`
+	DorisInitializerRecStatus  `json:",inline"`
+	DorisInitializerSyncStatus `json:",inline"`
 }
 
-type DorisInitializerRecStageStatus struct {
+type DorisInitializerRecStatus struct {
+	Phase   InitializeRecPhase `json:"phase,omitempty"`
+	Message string             `json:"Message,omitempty"`
 }
 
-type InitializePhase string
+type DorisInitializerSyncStatus struct {
+	JobRef            NamespacedName      `json:"jobRef,omitempty"`
+	Status            InitializeJobStatus `json:"status,omitempty"`
+	batchv1.JobStatus `json:",inline"`
+}
+
+type InitializeRecPhase string
 
 const (
-	InitializePhasePending     InitializePhase = "pending"
-	InitializePhaseReconciling InitializePhase = "reconciling"
-	InitializePhaseRunning     InitializePhase = "running"
-	InitializePhaseCompleted   InitializePhase = "completed"
-	InitializePhaseFailed      InitializePhase = "failed"
+	InitializeRecFailed    InitializeRecPhase = "failed"
+	InitializeRecCompleted InitializeRecPhase = "completed"
+)
+
+type InitializeJobStatus string
+
+const (
+	InitializeJobPending   InitializeJobStatus = "pending"
+	InitializeJobRunning   InitializeJobStatus = "running"
+	InitializeJobCompleted InitializeJobStatus = "completed"
+	InitializeJobFailed    InitializeJobStatus = "failed"
 )
 
 func init() {

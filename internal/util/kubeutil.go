@@ -20,6 +20,7 @@ package util
 
 import (
 	acv2 "k8s.io/api/autoscaling/v2"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -72,6 +73,24 @@ func NewResourceAvgUtilizationMetricSpec(name corev1.ResourceName, avgUnit *int3
 func IsPodReady(pod corev1.Pod) bool {
 	for _, condition := range pod.Status.Conditions {
 		if condition.Type == "Ready" && condition.Status == "True" {
+			return true
+		}
+	}
+	return false
+}
+
+func IsJobComplete(job batchv1.Job) bool {
+	for _, condition := range job.Status.Conditions {
+		if condition.Type == "Complete" && condition.Status == "True" {
+			return true
+		}
+	}
+	return false
+}
+
+func IsJobFailed(job batchv1.Job) bool {
+	for _, condition := range job.Status.Conditions {
+		if condition.Type == "Failed" && condition.Status == "True" {
 			return true
 		}
 	}

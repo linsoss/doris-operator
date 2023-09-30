@@ -101,8 +101,11 @@ spec:
             - maxRetry
             type: object
           status:
-            nullable: true
             properties:
+              LastApplySpecHash:
+                type: string
+              Message:
+                type: string
               active:
                 format: int32
                 type: integer
@@ -147,17 +150,15 @@ spec:
                 - name
                 - namespace
                 type: object
-              message:
-                type: string
               phase:
-                type: string
-              prevSpecHash:
                 type: string
               ready:
                 format: int32
                 type: integer
               startTime:
                 format: date-time
+                type: string
+              status:
                 type: string
               succeeded:
                 format: int32

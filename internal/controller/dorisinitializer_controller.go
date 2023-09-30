@@ -54,17 +54,36 @@ func (r *DorisInitializerReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		recCtx.Log.Info("DorisInitializer has been deleted")
 		return ctrl.Result{}, nil
 	}
+	rec := reconciler.DorisInitializerReconciler{ReconcileContext: recCtx, CR: cr}
 
-	// re-apply resources when spec has been changed
+	// reconcile the sub resources
 	curSpecHash := util.Md5HashOr(cr.Spec, "")
-	specHasChanged := cr.Status.PrevSpecHash == nil || *cr.Status.PrevSpecHash != curSpecHash
-	if specHasChanged {
+	preRecNotCompleted := cr.Status.Phase != dapi.InitializeRecCompleted
+	specHasChanged := cr.Status.LastApplySpecHash == nil || *cr.Status.LastApplySpecHash != curSpecHash
 
+	var recErr error
+	if preRecNotCompleted || specHasChanged {
+		recRs, err := rec.Reconcile()
+		recErr = err
+		cr.Status.DorisInitializerRecStatus = recRs
+		// when reconcile succeed, update the last apply sepc hash
+		if err == nil {
+			cr.Status.LastApplySpecHash = &curSpecHash
+		}
 	}
+	// sync the status of CR
+	syncRs, syncErr := rec.Sync()
+	cr.Status.DorisInitializerSyncStatus = syncRs
+	// update the status of CR
+	updateErr := r.Status().Update(ctx, cr)
 
-	// TODO(user): your logic here
-
-	return ctrl.Result{}, nil
+	// merged error as result
+	errSet := StCtrlErrSet{
+		Rec:    recErr,
+		Sync:   syncErr,
+		Update: updateErr,
+	}
+	return errSet.AsResult()
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -72,6 +91,7 @@ func (r *DorisInitializerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&dapi.DorisInitializer{}).
 		Owns(&corev1.ConfigMap{}).
+		Owns(&corev1.Secret{}).
 		Owns(&batchv1.Job{}).
 		Complete(r)
 }

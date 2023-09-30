@@ -69,16 +69,16 @@ func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	var recErr error
 	if preStageNotCompleted || specHasChanged {
-		recRes := rec.Reconcile()
-		recErr = recRes.Err
-		cr.Status.DorisClusterRecStatus = recRes.AsDorisClusterRecStatus()
-		if recRes.Stage == dapi.StageComplete {
+		recRs := rec.Reconcile()
+		recErr = recRs.Err
+		cr.Status.DorisClusterRecStatus = recRs.AsDorisClusterRecStatus()
+		if recRs.Stage == dapi.StageComplete {
 			cr.Status.LastApplySpecHash = &curSpecHash
 		}
 	}
 	// sync the status of CR
-	syncRes, syncErr := rec.Sync()
-	cr.Status.DorisClusterSyncStatus = syncRes
+	syncRs, syncErr := rec.Sync()
+	cr.Status.DorisClusterSyncStatus = syncRs
 	// update status
 	updateErr := r.Status().Update(ctx, cr)
 

@@ -38,7 +38,7 @@ type hpaType = acv2.HorizontalPodAutoscaler
 // Reconcile hpa resources
 func (r *DorisAutoScalerReconciler) Reconcile() (dapi.AutoscalerRecStatus, error) {
 	if r.CR.Spec.Cluster == "" {
-		return dapi.AutoscalerRecStatus{}, nil
+		return dapi.AutoscalerRecStatus{Phase: dapi.AutoScalePhaseCompleted}, nil
 	}
 
 	// delete cn auto scaler
@@ -102,12 +102,15 @@ func (r *DorisAutoScalerReconciler) Reconcile() (dapi.AutoscalerRecStatus, error
 // Sync status of hpa resources
 func (r *DorisAutoScalerReconciler) Sync() (dapi.CNAutoscalerSyncStatus, error) {
 	status := util.PointerDeRefer(r.CR.Status.CN.CNAutoscalerSyncStatus.DeepCopy(), dapi.CNAutoscalerSyncStatus{})
+	if r.CR.Spec.Cluster == "" {
+		return status, nil
+	}
 
 	syncCnUpHpa := func() error {
 		hpaRef := transformer.GetCnScaleUpHpaKey(r.CR.ObjKey())
 		hpa := &hpaType{}
 		if err := r.Find(hpaRef, hpa); err != nil {
-			return nil
+			return err
 		}
 		if hpa != nil {
 			status.ScaleUpHpaRef = &dapi.AutoScalerRef{
@@ -123,7 +126,7 @@ func (r *DorisAutoScalerReconciler) Sync() (dapi.CNAutoscalerSyncStatus, error) 
 		hpaRef := transformer.GetCnScaleDownHpaKey(r.CR.ObjKey())
 		hpa := &hpaType{}
 		if err := r.Find(hpaRef, hpa); err != nil {
-			return nil
+			return err
 		}
 		if hpa != nil {
 			status.ScaleDownHpaRef = &dapi.AutoScalerRef{

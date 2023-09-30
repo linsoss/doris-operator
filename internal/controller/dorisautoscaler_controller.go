@@ -60,17 +60,17 @@ func (r *DorisAutoscalerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	var recErr error
 	if preRecNotCompleted || specHasChanged {
-		recRes, err := rec.Reconcile()
+		recRs, err := rec.Reconcile()
 		recErr = err
-		cr.Status.CN.AutoscalerRecStatus = recRes
+		cr.Status.CN.AutoscalerRecStatus = recRs
 		// when reconcile succeed, update the last apply sepc hash
 		if err == nil {
 			cr.Status.LastApplySpecHash = &curSpecHash
 		}
 	}
 	// sync the status of CR
-	syncRes, syncErr := rec.Sync()
-	cr.Status.CN.CNAutoscalerSyncStatus = syncRes
+	syncRs, syncErr := rec.Sync()
+	cr.Status.CN.CNAutoscalerSyncStatus = syncRs
 	// update the status of CR
 	updateErr := r.Status().Update(ctx, cr)
 
