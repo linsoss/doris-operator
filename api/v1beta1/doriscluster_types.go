@@ -255,6 +255,9 @@ type DorisClusterSyncStatus struct {
 	BE     BEStatus     `json:"be,omitempty"`
 	CN     CNStatus     `json:"cn,omitempty"`
 	Broker BrokerStatus `json:"broker,omitempty"`
+
+	// AllReady represents all components(FE, BE, CN, Broker) of DorisCluster are ready.
+	AllReady bool `json:"allReady,omitempty"`
 }
 
 // DorisClusterOprStage represents DorisCluster operator stage

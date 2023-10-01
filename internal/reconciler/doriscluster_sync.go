@@ -41,7 +41,50 @@ func (r *DorisClusterReconciler) Sync() (dapi.DorisClusterSyncStatus, error) {
 	util.CollectFnErr(errCtr, r.syncCnStatus, func(s dapi.CNStatus) { syncRes.CN = s })
 	util.CollectFnErr(errCtr, r.syncBrokerStatus, func(s dapi.BrokerStatus) { syncRes.Broker = s })
 
+	allReady, err := r.inferIsDorisClusterAllReady()
+	if err != nil {
+		errCtr.Collect(err)
+	} else {
+		syncRes.AllReady = allReady
+	}
 	return syncRes, errCtr.Dry()
+}
+
+// infer whether the DorisCluster components are all ready.
+func (r *DorisClusterReconciler) inferIsDorisClusterAllReady() (bool, error) {
+	if r.CR.Spec.FE != nil {
+		if int(r.CR.Spec.FE.Replicas) != len(r.CR.Status.FE.ReadyMembers) {
+			return false, nil
+		}
+	}
+	if r.CR.Spec.BE != nil {
+		if int(r.CR.Spec.BE.Replicas) != len(r.CR.Status.BE.ReadyMembers) {
+			return false, nil
+		}
+	}
+	if r.CR.Spec.Broker != nil {
+		if int(r.CR.Spec.Broker.Replicas) != len(r.CR.Status.Broker.ReadyMembers) {
+			return false, nil
+		}
+	}
+	if r.CR.Spec.CN != nil {
+		autoScale, err := r.FindRefDorisAutoScaler(r.CR.ObjKey())
+		if err != nil {
+			return false, err
+		}
+		if autoScale == nil {
+			// when not exist DorisAutoScaler
+			if int(r.CR.Spec.CN.Replicas) != len(r.CR.Status.CN.ReadyMembers) {
+				return false, nil
+			}
+		} else {
+			// when exist DorisAutoScaler
+			if len(r.CR.Status.CN.ReadyMembers) < 1 {
+				return false, nil
+			}
+		}
+	}
+	return true, nil
 }
 
 // sync FE status

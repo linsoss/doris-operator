@@ -7896,6 +7896,8 @@ spec:
             type: object
           status:
             properties:
+              allReady:
+                type: boolean
               be:
                 properties:
                   conditions:
