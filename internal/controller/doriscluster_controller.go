@@ -22,7 +22,6 @@ import (
 	"github.com/al-assad/doris-operator/internal/reconciler"
 	"github.com/al-assad/doris-operator/internal/util"
 	appv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -98,9 +97,6 @@ func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request
 func (r *DorisClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&dapi.DorisCluster{}).
-		Owns(&corev1.Service{}).
 		Owns(&appv1.StatefulSet{}).
-		Owns(&corev1.ConfigMap{}).
-		Owns(&corev1.Secret{}).
 		Complete(r)
 }

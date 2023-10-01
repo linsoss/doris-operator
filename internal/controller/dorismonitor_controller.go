@@ -21,6 +21,7 @@ import (
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	"github.com/al-assad/doris-operator/internal/reconciler"
 	"github.com/al-assad/doris-operator/internal/util"
+	appv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -97,5 +98,7 @@ func (r *DorisMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 func (r *DorisMonitorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&dapi.DorisMonitor{}).
+		Owns(&appv1.DaemonSet{}).
+		Owns(&appv1.Deployment{}).
 		Complete(r)
 }

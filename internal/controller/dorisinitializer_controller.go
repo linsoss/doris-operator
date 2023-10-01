@@ -18,12 +18,10 @@ package controller
 
 import (
 	"context"
+	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	"github.com/al-assad/doris-operator/internal/reconciler"
 	"github.com/al-assad/doris-operator/internal/util"
 	batchv1 "k8s.io/api/batch/v1"
-	corev1 "k8s.io/api/core/v1"
-
-	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -95,8 +93,6 @@ func (r *DorisInitializerReconciler) Reconcile(ctx context.Context, req ctrl.Req
 func (r *DorisInitializerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&dapi.DorisInitializer{}).
-		Owns(&corev1.ConfigMap{}).
-		Owns(&corev1.Secret{}).
 		Owns(&batchv1.Job{}).
 		Complete(r)
 }
