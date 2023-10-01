@@ -61,7 +61,7 @@ func (r *DorisMonitorReconciler) Reconcile() MonitorStageRecResult {
 			return result
 		}
 	}
-	return MonitorStageRecResult{Stage: dapi.MnrRecStageComplete, Status: dapi.StageResultSucceeded}
+	return MonitorStageRecResult{Stage: dapi.MnrOprStageCompleted, Status: dapi.StageResultSucceeded}
 }
 
 func (r *MonitorStageRecResult) AsDorisClusterRecStatus() dapi.DorisMonitorRecStatus {

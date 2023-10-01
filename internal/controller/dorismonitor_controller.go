@@ -18,8 +18,9 @@ package controller
 
 import (
 	"context"
-
-	alassadgithubiov1beta1 "github.com/al-assad/doris-operator/api/v1beta1"
+	dapi "github.com/al-assad/doris-operator/api/v1beta1"
+	"github.com/al-assad/doris-operator/internal/reconciler"
+	"github.com/al-assad/doris-operator/internal/util"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -44,14 +45,53 @@ type DorisMonitorReconciler struct {
 //+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=serviceaccount,verbs=get;create
 
 func (r *DorisMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	// TODO(user): your logic here
+	recCtx := reconciler.NewReconcileContext(r.Client, r.Scheme, ctx)
 
-	return ctrl.Result{}, nil
+	// obtain CR
+	cr := &dapi.DorisMonitor{}
+	if err := recCtx.Find(req.NamespacedName, cr); err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
+	// skip reconciling process when it has been deleted
+	if cr == nil {
+		recCtx.Log.Info("DorisMonitor has been deleted")
+		return ctrl.Result{}, nil
+	}
+	rec := reconciler.DorisMonitorReconciler{ReconcileContext: recCtx, CR: cr}
+
+	// reconcile the sub resource of CR
+	curSpecHash := util.Md5HashOr(cr.Spec, "")
+	specHasChanged := cr.Status.LastApplySpecHash == nil || *cr.Status.LastApplySpecHash != curSpecHash
+	preStageNotCompleted := cr.Status.Stage != dapi.MnrOprStageCompleted
+
+	var recErr error
+	if preStageNotCompleted || specHasChanged {
+		recRs := rec.Reconcile()
+		recErr = recRs.Err
+		cr.Status.DorisMonitorRecStatus = recRs.AsDorisClusterRecStatus()
+		if recRs.Stage == dapi.MnrOprStageCompleted {
+			cr.Status.LastApplySpecHash = &curSpecHash
+		}
+	}
+
+	// sync the status of CR
+	syncRs, syncErr := rec.Sync()
+	cr.Status.DorisMonitorSyncStatus = syncRs
+	// update status
+	updateErr := r.Status().Update(ctx, cr)
+
+	// merge error at different reconcile phases
+	errSet := StCtrlErrSet{
+		Rec:    recErr,
+		Sync:   syncErr,
+		Update: updateErr,
+	}
+	return errSet.AsResult()
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *DorisMonitorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&alassadgithubiov1beta1.DorisMonitor{}).
+		For(&dapi.DorisMonitor{}).
 		Complete(r)
 }

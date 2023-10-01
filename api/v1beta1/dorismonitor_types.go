@@ -216,7 +216,7 @@ const (
 	MnrOprStageLokiPVC        DorisMonitorOprStage = "loki/PersistentVolumeClaim"
 	MnrOprStageLokiDeployment DorisMonitorOprStage = "loki/Deployment"
 
-	MnrRecStageComplete DorisMonitorOprStage = "completed"
+	MnrOprStageCompleted DorisMonitorOprStage = "completed"
 )
 
 // PrometheusStatus represents the current state of the prometheus
