@@ -21,6 +21,7 @@ package reconciler
 import (
 	"context"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
+	"github.com/al-assad/doris-operator/internal/util"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -82,7 +83,11 @@ func (r *ReconcileContext) CreateWhenNotExist(obj client.Object) error {
 	if exist {
 		return nil
 	}
-	return r.Create(r.Ctx, obj)
+	if err := r.Create(r.Ctx, obj); err != nil {
+		return err
+	}
+	r.Log.Info("create object: " + util.K8sObjKeyStr(key))
+	return nil
 }
 
 // DeleteWhenExist deletes the kubernetes object if it exists.
@@ -95,6 +100,7 @@ func (r *ReconcileContext) DeleteWhenExist(key types.NamespacedName, objType cli
 		if err := r.Delete(r.Ctx, objType); err != nil {
 			return err
 		}
+		r.Log.Info("delete object: " + util.K8sObjKeyStr(key))
 	}
 	return nil
 }
@@ -110,7 +116,12 @@ func (r *ReconcileContext) CreateOrUpdate(obj client.Object) error {
 		return err
 	}
 	if !exist {
-		return r.Create(r.Ctx, obj)
+		// create object
+		if err := r.Create(r.Ctx, obj); err != nil {
+			return err
+		}
+		r.Log.Info("create object: " + util.K8sObjKeyStr(key))
+		return nil
 	} else {
 		return r.Update(r.Ctx, obj)
 	}

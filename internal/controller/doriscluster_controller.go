@@ -59,19 +59,22 @@ func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 	rec := reconciler.DorisClusterReconciler{ReconcileContext: recCtx, CR: cr}
 
-	// reconcile the sub resource of CR under the following conditions:
-	//   it was created for the first time,
-	//   or the spec of it has been changed,
-	//   or the previous reconcile stage has not been completed
 	curSpecHash := util.Md5HashOr(cr.Spec, "")
-	specHasChanged := cr.Status.LastApplySpecHash == nil || *cr.Status.LastApplySpecHash != curSpecHash
-	preStageNotCompleted := cr.Status.Stage != dapi.StageComplete
+	isFirstCreated := cr.Status.LastApplySpecHash == nil
+	specHasChanged := *cr.Status.LastApplySpecHash != curSpecHash
+	preRecCompleted := cr.Status.Stage == dapi.StageComplete
 
+	if isFirstCreated && cr.Status.Stage == "" {
+		recCtx.Log.Info("DorisCluster is created for the first time")
+	}
+
+	// reconcile the sub resource of DorisCluster
 	var recErr error
-	if preStageNotCompleted || specHasChanged {
+	if isFirstCreated || specHasChanged || !preRecCompleted {
 		recRs := rec.Reconcile()
 		recErr = recRs.Err
 		cr.Status.DorisClusterRecStatus = recRs.AsDorisClusterRecStatus()
+		// when reconcile process competed success, update the last apply spec hash
 		if recRs.Stage == dapi.StageComplete {
 			cr.Status.LastApplySpecHash = &curSpecHash
 		}

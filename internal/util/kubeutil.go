@@ -19,11 +19,17 @@
 package util
 
 import (
+	"fmt"
 	acv2 "k8s.io/api/autoscaling/v2"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
+
+func K8sObjKeyStr(key types.NamespacedName) string {
+	return fmt.Sprintf("%s.%s", key.Name, key.Namespace)
+}
 
 func NewEmptyDirVolumeSource() corev1.VolumeSource {
 	return corev1.VolumeSource{

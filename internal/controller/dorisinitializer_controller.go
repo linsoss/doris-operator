@@ -56,17 +56,22 @@ func (r *DorisInitializerReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 	rec := reconciler.DorisInitializerReconciler{ReconcileContext: recCtx, CR: cr}
 
-	// reconcile the sub resources
 	curSpecHash := util.Md5HashOr(cr.Spec, "")
-	preRecNotCompleted := cr.Status.Phase != dapi.InitializeRecCompleted
-	specHasChanged := cr.Status.LastApplySpecHash == nil || *cr.Status.LastApplySpecHash != curSpecHash
+	isFirstCreated := cr.Status.LastApplySpecHash == nil
+	specHasChanged := *cr.Status.LastApplySpecHash != curSpecHash
+	preRecCompleted := cr.Status.Phase == dapi.InitializeRecCompleted
 
+	if isFirstCreated && cr.Status.Phase == "" {
+		recCtx.Log.Info("DorisInitializer is created for the first time")
+	}
+
+	// reconcile the sub resources
 	var recErr error
-	if preRecNotCompleted || specHasChanged {
+	if isFirstCreated || specHasChanged || !preRecCompleted {
 		recRs, err := rec.Reconcile()
 		recErr = err
 		cr.Status.DorisInitializerRecStatus = recRs
-		// when reconcile succeed, update the last apply sepc hash
+		// when reconcile process competed success, update the last apply spec hash
 		if err == nil {
 			cr.Status.LastApplySpecHash = &curSpecHash
 		}

@@ -59,13 +59,18 @@ func (r *DorisMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 	rec := reconciler.DorisMonitorReconciler{ReconcileContext: recCtx, CR: cr}
 
-	// reconcile the sub resource of CR
 	curSpecHash := util.Md5HashOr(cr.Spec, "")
-	specHasChanged := cr.Status.LastApplySpecHash == nil || *cr.Status.LastApplySpecHash != curSpecHash
-	preStageNotCompleted := cr.Status.Stage != dapi.MnrOprStageCompleted
+	isFirstCreated := cr.Status.LastApplySpecHash == nil
+	specHasChanged := *cr.Status.LastApplySpecHash != curSpecHash
+	preRecCompleted := cr.Status.Stage == dapi.MnrOprStageCompleted
 
+	if isFirstCreated && cr.Status.Stage == "" {
+		recCtx.Log.Info("DorisMonitor is created for the first time")
+	}
+
+	// reconcile the sub resource of CR
 	var recErr error
-	if preStageNotCompleted || specHasChanged {
+	if isFirstCreated || specHasChanged || !preRecCompleted {
 		recRs := rec.Reconcile()
 		recErr = recRs.Err
 		cr.Status.DorisMonitorRecStatus = recRs.AsDorisClusterRecStatus()
@@ -73,7 +78,6 @@ func (r *DorisMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			cr.Status.LastApplySpecHash = &curSpecHash
 		}
 	}
-
 	// sync the status of CR
 	syncRs, syncErr := rec.Sync()
 	cr.Status.DorisMonitorSyncStatus = syncRs
