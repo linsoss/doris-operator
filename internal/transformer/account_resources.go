@@ -62,7 +62,7 @@ const (
 	MonitorNamespacedAccountName     = "doris-monitor"
 )
 
-func MakeMonitorGlobalRole() *rbacv1.ClusterRole {
+func MakeMonitorGlobalClusterRole() *rbacv1.ClusterRole {
 	clusterRole := &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   MonitorClusterRoleName,
@@ -86,7 +86,7 @@ func MakeMonitorGlobalRole() *rbacv1.ClusterRole {
 	return clusterRole
 }
 
-func MakeMonitorNamespacedAccount(namespace string) *corev1.ServiceAccount {
+func MakeMonitorNamespacedServiceAccount(namespace string) *corev1.ServiceAccount {
 	account := &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      MonitorNamespacedAccountName,

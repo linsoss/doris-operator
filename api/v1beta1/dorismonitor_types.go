@@ -172,10 +172,10 @@ type DorisMonitorStatus struct {
 }
 
 type DorisMonitorRecStatus struct {
-	Stage       DorisMonitorOprStage       `json:"stage,omitempty"`
-	StageStatus DorisMonitorOprStageStatus `json:"stageStatus,omitempty"`
-	StageAction OprStageAction             `json:"stageAction,omitempty"`
-	LastMessage string                     `json:"lastMessage,omitempty"`
+	Stage       DorisMonitorOprStage `json:"stage,omitempty"`
+	StageStatus OprStageStatus       `json:"stageStatus,omitempty"`
+	StageAction OprStageAction       `json:"stageAction,omitempty"`
+	LastMessage string               `json:"lastMessage,omitempty"`
 }
 
 type DorisMonitorSyncStatus struct {
@@ -188,15 +188,35 @@ type DorisMonitorSyncStatus struct {
 type DorisMonitorOprStage string
 
 const (
-	// TODO other stage
-	MnrOprStageComplete DorisMonitorOprStage = "completed"
-)
+	MnrOprStageRbac                     DorisMonitorOprStage = "rbac"
+	MnrOprStageGlobalClusterRole        DorisMonitorOprStage = "global-rbac/ClusterRole"
+	MnrOprStageNamespacedServiceAccount DorisMonitorOprStage = "rbac/ServiceAccount"
+	MnrOprStageNamespacedRoleBinding    DorisMonitorOprStage = "rbac/RoleBinding"
 
-type DorisMonitorOprStageStatus string
+	MnrOprStagePrometheus           DorisMonitorOprStage = "prometheus"
+	MnrOprStagePrometheusConfigMap  DorisMonitorOprStage = "prometheus/ConfigMap"
+	MnrOprStagePrometheusService    DorisMonitorOprStage = "prometheus/Service"
+	MnrOprStagePrometheusPVC        DorisMonitorOprStage = "prometheus/PersistentVolumeClaim"
+	MnrOprStagePrometheusDeployment DorisMonitorOprStage = "prometheus/Deployment"
 
-const (
-	MnrOprStageResultSucceeded DorisMonitorOprStageStatus = "succeeded"
-	MnrOprStageResultFailed    DorisMonitorOprStageStatus = "failed"
+	MnrOprStageGrafana           DorisMonitorOprStage = "grafana"
+	MnrOprStageGrafanaSecret     DorisMonitorOprStage = "grafana/Secret"
+	MnrOprStageGrafanaConfigMap  DorisMonitorOprStage = "grafana/ConfigMap"
+	MnrOprStageGrafanaService    DorisMonitorOprStage = "grafana/Service"
+	MnrOprStageGrafanaPVC        DorisMonitorOprStage = "grafana/PersistentVolumeClaim"
+	MnrOprStageGrafanaDeployment DorisMonitorOprStage = "grafana/Deployment"
+
+	MnrOprStagePromtail          DorisMonitorOprStage = "promtail"
+	MnrOprStagePromtailConfigMap DorisMonitorOprStage = "promtail/ConfigMap"
+	MnrOprStagePromtailDaemonSet DorisMonitorOprStage = "promtail/DemonSet"
+
+	MnrOprStageLoki           DorisMonitorOprStage = "loki"
+	MnrOprStageLokiConfigMap  DorisMonitorOprStage = "loki/ConfigMap"
+	MnrOprStageLokiService    DorisMonitorOprStage = "loki/Service"
+	MnrOprStageLokiPVC        DorisMonitorOprStage = "loki/PersistentVolumeClaim"
+	MnrOprStageLokiDeployment DorisMonitorOprStage = "loki/Deployment"
+
+	MnrRecStageComplete DorisMonitorOprStage = "completed"
 )
 
 // PrometheusStatus represents the current state of the prometheus

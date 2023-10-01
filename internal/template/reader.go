@@ -28,6 +28,7 @@ import (
 //go:embed *
 var content embed.FS
 
+// Read reads the content of a file from the go embed fs
 func Read(path string) (string, error) {
 	data, err := content.ReadFile(path)
 	if err != nil {
@@ -36,6 +37,7 @@ func Read(path string) (string, error) {
 	return string(data), nil
 }
 
+// ReadOrPanic reads the content of a file from the embed fs and panics if it fails
 func ReadOrPanic(path string) string {
 	data, err := content.ReadFile(path)
 	if err != nil {
@@ -45,6 +47,7 @@ func ReadOrPanic(path string) string {
 	return string(data)
 }
 
+// NewTemplateOrPanic creates a new template from the embed fs and panics if it fails
 func NewTemplateOrPanic(name string, path string) *template.Template {
 	fileContent := ReadOrPanic(path)
 	tmpl, err := template.New(name).Parse(fileContent)
@@ -55,6 +58,7 @@ func NewTemplateOrPanic(name string, path string) *template.Template {
 	return tmpl
 }
 
+// ExecTemplate executes a template with the given data
 func ExecTemplate(tmpl *template.Template, data any) (string, error) {
 	var buf bytes.Buffer
 	err := tmpl.Execute(&buf, data)

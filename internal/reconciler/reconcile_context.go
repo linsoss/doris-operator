@@ -69,6 +69,22 @@ func (r *ReconcileContext) Find(key types.NamespacedName, obj client.Object) err
 	}
 }
 
+// CreateWhenNotExist creates the kubernetes object if it does not exist.
+func (r *ReconcileContext) CreateWhenNotExist(obj client.Object) error {
+	key := client.ObjectKeyFromObject(obj)
+	objType := reflect.TypeOf(obj)
+	objTypeInstance := reflect.New(objType).Elem().Interface().(client.Object)
+
+	exist, err := r.Exist(key, objTypeInstance)
+	if err != nil {
+		return err
+	}
+	if exist {
+		return nil
+	}
+	return r.Create(r.Ctx, obj)
+}
+
 // DeleteWhenExist deletes the kubernetes object if it exists.
 func (r *ReconcileContext) DeleteWhenExist(key types.NamespacedName, objType client.Object) error {
 	exist, err := r.Exist(key, objType)

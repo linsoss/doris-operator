@@ -49,18 +49,6 @@ type ClusterStageRecResult struct {
 	Err    error
 }
 
-func (r *ClusterStageRecResult) AsDorisClusterRecStatus() dapi.DorisClusterRecStatus {
-	res := dapi.DorisClusterRecStatus{
-		Stage:       r.Stage,
-		StageStatus: r.Status,
-		StageAction: r.Action,
-	}
-	if r.Err != nil {
-		res.LastMessage = r.Err.Error()
-	}
-	return res
-}
-
 // Reconcile all sub components
 func (r *DorisClusterReconciler) Reconcile() ClusterStageRecResult {
 	stages := []func() ClusterStageRecResult{
@@ -77,6 +65,18 @@ func (r *DorisClusterReconciler) Reconcile() ClusterStageRecResult {
 		}
 	}
 	return ClusterStageRecResult{Stage: dapi.StageComplete, Status: dapi.StageResultSucceeded}
+}
+
+func (r *ClusterStageRecResult) AsDorisClusterRecStatus() dapi.DorisClusterRecStatus {
+	res := dapi.DorisClusterRecStatus{
+		Stage:       r.Stage,
+		StageStatus: r.Status,
+		StageAction: r.Action,
+	}
+	if r.Err != nil {
+		res.LastMessage = r.Err.Error()
+	}
+	return res
 }
 
 func clusterStageSucc(stage dapi.DorisClusterOprStage, action dapi.OprStageAction) ClusterStageRecResult {
