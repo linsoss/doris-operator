@@ -182,7 +182,7 @@ type DorisMonitorSyncStatus struct {
 	Prometheus PrometheusStatus `json:"prometheus,omitempty"`
 	Grafana    GrafanaStatus    `json:"grafana,omitempty"`
 	Loki       LokiStatus       `json:"loki,omitempty"`
-	Promtail   Promtail         `json:"promtail,omitempty"`
+	Promtail   PromtailStatus   `json:"promtail,omitempty"`
 }
 
 type DorisMonitorOprStage string
@@ -221,13 +221,11 @@ const (
 
 // PrometheusStatus represents the current state of the prometheus
 type PrometheusStatus struct {
-	ServiceRef                  NamespacedName `json:"serviceRef,omitempty"`
 	DorisMonitorComponentStatus `json:",inline"`
 }
 
 // GrafanaStatus represents the current state of the grafana
 type GrafanaStatus struct {
-	ServiceRef                  NamespacedName `json:"serviceRef,omitempty"`
 	DorisMonitorComponentStatus `json:",inline"`
 }
 
@@ -236,8 +234,8 @@ type LokiStatus struct {
 	DorisMonitorComponentStatus `json:",inline"`
 }
 
-// Promtail represents the current state of the promtail
-type Promtail struct {
+// PromtailStatus represents the current state of the promtail
+type PromtailStatus struct {
 	DaemonSetRef NamespacedName            `json:"daemonSetRef,omitempty"`
 	Ready        bool                      `json:"ready,omitempty"`
 	Conditions   []apps.DaemonSetCondition `json:"conditions,omitempty"`
@@ -245,6 +243,7 @@ type Promtail struct {
 
 // DorisMonitorComponentStatus defines the status of the doris monitor component
 type DorisMonitorComponentStatus struct {
+	ServiceRef    NamespacedName             `json:"serviceRef,omitempty"`
 	DeploymentRef NamespacedName             `json:"deploymentRef,omitempty"`
 	PVCRef        NamespacedName             `json:"pvcRef,omitempty"`
 	Ready         bool                       `json:"ready,omitempty"`

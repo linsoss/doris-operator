@@ -330,6 +330,16 @@ spec:
                     type: object
                   ready:
                     type: boolean
+                  serviceRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
                 type: object
               prometheus:
                 properties:

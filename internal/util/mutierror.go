@@ -42,6 +42,16 @@ func (e *MultiError) Collect(err error) {
 	}
 }
 
+// CollectFnErr collects error from fn function, then execute rightFn function when the fn returns nil error.
+func CollectFnErr[T any](errContainer *MultiError, fn func() (T, error), rightFn func(T)) {
+	res, err := fn()
+	if err != nil {
+		errContainer.Collect(err)
+	}
+	rightFn(res)
+}
+
+// Dry returns nil if there is no error in the container.
 func (e *MultiError) Dry() error {
 	if len(e.Errors) == 0 {
 		return nil
@@ -88,5 +98,4 @@ func MergeErrorsWithTag(errors map[string]error) *MultiTaggedError {
 		return nil
 	}
 	return &MultiTaggedError{Errors: errMap}
-
 }
