@@ -20,7 +20,7 @@ package reconciler
 
 import (
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
-	"github.com/al-assad/doris-operator/internal/transformer"
+	tran "github.com/al-assad/doris-operator/internal/transformer"
 	"github.com/al-assad/doris-operator/internal/util"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -126,9 +126,9 @@ func (r *DorisClusterReconciler) syncFeStatus() (dapi.FEStatus, error) {
 		return dapi.FEStatus{}, nil
 	}
 	feStatus := util.PointerDeRefer(r.CR.Status.FE.DeepCopy(), dapi.FEStatus{})
-	feStatus.ServiceRef = dapi.NewNamespacedName(transformer.GetFeServiceKey(r.CR.ObjKey()))
-	statefulSetRef := transformer.GetFeStatefulSetKey(r.CR.ObjKey())
-	image := transformer.GetFeImage(r.CR)
+	feStatus.ServiceRef = dapi.NewNamespacedName(tran.GetFeServiceKey(r.CR.ObjKey()))
+	statefulSetRef := tran.GetFeStatefulSetKey(r.CR.ObjKey())
+	image := tran.GetFeImage(r.CR)
 
 	err := r.fillDorisComponentStatus(&feStatus.DorisComponentStatus, statefulSetRef, image)
 	return feStatus, err
@@ -140,8 +140,8 @@ func (r *DorisClusterReconciler) syncBeStatus() (dapi.BEStatus, error) {
 		return dapi.BEStatus{}, nil
 	}
 	beStatus := util.PointerDeRefer(r.CR.Status.BE.DeepCopy(), dapi.BEStatus{})
-	statefulSetRef := transformer.GetBeStatefulSetKey(r.CR)
-	image := transformer.GetBeImage(r.CR)
+	statefulSetRef := tran.GetBeStatefulSetKey(r.CR)
+	image := tran.GetBeImage(r.CR)
 
 	err := r.fillDorisComponentStatus(&beStatus.DorisComponentStatus, statefulSetRef, image)
 	return beStatus, err
@@ -153,8 +153,8 @@ func (r *DorisClusterReconciler) syncCnStatus() (dapi.CNStatus, error) {
 		return dapi.CNStatus{}, nil
 	}
 	cnStatus := util.PointerDeRefer(r.CR.Status.CN.DeepCopy(), dapi.CNStatus{})
-	statefulSetRef := transformer.GetCnStatefulSetKey(r.CR.ObjKey())
-	image := transformer.GetCnImage(r.CR)
+	statefulSetRef := tran.GetCnStatefulSetKey(r.CR.ObjKey())
+	image := tran.GetCnImage(r.CR)
 
 	err := r.fillDorisComponentStatus(&cnStatus.DorisComponentStatus, statefulSetRef, image)
 	return cnStatus, err
@@ -166,8 +166,8 @@ func (r *DorisClusterReconciler) syncBrokerStatus() (dapi.BrokerStatus, error) {
 		return dapi.BrokerStatus{}, nil
 	}
 	status := util.PointerDeRefer(r.CR.Status.Broker.DeepCopy(), dapi.BrokerStatus{})
-	image := transformer.GetBrokerImage(r.CR)
-	statefulSetRef := transformer.GetBrokerStatefulSetKey(r.CR.ObjKey())
+	image := tran.GetBrokerImage(r.CR)
+	statefulSetRef := tran.GetBrokerStatefulSetKey(r.CR.ObjKey())
 
 	err := r.fillDorisComponentStatus(&status.DorisComponentStatus, statefulSetRef, image)
 	return status, err
@@ -189,7 +189,7 @@ func (r *DorisClusterReconciler) fillDorisComponentStatus(
 	if sts != nil {
 		baseStatus.Members = r.getComponentMembers(sts)
 		baseStatus.Conditions = sts.Status.Conditions
-		readyMembers, err := r.getComponentReadyMembers(r.CR.Namespace, transformer.GetFeComponentLabels(r.CR.ObjKey()))
+		readyMembers, err := r.getComponentReadyMembers(r.CR.Namespace, tran.GetFeComponentLabels(r.CR.ObjKey()))
 		if err != nil {
 			return err
 		}

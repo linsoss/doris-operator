@@ -21,7 +21,7 @@ package reconciler
 import (
 	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
-	"github.com/al-assad/doris-operator/internal/transformer"
+	tran "github.com/al-assad/doris-operator/internal/transformer"
 	"github.com/al-assad/doris-operator/internal/util"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -92,7 +92,7 @@ func clusterStageFail(stage dapi.DorisClusterOprStage, action dapi.OprStageActio
 func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
 	action := dapi.StageActionApply
 	// create secret if not exists
-	secret := transformer.MakeOprSqlAccountSecret(r.CR)
+	secret := tran.MakeOprSqlAccountSecret(r.CR)
 	if err := r.CreateWhenNotExist(secret); err != nil {
 		return clusterStageFail(dapi.StageSqlAccountSecret, action, err)
 	}
@@ -106,21 +106,21 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 	applyRes := func() ClusterStageRecResult {
 		action := dapi.StageActionApply
 		// fe configmap
-		configMap := transformer.MakeFeConfigMap(r.CR, r.Schema)
+		configMap := tran.MakeFeConfigMap(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(configMap); err != nil {
 			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
 		// fe service
-		service := transformer.MakeFeService(r.CR, r.Schema)
+		service := tran.MakeFeService(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(service); err != nil {
 			return clusterStageFail(dapi.StageFeService, action, err)
 		}
-		peerService := transformer.MakeFePeerService(r.CR, r.Schema)
+		peerService := tran.MakeFePeerService(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(peerService); err != nil {
 			return clusterStageFail(dapi.StageFeService, action, err)
 		}
 		// fe statefulset
-		statefulSet := transformer.MakeFeStatefulSet(r.CR, r.Schema)
+		statefulSet := tran.MakeFeStatefulSet(r.CR, r.Schema)
 		statefulSet.Annotations[FeConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(statefulSet); err != nil {
 			return clusterStageFail(dapi.StageFeStatefulSet, action, err)
@@ -132,21 +132,21 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 	deleteRes := func() ClusterStageRecResult {
 		action := dapi.StageActionDelete
 		// fe statefulset
-		statefulsetRef := transformer.GetFeStatefulSetKey(r.CR.ObjKey())
+		statefulsetRef := tran.GetFeStatefulSetKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
 		// fe service
-		serviceRef := transformer.GetFeServiceKey(r.CR.ObjKey())
+		serviceRef := tran.GetFeServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(serviceRef, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
-		peerServiceRef := transformer.GetFePeerServiceKey(r.CR.ObjKey())
+		peerServiceRef := tran.GetFePeerServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
 		// fe configmap
-		configMapRef := transformer.GetFeConfigMapKey(r.CR.ObjKey())
+		configMapRef := tran.GetFeConfigMapKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
 			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
@@ -163,21 +163,21 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 	applyRes := func() ClusterStageRecResult {
 		action := dapi.StageActionApply
 		// be configmap
-		configMap := transformer.MakeBeConfigMap(r.CR, r.Schema)
+		configMap := tran.MakeBeConfigMap(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(configMap); err != nil {
 			return clusterStageFail(dapi.StageBeConfigmap, action, err)
 		}
 		// be service
-		service := transformer.MakeBeService(r.CR, r.Schema)
+		service := tran.MakeBeService(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(service); err != nil {
 			return clusterStageFail(dapi.StageBeService, action, err)
 		}
-		peerService := transformer.MakeBePeerService(r.CR, r.Schema)
+		peerService := tran.MakeBePeerService(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(peerService); err != nil {
 			return clusterStageFail(dapi.StageBeService, action, err)
 		}
 		// be statefulset
-		statefulSet := transformer.MakeBeStatefulSet(r.CR, r.Schema)
+		statefulSet := tran.MakeBeStatefulSet(r.CR, r.Schema)
 		statefulSet.Annotations[BeConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(statefulSet); err != nil {
 			return clusterStageFail(dapi.StageBeStatefulSet, action, err)
@@ -189,21 +189,21 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 	deleteRes := func() ClusterStageRecResult {
 		action := dapi.StageActionDelete
 		// be statefulset
-		statefulsetRef := transformer.GetBeStatefulSetKey(r.CR)
+		statefulsetRef := tran.GetBeStatefulSetKey(r.CR)
 		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageBeConfigmap, action, err)
 		}
 		// be service
-		serviceRef := transformer.GetBeServiceKey(r.CR.ObjKey())
+		serviceRef := tran.GetBeServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(serviceRef, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageBeConfigmap, action, err)
 		}
-		peerServiceRef := transformer.GetBePeerServiceKey(r.CR.ObjKey())
+		peerServiceRef := tran.GetBePeerServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageBeConfigmap, action, err)
 		}
 		// be configmap
-		configMapRef := transformer.GetBeConfigMapKey(r.CR.ObjKey())
+		configMapRef := tran.GetBeConfigMapKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
 			return clusterStageFail(dapi.StageBeConfigmap, action, err)
 		}
@@ -220,22 +220,22 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 	applyRes := func() ClusterStageRecResult {
 		action := dapi.StageActionApply
 		// cn configmap
-		configMap := transformer.MakeCnConfigMap(r.CR, r.Schema)
+		configMap := tran.MakeCnConfigMap(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(configMap); err != nil {
 			return clusterStageFail(dapi.StageCnConfigmap, action, err)
 		}
 		// cn service
-		service := transformer.MakeCnService(r.CR, r.Schema)
+		service := tran.MakeCnService(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(service); err != nil {
 			return clusterStageFail(dapi.StageCnService, action, err)
 		}
-		peerService := transformer.MakeCnPeerService(r.CR, r.Schema)
+		peerService := tran.MakeCnPeerService(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(peerService); err != nil {
 			return clusterStageFail(dapi.StageCnService, action, err)
 		}
 
 		// cn statefulset
-		statefulSet := transformer.MakeCnStatefulSet(r.CR, r.Schema)
+		statefulSet := tran.MakeCnStatefulSet(r.CR, r.Schema)
 		statefulSet.Annotations[CnConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		// when the corresponding DorisAutoScaler resource exists,
 		// the replica of statefulset would not be overridden
@@ -257,21 +257,21 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 	deleteRes := func() ClusterStageRecResult {
 		action := dapi.StageActionDelete
 		// cn statefulset
-		statefulsetRef := transformer.GetCnStatefulSetKey(r.CR.ObjKey())
+		statefulsetRef := tran.GetCnStatefulSetKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageCnConfigmap, action, err)
 		}
 		// cn service
-		serviceRef := transformer.GetCnServiceKey(r.CR.ObjKey())
+		serviceRef := tran.GetCnServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(serviceRef, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageCnConfigmap, action, err)
 		}
-		peerServiceRef := transformer.GetCnPeerServiceKey(r.CR.ObjKey())
+		peerServiceRef := tran.GetCnPeerServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageCnConfigmap, action, err)
 		}
 		// cn configmap
-		configMapRef := transformer.GetCnConfigMapKey(r.CR.ObjKey())
+		configMapRef := tran.GetCnConfigMapKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
 			return clusterStageFail(dapi.StageCnConfigmap, action, err)
 		}
@@ -288,17 +288,17 @@ func (r *DorisClusterReconciler) recBrokerResources() ClusterStageRecResult {
 	applyRes := func() ClusterStageRecResult {
 		action := dapi.StageActionApply
 		// broker configmap
-		configMap := transformer.MakeBrokerConfigMap(r.CR, r.Schema)
+		configMap := tran.MakeBrokerConfigMap(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(configMap); err != nil {
 			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
 		}
 		// broker service
-		peerService := transformer.MakeBrokerPeerService(r.CR, r.Schema)
+		peerService := tran.MakeBrokerPeerService(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(peerService); err != nil {
 			return clusterStageFail(dapi.StageBrokerService, action, err)
 		}
 		// broker statefulset
-		statefulSet := transformer.MakeBrokerStatefulSet(r.CR, r.Schema)
+		statefulSet := tran.MakeBrokerStatefulSet(r.CR, r.Schema)
 		statefulSet.Annotations[BrokerConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(statefulSet); err != nil {
 			return clusterStageFail(dapi.StageBrokerStatefulSet, action, err)
@@ -310,17 +310,17 @@ func (r *DorisClusterReconciler) recBrokerResources() ClusterStageRecResult {
 	deleteRes := func() ClusterStageRecResult {
 		action := dapi.StageActionDelete
 		// broker statefulset
-		statefulsetRef := transformer.GetBrokerStatefulSetKey(r.CR.ObjKey())
+		statefulsetRef := tran.GetBrokerStatefulSetKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
 		}
 		// broker service
-		peerServiceRef := transformer.GetBrokerPeerServiceKey(r.CR.ObjKey())
+		peerServiceRef := tran.GetBrokerPeerServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
 		}
 		// broker configmap
-		configMapRef := transformer.GetBrokerConfigMapKey(r.CR.ObjKey())
+		configMapRef := tran.GetBrokerConfigMapKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
 			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
 		}

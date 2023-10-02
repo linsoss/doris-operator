@@ -21,7 +21,7 @@ package reconciler
 import (
 	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
-	"github.com/al-assad/doris-operator/internal/transformer"
+	tran "github.com/al-assad/doris-operator/internal/transformer"
 	"github.com/al-assad/doris-operator/internal/util"
 	v1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -73,21 +73,21 @@ func (r *DorisInitializerReconciler) Reconcile() (dapi.DorisInitializerRecStatus
 		}
 
 		// secret
-		if secret := transformer.MakeInitializerSecret(r.CR, r.Schema); secret != nil {
+		if secret := tran.MakeInitializerSecret(r.CR, r.Schema); secret != nil {
 			if err := r.CreateOrUpdate(secret); err != nil {
 				return err
 			}
 		}
 		// configmap
-		configMap := transformer.MakeInitializerConfigMap(r.CR, r.Schema)
+		configMap := tran.MakeInitializerConfigMap(r.CR, r.Schema)
 		if configMap != nil {
 			if err := r.CreateOrUpdate(configMap); err != nil {
 				return err
 			}
 		}
 		// job
-		feQueryPort := transformer.GetFeQueryPort(clusterCr)
-		if job := transformer.MakeInitializerJob(r.CR, feQueryPort, r.Schema); job != nil {
+		feQueryPort := tran.GetFeQueryPort(clusterCr)
+		if job := tran.MakeInitializerJob(r.CR, feQueryPort, r.Schema); job != nil {
 			job.Annotations[InitializerConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 			if err := r.CreateOrUpdate(configMap); err != nil {
 				return err
@@ -111,7 +111,7 @@ func (r *DorisInitializerReconciler) Sync() (dapi.DorisInitializerSyncStatus, er
 		return status, nil
 	}
 
-	jobRef := transformer.GetInitializerJobKey(r.CR.ObjKey())
+	jobRef := tran.GetInitializerJobKey(r.CR.ObjKey())
 	job := &v1.Job{}
 	if err := r.Find(jobRef, job); err != nil {
 		return status, err

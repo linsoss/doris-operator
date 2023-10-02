@@ -21,7 +21,7 @@ package reconciler
 import (
 	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
-	"github.com/al-assad/doris-operator/internal/transformer"
+	tran "github.com/al-assad/doris-operator/internal/transformer"
 	"github.com/al-assad/doris-operator/internal/util"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -88,15 +88,15 @@ func mnrStageFail(stage dapi.DorisMonitorOprStage, action dapi.OprStageAction, e
 func (r *DorisMonitorReconciler) recRbacResources() MonitorStageRecResult {
 	action := dapi.StageActionApply
 	// global cluster role
-	if err := r.CreateWhenNotExist(transformer.MakeMonitorGlobalClusterRole()); err != nil {
+	if err := r.CreateWhenNotExist(tran.MakeMonitorGlobalClusterRole()); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGlobalClusterRole, action, err)
 	}
 	// namespaced service account
-	if err := r.CreateWhenNotExist(transformer.MakeMonitorNamespacedServiceAccount(r.CR.Namespace)); err != nil {
+	if err := r.CreateWhenNotExist(tran.MakeMonitorNamespacedServiceAccount(r.CR.Namespace)); err != nil {
 		return mnrStageFail(dapi.MnrOprStageNamespacedServiceAccount, action, err)
 	}
 	// namespaced role binding
-	if err := r.CreateWhenNotExist(transformer.MakeMonitorNamespacedRoleBinding(r.CR.Namespace)); err != nil {
+	if err := r.CreateWhenNotExist(tran.MakeMonitorNamespacedRoleBinding(r.CR.Namespace)); err != nil {
 		return mnrStageFail(dapi.MnrOprStageNamespacedRoleBinding, action, err)
 	}
 	return mnrStageSucc(dapi.MnrOprStageRbac, action)
@@ -106,7 +106,7 @@ func (r *DorisMonitorReconciler) recRbacResources() MonitorStageRecResult {
 func (r *DorisMonitorReconciler) recPrometheusResources() MonitorStageRecResult {
 	action := dapi.StageActionApply
 	// config map
-	configMap, genConfErr := transformer.MakePrometheusConfigMap(r.CR, r.Schema)
+	configMap, genConfErr := tran.MakePrometheusConfigMap(r.CR, r.Schema)
 	if genConfErr != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusConfigMap, action, genConfErr)
 	}
@@ -114,17 +114,17 @@ func (r *DorisMonitorReconciler) recPrometheusResources() MonitorStageRecResult 
 		return mnrStageFail(dapi.MnrOprStagePrometheusConfigMap, action, err)
 	}
 	// service
-	service := transformer.MakePrometheusService(r.CR, r.Schema)
+	service := tran.MakePrometheusService(r.CR, r.Schema)
 	if err := r.CreateOrUpdate(service); err != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusService, action, err)
 	}
 	// pvc
-	pvc := transformer.MakePrometheusPVC(r.CR, r.Schema)
+	pvc := tran.MakePrometheusPVC(r.CR, r.Schema)
 	if err := r.CreateOrUpdate(pvc); err != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusPVC, action, err)
 	}
 	// deployment
-	deployment := transformer.MakePrometheusDeployment(r.CR, r.Schema)
+	deployment := tran.MakePrometheusDeployment(r.CR, r.Schema)
 	deployment.Annotations[PrometheusConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 	if err := r.CreateOrUpdate(deployment); err != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusDeployment, action, err)
@@ -136,7 +136,7 @@ func (r *DorisMonitorReconciler) recPrometheusResources() MonitorStageRecResult 
 func (r *DorisMonitorReconciler) recGrafanaResources() MonitorStageRecResult {
 	action := dapi.StageActionApply
 	// config map
-	configMap, genConfErr := transformer.MakeGrafanaConfigMap(r.CR, r.Schema)
+	configMap, genConfErr := tran.MakeGrafanaConfigMap(r.CR, r.Schema)
 	if genConfErr != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaConfigMap, action, genConfErr)
 	}
@@ -144,22 +144,22 @@ func (r *DorisMonitorReconciler) recGrafanaResources() MonitorStageRecResult {
 		return mnrStageFail(dapi.MnrOprStageGrafanaConfigMap, action, err)
 	}
 	// secret
-	secret := transformer.MakeGrafanaSecret(r.CR, r.Schema)
+	secret := tran.MakeGrafanaSecret(r.CR, r.Schema)
 	if err := r.CreateOrUpdate(secret); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaSecret, action, err)
 	}
 	// service
-	service := transformer.MakeGrafanaService(r.CR, r.Schema)
+	service := tran.MakeGrafanaService(r.CR, r.Schema)
 	if err := r.CreateOrUpdate(service); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaService, action, err)
 	}
 	// pvc
-	pvc := transformer.MakeGrafanaPVC(r.CR, r.Schema)
+	pvc := tran.MakeGrafanaPVC(r.CR, r.Schema)
 	if err := r.CreateOrUpdate(pvc); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaPVC, action, err)
 	}
 	// deployment
-	deployment := transformer.MakeGrafanaDeployment(r.CR, r.Schema)
+	deployment := tran.MakeGrafanaDeployment(r.CR, r.Schema)
 	deployment.Annotations[GrafanaConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 	if err := r.CreateOrUpdate(deployment); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaDeployment, action, err)
@@ -173,7 +173,7 @@ func (r *DorisMonitorReconciler) recLokiResources() MonitorStageRecResult {
 	applyRes := func() MonitorStageRecResult {
 		action := dapi.StageActionApply
 		// configmap
-		configMap, genErr := transformer.MakeLokiConfigMap(r.CR, r.Schema)
+		configMap, genErr := tran.MakeLokiConfigMap(r.CR, r.Schema)
 		if genErr != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiConfigMap, action, genErr)
 		}
@@ -181,17 +181,17 @@ func (r *DorisMonitorReconciler) recLokiResources() MonitorStageRecResult {
 			return mnrStageFail(dapi.MnrOprStageLokiConfigMap, action, err)
 		}
 		// service
-		service := transformer.MakeLokiService(r.CR, r.Schema)
+		service := tran.MakeLokiService(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(service); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiService, action, err)
 		}
 		// pvc
-		pvc := transformer.MakeLokiPVC(r.CR, r.Schema)
+		pvc := tran.MakeLokiPVC(r.CR, r.Schema)
 		if err := r.CreateOrUpdate(pvc); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiPVC, action, err)
 		}
 		// deployment
-		deployment := transformer.MakeLokiDeployment(r.CR, r.Schema)
+		deployment := tran.MakeLokiDeployment(r.CR, r.Schema)
 		deployment.Annotations[LokiConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(deployment); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiDeployment, action, err)
@@ -203,22 +203,22 @@ func (r *DorisMonitorReconciler) recLokiResources() MonitorStageRecResult {
 	deleteRes := func() MonitorStageRecResult {
 		action := dapi.StageActionDelete
 		// configmap
-		configMapRef := transformer.GetLokiServiceKey(r.CR.ObjKey())
+		configMapRef := tran.GetLokiServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiConfigMap, action, err)
 		}
 		// service
-		serviceRef := transformer.GetLokiServiceKey(r.CR.ObjKey())
+		serviceRef := tran.GetLokiServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(serviceRef, &corev1.Service{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiService, action, err)
 		}
 		// pvc
-		pvcRef := transformer.GetLokiPVCKey(r.CR.ObjKey())
+		pvcRef := tran.GetLokiPVCKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(pvcRef, &corev1.PersistentVolumeClaim{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiPVC, action, err)
 		}
 		// deployment
-		deploymentRef := transformer.GetLokiDeploymentKey(r.CR.ObjKey())
+		deploymentRef := tran.GetLokiDeploymentKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(deploymentRef, &corev1.PersistentVolumeClaim{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiDeployment, action, err)
 		}
@@ -234,7 +234,7 @@ func (r *DorisMonitorReconciler) recPromtailResources() MonitorStageRecResult {
 	applyRes := func() MonitorStageRecResult {
 		action := dapi.StageActionApply
 		// configmap
-		configMap, genErr := transformer.MakePromtailConfigMap(r.CR, r.Schema)
+		configMap, genErr := tran.MakePromtailConfigMap(r.CR, r.Schema)
 		if genErr != nil {
 			return mnrStageFail(dapi.MnrOprStagePromtailConfigMap, action, genErr)
 		}
@@ -242,7 +242,7 @@ func (r *DorisMonitorReconciler) recPromtailResources() MonitorStageRecResult {
 			return mnrStageFail(dapi.MnrOprStagePromtailConfigMap, action, err)
 		}
 		// daemonset
-		daemonSet := transformer.MakePromtailDaemonSet(r.CR, r.Schema)
+		daemonSet := tran.MakePromtailDaemonSet(r.CR, r.Schema)
 		daemonSet.Annotations[PromtailConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(daemonSet); err != nil {
 			return mnrStageFail(dapi.MnrOprStagePromtailDaemonSet, action, err)
@@ -254,12 +254,12 @@ func (r *DorisMonitorReconciler) recPromtailResources() MonitorStageRecResult {
 	deleteRes := func() MonitorStageRecResult {
 		action := dapi.StageActionDelete
 		// configmap
-		configMapRef := transformer.GetPromtailConfigMapKey(r.CR.ObjKey())
+		configMapRef := tran.GetPromtailConfigMapKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(configMapRef, &corev1.ConfigMap{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStagePromtailConfigMap, action, err)
 		}
 		// daemonset
-		daemonSetRef := transformer.GetPromtailDaemonSetKey(r.CR.ObjKey())
+		daemonSetRef := tran.GetPromtailDaemonSetKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(daemonSetRef, &corev1.ConfigMap{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStagePromtailDaemonSet, action, err)
 		}

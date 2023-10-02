@@ -22,7 +22,7 @@ import (
 	"errors"
 	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
-	"github.com/al-assad/doris-operator/internal/transformer"
+	tran "github.com/al-assad/doris-operator/internal/transformer"
 	"github.com/al-assad/doris-operator/internal/util"
 	acv2 "k8s.io/api/autoscaling/v2"
 	"k8s.io/apimachinery/pkg/types"
@@ -44,10 +44,10 @@ func (r *DorisAutoScalerReconciler) Reconcile() (dapi.AutoscalerRecStatus, error
 
 	// delete cn auto scaler
 	deleteHpa := func() error {
-		if err := r.DeleteWhenExist(transformer.GetCnScaleUpHpaKey(r.CR.ObjKey()), &hpaType{}); err != nil {
+		if err := r.DeleteWhenExist(tran.GetCnScaleUpHpaKey(r.CR.ObjKey()), &hpaType{}); err != nil {
 			return err
 		}
-		if err := r.DeleteWhenExist(transformer.GetCnScaleDownHpaKey(r.CR.ObjKey()), &hpaType{}); err != nil {
+		if err := r.DeleteWhenExist(tran.GetCnScaleDownHpaKey(r.CR.ObjKey()), &hpaType{}); err != nil {
 			return err
 		}
 		return nil
@@ -79,12 +79,12 @@ func (r *DorisAutoScalerReconciler) Reconcile() (dapi.AutoscalerRecStatus, error
 					bound.Name, bound.Name))
 		}
 		// apply hpa resources
-		if cnUpHpa := transformer.MakeCnScaleUpHpa(r.CR, r.Schema); cnUpHpa != nil {
+		if cnUpHpa := tran.MakeCnScaleUpHpa(r.CR, r.Schema); cnUpHpa != nil {
 			if err := r.CreateOrUpdate(cnUpHpa); err != nil {
 				return err
 			}
 		}
-		if cnDownHpa := transformer.MakeCnScaleDownHpa(r.CR, r.Schema); cnDownHpa != nil {
+		if cnDownHpa := tran.MakeCnScaleDownHpa(r.CR, r.Schema); cnDownHpa != nil {
 			if err := r.CreateOrUpdate(cnDownHpa); err != nil {
 				return err
 			}
@@ -109,7 +109,7 @@ func (r *DorisAutoScalerReconciler) Sync() (dapi.CNAutoscalerSyncStatus, error) 
 	}
 
 	syncCnUpHpa := func() error {
-		hpaRef := transformer.GetCnScaleUpHpaKey(r.CR.ObjKey())
+		hpaRef := tran.GetCnScaleUpHpaKey(r.CR.ObjKey())
 		hpa := &hpaType{}
 		if err := r.Find(hpaRef, hpa); err != nil {
 			return err
@@ -125,7 +125,7 @@ func (r *DorisAutoScalerReconciler) Sync() (dapi.CNAutoscalerSyncStatus, error) 
 	}
 
 	syncCnDownHpa := func() error {
-		hpaRef := transformer.GetCnScaleDownHpaKey(r.CR.ObjKey())
+		hpaRef := tran.GetCnScaleDownHpaKey(r.CR.ObjKey())
 		hpa := &hpaType{}
 		if err := r.Find(hpaRef, hpa); err != nil {
 			return err

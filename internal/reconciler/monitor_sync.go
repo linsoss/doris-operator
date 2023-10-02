@@ -20,7 +20,7 @@ package reconciler
 
 import (
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
-	"github.com/al-assad/doris-operator/internal/transformer"
+	tran "github.com/al-assad/doris-operator/internal/transformer"
 	"github.com/al-assad/doris-operator/internal/util"
 	appv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -76,9 +76,9 @@ func (r *DorisMonitorReconciler) Sync() (dapi.DorisMonitorSyncStatus, error) {
 
 func (r *DorisMonitorReconciler) syncPrometheusStatus() (dapi.PrometheusStatus, error) {
 	status := util.PointerDeRefer(r.CR.Status.Prometheus.DeepCopy(), dapi.PrometheusStatus{})
-	serviceKey := transformer.GetPrometheusServiceKey(r.CR.ObjKey())
-	pvcKey := transformer.GetPrometheusPVCKey(r.CR.ObjKey())
-	deployKey := transformer.GetPrometheusDeploymentKey(r.CR.ObjKey())
+	serviceKey := tran.GetPrometheusServiceKey(r.CR.ObjKey())
+	pvcKey := tran.GetPrometheusPVCKey(r.CR.ObjKey())
+	deployKey := tran.GetPrometheusDeploymentKey(r.CR.ObjKey())
 
 	err := r.fillMonitorComponentStatus(&status.DorisMonitorComponentStatus, serviceKey, pvcKey, deployKey)
 	return status, err
@@ -86,9 +86,9 @@ func (r *DorisMonitorReconciler) syncPrometheusStatus() (dapi.PrometheusStatus, 
 
 func (r *DorisMonitorReconciler) syncGrafanaStatus() (dapi.GrafanaStatus, error) {
 	status := util.PointerDeRefer(r.CR.Status.Grafana.DeepCopy(), dapi.GrafanaStatus{})
-	serviceKey := transformer.GetGrafanaServiceKey(r.CR.ObjKey())
-	pvcKey := transformer.GetGrafanaPVCKey(r.CR.ObjKey())
-	deployKey := transformer.GetGrafanaDeploymentKey(r.CR.ObjKey())
+	serviceKey := tran.GetGrafanaServiceKey(r.CR.ObjKey())
+	pvcKey := tran.GetGrafanaPVCKey(r.CR.ObjKey())
+	deployKey := tran.GetGrafanaDeploymentKey(r.CR.ObjKey())
 
 	err := r.fillMonitorComponentStatus(&status.DorisMonitorComponentStatus, serviceKey, pvcKey, deployKey)
 	return status, err
@@ -96,9 +96,9 @@ func (r *DorisMonitorReconciler) syncGrafanaStatus() (dapi.GrafanaStatus, error)
 
 func (r *DorisMonitorReconciler) syncLokiStatus() (dapi.LokiStatus, error) {
 	status := util.PointerDeRefer(r.CR.Status.Loki.DeepCopy(), dapi.LokiStatus{})
-	serviceKey := transformer.GetLokiServiceKey(r.CR.ObjKey())
-	pvcKey := transformer.GetLokiPVCKey(r.CR.ObjKey())
-	deployKey := transformer.GetLokiDeploymentKey(r.CR.ObjKey())
+	serviceKey := tran.GetLokiServiceKey(r.CR.ObjKey())
+	pvcKey := tran.GetLokiPVCKey(r.CR.ObjKey())
+	deployKey := tran.GetLokiDeploymentKey(r.CR.ObjKey())
 
 	err := r.fillMonitorComponentStatus(&status.DorisMonitorComponentStatus, serviceKey, pvcKey, deployKey)
 	return status, err
@@ -106,7 +106,7 @@ func (r *DorisMonitorReconciler) syncLokiStatus() (dapi.LokiStatus, error) {
 
 func (r *DorisMonitorReconciler) syncPromtailStatus() (dapi.PromtailStatus, error) {
 	status := util.PointerDeRefer(r.CR.Status.Promtail.DeepCopy(), dapi.PromtailStatus{})
-	daemonsetKey := transformer.GetPromtailDaemonSetKey(r.CR.ObjKey())
+	daemonsetKey := tran.GetPromtailDaemonSetKey(r.CR.ObjKey())
 	status.DaemonSetRef = dapi.NewNamespacedName(daemonsetKey)
 
 	// Get daemonset status
