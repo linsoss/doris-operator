@@ -37,9 +37,12 @@ func (e *MultiError) Error() string {
 	return strings.Join(errStrs, "; ")
 }
 
-func (e *MultiError) Collect(err error) {
+func (e *MultiError) Collect(err error) bool {
 	if err != nil {
 		e.Errors = append(e.Errors, err)
+		return true
+	} else {
+		return false
 	}
 }
 

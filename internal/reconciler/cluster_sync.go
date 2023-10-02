@@ -32,22 +32,55 @@ import (
 
 // Sync all subcomponents status.
 func (r *DorisClusterReconciler) Sync() (dapi.DorisClusterSyncStatus, error) {
-	syncRes := dapi.DorisClusterSyncStatus{}
+	syncRes := &dapi.DorisClusterSyncStatus{}
 	errCtr := &util.MultiError{}
 
-	// todo modified to execute code in parallel
-	util.CollectFnErr(errCtr, r.syncFeStatus, func(s dapi.FEStatus) { syncRes.FE = s })
-	util.CollectFnErr(errCtr, r.syncBeStatus, func(s dapi.BEStatus) { syncRes.BE = s })
-	util.CollectFnErr(errCtr, r.syncCnStatus, func(s dapi.CNStatus) { syncRes.CN = s })
-	util.CollectFnErr(errCtr, r.syncBrokerStatus, func(s dapi.BrokerStatus) { syncRes.Broker = s })
+	type SyncStatus = *dapi.DorisClusterSyncStatus
+	type ErrCollector = *util.MultiError
+	type MuteFn = func(SyncStatus, ErrCollector)
 
+	// collect fe, be, cn, broker status in parallel
+	syncFns := []func() MuteFn{
+		func() MuteFn {
+			status, err := r.syncFeStatus()
+			return func(s SyncStatus, c ErrCollector) {
+				s.FE = status
+				c.Collect(err)
+			}
+		},
+		func() MuteFn {
+			status, err := r.syncBeStatus()
+			return func(s SyncStatus, c ErrCollector) {
+				s.BE = status
+				c.Collect(err)
+			}
+		},
+		func() MuteFn {
+			status, err := r.syncCnStatus()
+			return func(s SyncStatus, c ErrCollector) {
+				s.CN = status
+				c.Collect(err)
+			}
+		},
+		func() MuteFn {
+			status, err := r.syncBrokerStatus()
+			return func(s SyncStatus, c ErrCollector) {
+				s.Broker = status
+				c.Collect(err)
+			}
+		},
+	}
+	muteFnRes := util.ParallelRun(syncFns...)
+	for _, muteFn := range muteFnRes {
+		muteFn(syncRes, errCtr)
+	}
+
+	// eval allReady state
 	allReady, err := r.inferIsDorisClusterAllReady()
-	if err != nil {
-		errCtr.Collect(err)
-	} else {
+	if !errCtr.Collect(err) {
 		syncRes.AllReady = allReady
 	}
-	return syncRes, errCtr.Dry()
+	return *syncRes, errCtr.Dry()
 }
 
 // infer whether the DorisCluster components are all ready.

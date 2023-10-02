@@ -28,16 +28,50 @@ import (
 
 // Sync all subcomponents status of DorisMonitor
 func (r *DorisMonitorReconciler) Sync() (dapi.DorisMonitorSyncStatus, error) {
-	syncRes := dapi.DorisMonitorSyncStatus{}
+	syncRes := &dapi.DorisMonitorSyncStatus{}
 	errCtr := &util.MultiError{}
 
-	// todo modified to execute code in parallel
-	util.CollectFnErr(errCtr, r.syncPrometheusStatus, func(s dapi.PrometheusStatus) { syncRes.Prometheus = s })
-	util.CollectFnErr(errCtr, r.syncGrafanaStatus, func(s dapi.GrafanaStatus) { syncRes.Grafana = s })
-	util.CollectFnErr(errCtr, r.syncLokiStatus, func(s dapi.LokiStatus) { syncRes.Loki = s })
-	util.CollectFnErr(errCtr, r.syncPromtailStatus, func(s dapi.PromtailStatus) { syncRes.Promtail = s })
+	type SyncStatus = *dapi.DorisMonitorSyncStatus
+	type ErrCollector = *util.MultiError
+	type MuteFn = func(SyncStatus, ErrCollector)
 
-	return syncRes, errCtr.Dry()
+	// collect prometheus, grafana, loki, promtail status in parallel
+	syncFns := []func() MuteFn{
+		func() MuteFn {
+			status, err := r.syncPrometheusStatus()
+			return func(s SyncStatus, c ErrCollector) {
+				s.Prometheus = status
+				c.Collect(err)
+			}
+		},
+		func() MuteFn {
+			status, err := r.syncGrafanaStatus()
+			return func(s SyncStatus, c ErrCollector) {
+				s.Grafana = status
+				c.Collect(err)
+			}
+		},
+		func() MuteFn {
+			status, err := r.syncLokiStatus()
+			return func(s SyncStatus, c ErrCollector) {
+				s.Loki = status
+				c.Collect(err)
+			}
+		},
+		func() MuteFn {
+			status, err := r.syncPromtailStatus()
+			return func(s SyncStatus, c ErrCollector) {
+				s.Promtail = status
+				c.Collect(err)
+			}
+		},
+	}
+	muteFnRes := util.ParallelRun(syncFns...)
+	for _, muteFn := range muteFnRes {
+		muteFn(syncRes, errCtr)
+	}
+
+	return *syncRes, errCtr.Dry()
 }
 
 func (r *DorisMonitorReconciler) syncPrometheusStatus() (dapi.PrometheusStatus, error) {
