@@ -189,7 +189,7 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 	deleteRes := func() ClusterStageRecResult {
 		action := dapi.StageActionDelete
 		// be statefulset
-		statefulsetRef := tran.GetBeStatefulSetKey(r.CR)
+		statefulsetRef := tran.GetBeStatefulSetKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageBeConfigmap, action, err)
 		}

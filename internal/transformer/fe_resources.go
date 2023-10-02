@@ -103,6 +103,20 @@ func GetFeEditLogPort(cr *dapi.DorisCluster) int32 {
 	return getPortValueFromRawConf(cr.Spec.FE.Configs, "edit_log_port", DefaultFeEditLogPort)
 }
 
+func GetFeServiceDNS(dorisClusterKey types.NamespacedName) string {
+	key := GetFeServiceKey(dorisClusterKey)
+	return fmt.Sprintf("%s.%s", key.Name, key.Namespace)
+}
+
+func GetFeExpectPodNames(dorisClusterKey types.NamespacedName, replicas int32) []string {
+	stsName := GetFeStatefulSetKey(dorisClusterKey).Name
+	var expectFePods []string
+	for i := 0; i < int(replicas); i++ {
+		expectFePods = append(expectFePods, fmt.Sprintf("%s-%d", stsName, i))
+	}
+	return expectFePods
+}
+
 func MakeFeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.ConfigMap {
 	if cr.Spec.FE == nil {
 		return nil

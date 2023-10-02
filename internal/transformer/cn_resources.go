@@ -100,6 +100,15 @@ func GetCnBrpcPort(cr *dapi.DorisCluster) int32 {
 	return getPortValueFromRawConf(cr.Spec.CN.Configs, "brpc_port", DefaultBeBrpcPort)
 }
 
+func GetCnExpectPodNames(dorisClusterKey types.NamespacedName, replicas int32) []string {
+	stsName := GetCnStatefulSetKey(dorisClusterKey).Name
+	var expectPods []string
+	for i := 0; i < int(replicas); i++ {
+		expectPods = append(expectPods, fmt.Sprintf("%s-%d", stsName, i))
+	}
+	return expectPods
+}
+
 func MakeCnConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.ConfigMap {
 	if cr.Spec.CN == nil {
 		return nil

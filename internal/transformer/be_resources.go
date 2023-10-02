@@ -65,10 +65,10 @@ func GetBePeerServiceKey(dorisClusterKey types.NamespacedName) types.NamespacedN
 	}
 }
 
-func GetBeStatefulSetKey(r *dapi.DorisCluster) types.NamespacedName {
+func GetBeStatefulSetKey(dorisClusterKey types.NamespacedName) types.NamespacedName {
 	return types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      fmt.Sprintf("%s-be", r.Name),
+		Namespace: dorisClusterKey.Namespace,
+		Name:      fmt.Sprintf("%s-be", dorisClusterKey.Name),
 	}
 }
 
@@ -103,6 +103,15 @@ func GetBeBrpcPort(cr *dapi.DorisCluster) int32 {
 		return DefaultBeBrpcPort
 	}
 	return getPortValueFromRawConf(cr.Spec.BE.Configs, "brpc_port", DefaultBeBrpcPort)
+}
+
+func GetBeExpectPodNames(dorisClusterKey types.NamespacedName, replicas int32) []string {
+	stsName := GetBeStatefulSetKey(dorisClusterKey).Name
+	var expectPods []string
+	for i := 0; i < int(replicas); i++ {
+		expectPods = append(expectPods, fmt.Sprintf("%s-%d", stsName, i))
+	}
+	return expectPods
 }
 
 func MakeBeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.ConfigMap {
@@ -187,7 +196,7 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	if cr.Spec.BE == nil {
 		return nil
 	}
-	statefulSetRef := GetBeStatefulSetKey(cr)
+	statefulSetRef := GetBeStatefulSetKey(cr.ObjKey())
 	accountSecretRef := GetOprSqlAccountSecretKey(cr.ObjKey())
 	beLabels := GetBeComponentLabels(cr.ObjKey())
 

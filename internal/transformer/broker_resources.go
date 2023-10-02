@@ -76,6 +76,15 @@ func GetBrokerIpcPort(cr *dapi.DorisCluster) int32 {
 	return getPortValueFromRawConf(cr.Spec.Broker.Configs, "broker_ipc_port", DefaultBrokerIpcPort)
 }
 
+func GetBrokerExpectPodNames(dorisClusterKey types.NamespacedName, replicas int32) []string {
+	stsName := GetBrokerStatefulSetKey(dorisClusterKey).Name
+	var expectPods []string
+	for i := 0; i < int(replicas); i++ {
+		expectPods = append(expectPods, fmt.Sprintf("%s-%d", stsName, i))
+	}
+	return expectPods
+}
+
 func MakeBrokerConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.ConfigMap {
 	if cr.Spec.Broker == nil {
 		return nil

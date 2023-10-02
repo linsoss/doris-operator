@@ -140,7 +140,7 @@ func (r *DorisClusterReconciler) syncBeStatus() (dapi.BEStatus, error) {
 		return dapi.BEStatus{}, nil
 	}
 	beStatus := util.PointerDeRefer(r.CR.Status.BE.DeepCopy(), dapi.BEStatus{})
-	statefulSetRef := tran.GetBeStatefulSetKey(r.CR)
+	statefulSetRef := tran.GetBeStatefulSetKey(r.CR.ObjKey())
 	image := tran.GetBeImage(r.CR)
 
 	err := r.fillDorisComponentStatus(&beStatus.DorisComponentStatus, statefulSetRef, image)
