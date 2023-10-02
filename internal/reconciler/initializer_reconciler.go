@@ -110,6 +110,7 @@ func (r *DorisInitializerReconciler) Sync() (dapi.DorisInitializerSyncStatus, er
 	if r.CR.Spec.Cluster == "" {
 		return status, nil
 	}
+
 	jobRef := transformer.GetInitializerJobKey(r.CR.ObjKey())
 	job := &v1.Job{}
 	if err := r.Find(jobRef, job); err != nil {

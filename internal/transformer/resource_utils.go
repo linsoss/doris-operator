@@ -23,6 +23,7 @@ import (
 	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	"github.com/al-assad/doris-operator/internal/util"
+	u "github.com/rjNemo/underscore"
 	corev1 "k8s.io/api/core/v1"
 	"math/big"
 	"strconv"
@@ -89,12 +90,10 @@ func dumpJavaBasedComponentConf(config map[string]string) string {
 		JvmRamPercentage, JvmRamPercentage, JvmRamPercentage)
 	// order by key
 	keys := util.MapSortedKeys(config)
-
-	// generate config file content
-	var lines []string
 	hasJvmOpt := false
 
-	for _, k := range keys {
+	// generate config file content
+	lines := u.Map(keys, func(k string) string {
 		key := strings.TrimSpace(k)
 		value := strings.TrimSpace(config[k])
 		// handle JVM opt config
@@ -102,18 +101,16 @@ func dumpJavaBasedComponentConf(config map[string]string) string {
 			hasJvmOpt = true
 		}
 		if key == JvmOptKey || key == JvmOpt9Key {
-			parts := strings.Split(value, " ")
-			var filterParts []string
-			for _, part := range parts {
-				if !strings.HasPrefix(part, "-Xss") && !strings.HasPrefix(part, "-Xmx") {
-					filterParts = append(filterParts, part)
-				}
-			}
-			filterParts = append(filterParts, containerJvmRamOpt)
-			value = fmt.Sprintf(`"%s"`, strings.Join(filterParts, " "))
+			splits := strings.Split(value, " ")
+			noHandledOpts := u.Filter(splits, func(part string) bool {
+				return !strings.HasPrefix(part, "-Xss") && !strings.HasPrefix(part, "-Xmx")
+			})
+			noHandledOpts = append(noHandledOpts, containerJvmRamOpt)
+			value = fmt.Sprintf(`"%s"`, strings.Join(noHandledOpts, " "))
 		}
-		lines = append(lines, fmt.Sprintf("%s=%s", key, value))
-	}
+		line := fmt.Sprintf("%s=%s", key, value)
+		return line
+	})
 	if !hasJvmOpt {
 		lines = append(lines, fmt.Sprintf("%s=%s", JvmOptKey, fmt.Sprintf(`"%s"`, containerJvmRamOpt)))
 	}
@@ -126,16 +123,15 @@ func dumpCppBasedComponentConf(config map[string]string) string {
 	keys := util.MapSortedKeys(config)
 
 	// generate config file content
-	var lines []string
-	for _, k := range keys {
+	lines := u.Map(keys, func(k string) string {
 		key := strings.TrimSpace(k)
 		value := strings.TrimSpace(config[k])
 		// handle JVM opt config
 		if key == JvmOptKey || key == JvmOpt9Key {
 			value = fmt.Sprintf(`"%s"`, value)
 		}
-		lines = append(lines, fmt.Sprintf("%s=%s", key, value))
-	}
+		return fmt.Sprintf("%s=%s", key, value)
+	})
 	return strings.Join(lines, "\n")
 }
 
@@ -153,15 +149,17 @@ func getPortValueFromRawConf(config map[string]string, key string, defaultValue 
 }
 
 // Merge HostAlias info in HostnameIpItem into HostAlias slice
-func mergeHostAlias(items []dapi.HostnameIpItem, hostAlias []corev1.HostAlias) []corev1.HostAlias {
+func mergeHostAlias(items []dapi.HostnameIpItem, hostAliasList []corev1.HostAlias) []corev1.HostAlias {
 	if len(items) == 0 {
-		return hostAlias
+		return hostAliasList
 	}
-	var result = make(map[string]*corev1.HostAlias)
+	var ipHostAliasMap map[string]*corev1.HostAlias
+
+	// handle items
 	for _, item := range items {
-		v, ok := result[item.IP]
-		if !ok {
-			result[item.IP] = &corev1.HostAlias{
+		v := ipHostAliasMap[item.IP]
+		if v == nil {
+			ipHostAliasMap[item.IP] = &corev1.HostAlias{
 				IP:        item.IP,
 				Hostnames: []string{item.Name},
 			}
@@ -169,9 +167,22 @@ func mergeHostAlias(items []dapi.HostnameIpItem, hostAlias []corev1.HostAlias) [
 			v.Hostnames = append(v.Hostnames, item.Name)
 		}
 	}
-	newHostAlias := make([]corev1.HostAlias, len(result))
-	for _, value := range result {
-		newHostAlias = append(newHostAlias, *value)
+	// handle hostAlias
+	for _, hostAlias := range hostAliasList {
+		v := ipHostAliasMap[hostAlias.IP]
+		if v == nil {
+			ipHostAliasMap[hostAlias.IP] = &corev1.HostAlias{
+				IP:        hostAlias.IP,
+				Hostnames: hostAlias.Hostnames,
+			}
+		} else {
+			v.Hostnames = append(v.Hostnames, hostAlias.Hostnames...)
+		}
 	}
-	return newHostAlias
+
+	var result []corev1.HostAlias
+	for _, hostAlias := range ipHostAliasMap {
+		result = append(result, *hostAlias)
+	}
+	return result
 }

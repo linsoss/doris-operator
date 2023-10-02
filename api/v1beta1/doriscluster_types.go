@@ -239,8 +239,6 @@ type DorisClusterStatus struct {
 	LastApplySpecHash      *string `json:"lastApplySpecHash,omitempty"`
 	DorisClusterRecStatus  `json:",inline"`
 	DorisClusterSyncStatus `json:",inline"`
-
-	// TODO Status indicates that the cluster is fully ready or able to provide external sql query service.
 }
 
 type DorisClusterRecStatus struct {

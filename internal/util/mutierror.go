@@ -19,6 +19,7 @@
 package util
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -56,12 +57,15 @@ func (e *MultiError) Dry() error {
 	if len(e.Errors) == 0 {
 		return nil
 	}
+	if len(e.Errors) == 1 {
+		return e.Errors[0]
+	}
 	return e
 }
 
 // MergeErrors merges multiple errors into one.
 func MergeErrors(errs ...error) *MultiError {
-	errorList := make([]error, 0, len(errs))
+	var errorList []error
 	for _, err := range errs {
 		if err != nil {
 			errorList = append(errorList, err)
@@ -71,6 +75,13 @@ func MergeErrors(errs ...error) *MultiError {
 		return nil
 	}
 	return &MultiError{Errors: errorList}
+}
+
+func AppendErrMsg(err error, message string) *MultiError {
+	if err == nil {
+		return nil
+	}
+	return MergeErrors(errors.New(message), err)
 }
 
 // MultiTaggedError is a list of errors with tags.

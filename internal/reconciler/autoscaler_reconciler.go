@@ -19,6 +19,7 @@
 package reconciler
 
 import (
+	"errors"
 	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	"github.com/al-assad/doris-operator/internal/transformer"
@@ -64,8 +65,8 @@ func (r *DorisAutoScalerReconciler) Reconcile() (dapi.AutoscalerRecStatus, error
 			return err
 		}
 		if !exist {
-			return fmt.Errorf("target DorisCluster[name=%s][namespace=%s] not exist",
-				clusterRef.Name, clusterRef.Name)
+			return errors.New(fmt.Sprintf("target DorisCluster[name=%s][namespace=%s] not exist",
+				clusterRef.Name, clusterRef.Name))
 		}
 		// check if target DorisCluster already bound another DorisAutoscaler
 		bound, bErr := r.FindRefDorisAutoScaler(clusterRef)
@@ -73,8 +74,9 @@ func (r *DorisAutoScalerReconciler) Reconcile() (dapi.AutoscalerRecStatus, error
 			return err
 		}
 		if bound != nil {
-			return fmt.Errorf("target DorisCluster already bound another DorisAutoscaler[name=%s][namespace=%s]",
-				bound.Name, bound.Name)
+			return errors.New(
+				fmt.Sprintf("target DorisCluster already bound another DorisAutoscaler[name=%s][namespace=%s]",
+					bound.Name, bound.Name))
 		}
 		// apply hpa resources
 		if cnUpHpa := transformer.MakeCnScaleUpHpa(r.CR, r.Schema); cnUpHpa != nil {
