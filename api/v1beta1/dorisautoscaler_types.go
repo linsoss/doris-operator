@@ -44,6 +44,7 @@ type DorisAutoscalerList struct {
 // DorisAutoscalerSpec defines the desired state of DorisAutoscaler
 type DorisAutoscalerSpec struct {
 	// name of the target DorisCluster
+	// +kubebuilder:validation:Required
 	Cluster string            `json:"cluster"`
 	CN      *CNAutoscalerSpec `json:"cn,omitempty"`
 }

@@ -137,7 +137,9 @@ type HadoopConfSpec struct {
 // HostnameIpItem define Hostname-IP kv item
 // +k8s:openapi-gen=true
 type HostnameIpItem struct {
-	IP   string `json:"ip"`
+	// +kubebuilder:validation:Required
+	IP string `json:"ip"`
+	// +kubebuilder:validation:Required
 	Name string `json:"name"`
 }
 
@@ -168,9 +170,11 @@ type FeServiceSpec struct {
 // +k8s:openapi-gen=true
 type DorisComponentSpec struct {
 	//Base image of the component
+	// +kubebuilder:validation:Required
 	BaseImage string `json:"baseImage"`
 
 	// Type of the real kubernetes service
+	// +optional
 	Version string `json:"version,omitempty"`
 
 	// The desired ready replicas

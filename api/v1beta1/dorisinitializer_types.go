@@ -61,6 +61,7 @@ type DorisInitializerSpec struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 
 	// MaxRetry of the Doris initializer Job
+	// +optional
 	MaxRetry *int32 `json:"maxRetry"`
 
 	// Specify a Service Account

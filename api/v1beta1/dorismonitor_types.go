@@ -46,6 +46,7 @@ type DorisMonitorList struct {
 // +k8s:openapi-gen=true
 type DorisMonitorSpec struct {
 	// Name of the target DorisCluster
+	// +kubebuilder:validation:Required
 	Cluster string `json:"cluster"`
 
 	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`
@@ -155,6 +156,7 @@ type MonitorServiceSpec struct {
 
 	// Expose the http query port of prometheus or grafana
 	// Optional: Defaults to 0
+	// +optional
 	HttpPort *int32 `json:"httpPort,omitempty"`
 
 	// ExternalTrafficPolicy of the service
