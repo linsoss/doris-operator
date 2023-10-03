@@ -4107,6 +4107,8 @@ spec:
                 - baseImage
                 - replicas
                 type: object
+              busyBoxImage:
+                type: string
               cn:
                 properties:
                   additionalContainers:

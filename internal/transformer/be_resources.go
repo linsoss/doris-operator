@@ -118,6 +118,8 @@ func MakeBeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 	if cr.Spec.BE == nil {
 		return nil
 	}
+	cr.Spec.BE.Configs["be_node_role"] = "mix"
+
 	configMapRef := GetBeConfigMapKey(cr.ObjKey())
 	data := map[string]string{
 		"be.conf": dumpCppBasedComponentConf(cr.Spec.BE.Configs),
@@ -259,6 +261,14 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			FailureThreshold: 3,
 		},
 	}
+	// pod template: init container
+	privileged := true
+	initContainer := corev1.Container{
+		Name:            "sysctl",
+		Image:           GetBusyBoxImage(cr),
+		Command:         []string{"sysctl", "-w", "vm.max_map_count=2000000"},
+		SecurityContext: &corev1.SecurityContext{Privileged: &privileged},
+	}
 	// pod template: merge additional pod containers configs defined by user
 	mainContainer.Env = append(mainContainer.Env, cr.Spec.BE.AdditionalEnvs...)
 	mainContainer.VolumeMounts = append(mainContainer.VolumeMounts, cr.Spec.BE.AdditionalVolumeMounts...)
@@ -281,6 +291,7 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		Spec: corev1.PodSpec{
 			Volumes:            volumes,
 			Containers:         containers,
+			InitContainers:     []corev1.Container{initContainer},
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			ServiceAccountName: util.StringFallback(cr.Spec.BE.ServiceAccount, cr.Spec.ServiceAccount),
 			Affinity:           util.PointerFallback(cr.Spec.BE.Affinity, cr.Spec.Affinity),

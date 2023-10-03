@@ -42,7 +42,13 @@ const (
 	PrometheusPathAnnoKey   = "prometheus.io/path"
 	PrometheusPortAnnoKey   = "prometheus.io/port"
 	PrometheusScrapeAnnoKey = "prometheus.io/scrape"
+
+	DefaultBusyBoxImage = "busybox:1.36"
 )
+
+func GetBusyBoxImage(cr *dapi.DorisCluster) string {
+	return util.PointerDeRefer(cr.Spec.BusyBoxImage, DefaultBusyBoxImage)
+}
 
 // MakeResourceLabels make the k8s label meta for the managed resource
 func MakeResourceLabels(dorisName string, component string) map[string]string {

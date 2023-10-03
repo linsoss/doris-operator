@@ -113,6 +113,8 @@ func MakeCnConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 	if cr.Spec.CN == nil {
 		return nil
 	}
+	cr.Spec.BE.Configs["be_node_role"] = "computation"
+
 	configMapRef := GetCnConfigMapKey(cr.ObjKey())
 	data := map[string]string{
 		"be.conf": dumpCppBasedComponentConf(cr.Spec.CN.Configs),
@@ -223,7 +225,7 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			{Name: "FE_QUERY_PORT", Value: strconv.Itoa(int(GetFeQueryPort(cr)))},
 			{Name: "ACC_USER", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "user")},
 			{Name: "ACC_PWD", ValueFrom: util.NewEnvVarSecretSource(accountSecretRef.Name, "password")},
-			{Name: "CN_PROBE_TIMEOUT", Value: strconv.Itoa(CnProbeTimeoutSec)},
+			{Name: "BE_PROBE_TIMEOUT", Value: strconv.Itoa(CnProbeTimeoutSec)},
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: "conf", MountPath: "/etc/apache-doris/be/"},
@@ -236,6 +238,14 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			SuccessThreshold: 1,
 			FailureThreshold: 3,
 		},
+	}
+	// pod template: init container
+	privileged := true
+	initContainer := corev1.Container{
+		Name:            "sysctl",
+		Image:           GetBusyBoxImage(cr),
+		Command:         []string{"sysctl", "-w", "vm.max_map_count=2000000"},
+		SecurityContext: &corev1.SecurityContext{Privileged: &privileged},
 	}
 	// pod template: merge additional pod containers configs defined by user
 	mainContainer.Env = append(mainContainer.Env, cr.Spec.CN.AdditionalEnvs...)
@@ -259,6 +269,7 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		Spec: corev1.PodSpec{
 			Volumes:            volumes,
 			Containers:         containers,
+			InitContainers:     []corev1.Container{initContainer},
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			ServiceAccountName: util.StringFallback(cr.Spec.CN.ServiceAccount, cr.Spec.ServiceAccount),
 			Affinity:           util.PointerFallback(cr.Spec.CN.Affinity, cr.Spec.Affinity),

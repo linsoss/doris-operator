@@ -474,6 +474,11 @@ func (in *DorisClusterSpec) DeepCopyInto(out *DorisClusterSpec) {
 		*out = new(HadoopConfSpec)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.BusyBoxImage != nil {
+		in, out := &in.BusyBoxImage, &out.BusyBoxImage
+		*out = new(string)
+		**out = **in
+	}
 	if in.ImagePullSecrets != nil {
 		in, out := &in.ImagePullSecrets, &out.ImagePullSecrets
 		*out = make([]v1.LocalObjectReference, len(*in))

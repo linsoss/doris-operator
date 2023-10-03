@@ -55,6 +55,10 @@ type DorisClusterSpec struct {
 	Broker     *BrokerSpec     `json:"broker,omitempty"`
 	HadoopConf *HadoopConfSpec `json:"hadoopConf,omitempty"`
 
+	// Default busybox image
+	// +optional
+	BusyBoxImage *string `json:"busyBoxImage,omitempty"`
+
 	// Doris cluster image version
 	Version string `json:"version"`
 

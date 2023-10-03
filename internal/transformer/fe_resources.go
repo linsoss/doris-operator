@@ -121,6 +121,8 @@ func MakeFeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 	if cr.Spec.FE == nil {
 		return nil
 	}
+	cr.Spec.FE.Configs["enable_fqdn_mode"] = "true"
+
 	configMapRef := GetFeConfigMapKey(cr.ObjKey())
 	data := map[string]string{
 		"fe.conf": dumpJavaBasedComponentConf(cr.Spec.FE.Configs),
