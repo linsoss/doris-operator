@@ -13,8 +13,6 @@ COPY cn/cn_entrypoint.sh /opt/apache-doris/be/bin
 RUN apt-get update && \
 	apt-get install -y default-mysql-client && \
 	apt-get clean && \
-    sysctl -w vm.max_map_count=2000000 && \
-    ulimit -n 65536 && \
 	chmod 755 /opt/apache-doris/be/bin/entrypoint_helper.sh && \
     chmod 755 /opt/apache-doris/be/bin/cn_entrypoint.sh && \
     chmod 755 /opt/apache-doris/be/bin/start_be.sh && \
