@@ -224,7 +224,8 @@ func MakeInitializerJob(cr *dapi.DorisInitializer, feSvcQueryPort int32, scheme 
 	// pod template
 	podTemplate := corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Labels: initLabels,
+			Labels:      initLabels,
+			Annotations: make(map[string]string),
 		},
 		Spec: corev1.PodSpec{
 			RestartPolicy:    corev1.RestartPolicyNever,

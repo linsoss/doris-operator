@@ -243,7 +243,8 @@ func MakeGrafanaDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1
 	// pod template
 	podTemplate := corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Labels: labels,
+			Labels:      labels,
+			Annotations: make(map[string]string),
 		},
 		Spec: corev1.PodSpec{
 			ServiceAccountName: cr.Spec.ServiceAccount,

@@ -89,8 +89,7 @@ func (r *DorisInitializerReconciler) Reconcile() (dapi.DorisInitializerRecStatus
 		// job
 		feQueryPort := tran.GetFeQueryPort(clusterCr)
 		if job := tran.MakeInitializerJob(r.CR, feQueryPort, r.Schema); job != nil {
-			job.Annotations = util.MapFallback(job.Annotations, make(map[string]string))
-			job.Annotations[InitializerConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
+			job.Spec.Template.Annotations[InitializerConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 			if err := r.CreateOrUpdate(job, &batchv1.Job{}); err != nil {
 				return err
 			}

@@ -121,8 +121,7 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 		}
 		// fe statefulset
 		statefulSet := tran.MakeFeStatefulSet(r.CR, r.Schema)
-		statefulSet.Annotations = util.MapFallback(statefulSet.Annotations, make(map[string]string))
-		statefulSet.Annotations[FeConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
+		statefulSet.Spec.Template.Annotations[FeConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(statefulSet, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageFeStatefulSet, action, err)
 		}
@@ -131,6 +130,7 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 
 	// delete resources
 	deleteRes := func() ClusterStageRecResult {
+		r.Log.Info("delete Doris FE resources")
 		action := dapi.StageActionDelete
 		// fe statefulset
 		statefulsetRef := tran.GetFeStatefulSetKey(r.CR.ObjKey())
@@ -179,8 +179,7 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 		}
 		// be statefulset
 		statefulSet := tran.MakeBeStatefulSet(r.CR, r.Schema)
-		statefulSet.Annotations = util.MapFallback(statefulSet.Annotations, make(map[string]string))
-		statefulSet.Annotations[BeConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
+		statefulSet.Spec.Template.Annotations[BeConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(statefulSet, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageBeStatefulSet, action, err)
 		}
@@ -189,6 +188,7 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 
 	// delete resources
 	deleteRes := func() ClusterStageRecResult {
+		r.Log.Info("delete Doris BE resources")
 		action := dapi.StageActionDelete
 		// be statefulset
 		statefulsetRef := tran.GetBeStatefulSetKey(r.CR.ObjKey())
@@ -238,8 +238,7 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 
 		// cn statefulset
 		statefulSet := tran.MakeCnStatefulSet(r.CR, r.Schema)
-		statefulSet.Annotations = util.MapFallback(statefulSet.Annotations, make(map[string]string))
-		statefulSet.Annotations[CnConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
+		statefulSet.Spec.Template.Annotations[CnConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		// when the corresponding DorisAutoScaler resource exists,
 		// the replica of statefulset would not be overridden
 		autoScaler, err := r.FindRefDorisAutoScaler(client.ObjectKeyFromObject(r.CR))
@@ -258,6 +257,7 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 
 	// delete resources
 	deleteRes := func() ClusterStageRecResult {
+		r.Log.Info("delete Doris CN resources")
 		action := dapi.StageActionDelete
 		// cn statefulset
 		statefulsetRef := tran.GetCnStatefulSetKey(r.CR.ObjKey())
@@ -302,8 +302,7 @@ func (r *DorisClusterReconciler) recBrokerResources() ClusterStageRecResult {
 		}
 		// broker statefulset
 		statefulSet := tran.MakeBrokerStatefulSet(r.CR, r.Schema)
-		statefulSet.Annotations = util.MapFallback(statefulSet.Annotations, make(map[string]string))
-		statefulSet.Annotations[BrokerConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
+		statefulSet.Spec.Template.Annotations[BrokerConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(statefulSet, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageBrokerStatefulSet, action, err)
 		}
@@ -312,6 +311,7 @@ func (r *DorisClusterReconciler) recBrokerResources() ClusterStageRecResult {
 
 	// delete resources
 	deleteRes := func() ClusterStageRecResult {
+		r.Log.Info("delete Doris Broker resources")
 		action := dapi.StageActionDelete
 		// broker statefulset
 		statefulsetRef := tran.GetBrokerStatefulSetKey(r.CR.ObjKey())

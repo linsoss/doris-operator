@@ -130,8 +130,7 @@ func (r *DorisMonitorReconciler) recPrometheusResources() MonitorStageRecResult 
 	}
 	// deployment
 	deployment := tran.MakePrometheusDeployment(r.CR, r.Schema)
-	deployment.Annotations = util.MapFallback(deployment.Annotations, make(map[string]string))
-	deployment.Annotations[PrometheusConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
+	deployment.Spec.Template.Annotations[PrometheusConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 	if err := r.CreateOrUpdate(deployment, &appv1.Deployment{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusDeployment, action, err)
 	}
@@ -166,8 +165,7 @@ func (r *DorisMonitorReconciler) recGrafanaResources() MonitorStageRecResult {
 	}
 	// deployment
 	deployment := tran.MakeGrafanaDeployment(r.CR, r.Schema)
-	deployment.Annotations = util.MapFallback(deployment.Annotations, make(map[string]string))
-	deployment.Annotations[GrafanaConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
+	deployment.Spec.Template.Annotations[GrafanaConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 	if err := r.CreateOrUpdate(deployment, &appv1.Deployment{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaDeployment, action, err)
 	}
@@ -199,8 +197,7 @@ func (r *DorisMonitorReconciler) recLokiResources() MonitorStageRecResult {
 		}
 		// deployment
 		deployment := tran.MakeLokiDeployment(r.CR, r.Schema)
-		deployment.Annotations = util.MapFallback(deployment.Annotations, make(map[string]string))
-		deployment.Annotations[LokiConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
+		deployment.Spec.Template.Annotations[LokiConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(deployment, &appv1.Deployment{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiDeployment, action, err)
 		}
@@ -251,8 +248,7 @@ func (r *DorisMonitorReconciler) recPromtailResources() MonitorStageRecResult {
 		}
 		// daemonset
 		daemonSet := tran.MakePromtailDaemonSet(r.CR, r.Schema)
-		daemonSet.Annotations = util.MapFallback(daemonSet.Annotations, make(map[string]string))
-		daemonSet.Annotations[PromtailConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
+		daemonSet.Spec.Template.Annotations[PromtailConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		if err := r.CreateOrUpdate(daemonSet, &appv1.DaemonSet{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStagePromtailDaemonSet, action, err)
 		}

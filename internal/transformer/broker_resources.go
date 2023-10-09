@@ -193,7 +193,8 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 	// pod template
 	podTemplate := corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Labels: brokerLabels,
+			Labels:      brokerLabels,
+			Annotations: make(map[string]string),
 		},
 		Spec: corev1.PodSpec{
 			Volumes:            volumes,
