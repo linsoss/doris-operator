@@ -261,5 +261,6 @@ func MakePrometheusDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *ap
 		},
 	}
 	_ = controllerutil.SetOwnerReference(cr, deployment, scheme)
+	_ = controllerutil.SetControllerReference(cr, deployment, scheme)
 	return deployment
 }

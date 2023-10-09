@@ -7937,9 +7937,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                 type: object
               broker:
@@ -7979,9 +7976,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                 type: object
               cn:
@@ -8021,9 +8015,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                 type: object
               fe:
@@ -8063,9 +8054,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                   statefulSetRef:
                     properties:
@@ -8073,9 +8061,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                 type: object
               lastApplySpecHash:
@@ -8088,6 +8073,8 @@ spec:
                 type: string
               stageStatus:
                 type: string
+            required:
+            - allReady
             type: object
         type: object
     served: true

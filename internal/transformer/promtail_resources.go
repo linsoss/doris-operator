@@ -176,5 +176,6 @@ func MakePromtailDaemonSet(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1
 		},
 	}
 	_ = controllerutil.SetOwnerReference(cr, daemonSet, scheme)
+	_ = controllerutil.SetControllerReference(cr, daemonSet, scheme)
 	return daemonSet
 }

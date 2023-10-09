@@ -233,5 +233,6 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 	}
 
 	_ = controllerutil.SetOwnerReference(cr, statefulSet, scheme)
+	_ = controllerutil.SetControllerReference(cr, statefulSet, scheme)
 	return statefulSet
 }

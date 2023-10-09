@@ -254,5 +254,6 @@ func MakeLokiDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.De
 		},
 	}
 	_ = controllerutil.SetOwnerReference(cr, deployment, scheme)
+	_ = controllerutil.SetControllerReference(cr, deployment, scheme)
 	return deployment
 }

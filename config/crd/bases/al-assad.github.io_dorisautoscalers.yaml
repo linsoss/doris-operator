@@ -83,9 +83,6 @@ spec:
                     type: string
                   namespace:
                     type: string
-                required:
-                - name
-                - namespace
                 type: object
               cn:
                 properties:
@@ -103,9 +100,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                   scaleDownHpaStatus:
                     properties:
@@ -399,9 +393,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                   scaleUpHpaStatus:
                     properties:

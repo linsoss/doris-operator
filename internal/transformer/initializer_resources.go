@@ -253,5 +253,6 @@ func MakeInitializerJob(cr *dapi.DorisInitializer, feSvcQueryPort int32, scheme 
 		},
 	}
 	_ = controllerutil.SetOwnerReference(cr, job, scheme)
+	_ = controllerutil.SetControllerReference(cr, job, scheme)
 	return job
 }

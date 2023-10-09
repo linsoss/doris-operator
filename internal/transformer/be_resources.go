@@ -326,5 +326,6 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	}
 
 	_ = controllerutil.SetOwnerReference(cr, statefulSet, scheme)
+	_ = controllerutil.SetControllerReference(cr, statefulSet, scheme)
 	return statefulSet
 }

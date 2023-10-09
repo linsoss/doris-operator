@@ -70,8 +70,12 @@ func (r *DorisClusterReconciler) Sync() (dapi.DorisClusterSyncStatus, error) {
 			}
 		},
 	}
-	muteFnRes := util.ParallelRun(syncFns...)
-	for _, muteFn := range muteFnRes {
+	//muteFnRes := util.ParallelRun(syncFns...)
+	//for _, muteFn := range muteFnRes {
+	//	muteFn(syncRes, errCtr)
+	//}
+	for _, fn := range syncFns {
+		muteFn := fn()
 		muteFn(syncRes, errCtr)
 	}
 
@@ -130,7 +134,7 @@ func (r *DorisClusterReconciler) syncFeStatus() (dapi.FEStatus, error) {
 	statefulSetRef := tran.GetFeStatefulSetKey(r.CR.ObjKey())
 	image := tran.GetFeImage(r.CR)
 
-	err := r.fillDorisComponentStatus(&feStatus.DorisComponentStatus, statefulSetRef, image)
+	err := r.fillDorisComponentStatus(&feStatus.DorisComponentStatus, statefulSetRef, tran.GetFeComponentLabels(r.CR.ObjKey()), image)
 	return feStatus, err
 }
 
@@ -143,7 +147,7 @@ func (r *DorisClusterReconciler) syncBeStatus() (dapi.BEStatus, error) {
 	statefulSetRef := tran.GetBeStatefulSetKey(r.CR.ObjKey())
 	image := tran.GetBeImage(r.CR)
 
-	err := r.fillDorisComponentStatus(&beStatus.DorisComponentStatus, statefulSetRef, image)
+	err := r.fillDorisComponentStatus(&beStatus.DorisComponentStatus, statefulSetRef, tran.GetBeComponentLabels(r.CR.ObjKey()), image)
 	return beStatus, err
 }
 
@@ -156,7 +160,7 @@ func (r *DorisClusterReconciler) syncCnStatus() (dapi.CNStatus, error) {
 	statefulSetRef := tran.GetCnStatefulSetKey(r.CR.ObjKey())
 	image := tran.GetCnImage(r.CR)
 
-	err := r.fillDorisComponentStatus(&cnStatus.DorisComponentStatus, statefulSetRef, image)
+	err := r.fillDorisComponentStatus(&cnStatus.DorisComponentStatus, statefulSetRef, tran.GetCnComponentLabels(r.CR.ObjKey()), image)
 	return cnStatus, err
 }
 
@@ -169,13 +173,14 @@ func (r *DorisClusterReconciler) syncBrokerStatus() (dapi.BrokerStatus, error) {
 	image := tran.GetBrokerImage(r.CR)
 	statefulSetRef := tran.GetBrokerStatefulSetKey(r.CR.ObjKey())
 
-	err := r.fillDorisComponentStatus(&status.DorisComponentStatus, statefulSetRef, image)
+	err := r.fillDorisComponentStatus(&status.DorisComponentStatus, statefulSetRef, tran.GetBrokerComponentLabels(r.CR.ObjKey()), image)
 	return status, err
 }
 
 func (r *DorisClusterReconciler) fillDorisComponentStatus(
 	baseStatus *dapi.DorisComponentStatus,
 	statefulSetKey types.NamespacedName,
+	statefulSetLabels map[string]string,
 	image string) error {
 
 	baseStatus.Image = image
@@ -190,7 +195,7 @@ func (r *DorisClusterReconciler) fillDorisComponentStatus(
 	if exist {
 		baseStatus.Members = r.getComponentMembers(sts)
 		baseStatus.Conditions = sts.Status.Conditions
-		readyMembers, err := r.getComponentReadyMembers(r.CR.Namespace, tran.GetFeComponentLabels(r.CR.ObjKey()))
+		readyMembers, err := r.getComponentReadyMembers(r.CR.Namespace, statefulSetLabels)
 		if err != nil {
 			return err
 		}

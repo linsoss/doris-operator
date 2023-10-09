@@ -114,6 +114,7 @@ func MakeCnScaleUpHpa(cr *dapi.DorisAutoscaler, scheme *runtime.Scheme) *acv2.Ho
 		},
 	}
 	_ = controllerutil.SetOwnerReference(cr, hpa, scheme)
+	_ = controllerutil.SetControllerReference(cr, hpa, scheme)
 	return hpa
 }
 
@@ -179,5 +180,6 @@ func MakeCnScaleDownHpa(cr *dapi.DorisAutoscaler, scheme *runtime.Scheme) *acv2.
 		},
 	}
 	_ = controllerutil.SetOwnerReference(cr, hpa, scheme)
+	_ = controllerutil.SetControllerReference(cr, hpa, scheme)
 	return hpa
 }

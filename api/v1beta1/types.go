@@ -21,8 +21,8 @@ import "k8s.io/apimachinery/pkg/types"
 // NamespacedName is the name and namespace of the kubernetes object
 // +k8s:openapi-gen=true
 type NamespacedName struct {
-	Name      string `json:"name"`
-	Namespace string `json:"namespace"`
+	Name      string `json:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
 }
 
 func NewNamespacedName(name types.NamespacedName) NamespacedName {

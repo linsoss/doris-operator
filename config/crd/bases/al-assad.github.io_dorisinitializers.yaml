@@ -145,9 +145,6 @@ spec:
                     type: string
                   namespace:
                     type: string
-                required:
-                - name
-                - namespace
                 type: object
               phase:
                 type: string

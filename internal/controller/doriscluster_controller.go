@@ -46,7 +46,6 @@ type DorisClusterReconciler struct {
 
 func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	recCtx := reconciler.NewReconcileContext(r.Client, r.Scheme, ctx)
-
 	// obtain CR
 	cr := &dapi.DorisCluster{}
 	exist, err := recCtx.Exist(req.NamespacedName, cr)

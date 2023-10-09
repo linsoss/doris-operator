@@ -71,8 +71,7 @@ func (r *ReconcileContext) CreateWhenNotExist(obj client.Object, objType client.
 	if err := r.Create(r.Ctx, obj); err != nil {
 		return err
 	}
-	r.Log.Info("create object: "+util.K8sObjKeyStr(key),
-		"kind", objType.GetObjectKind().GroupVersionKind().Kind)
+	r.Log.Info("create object: " + util.K8sObjKeyStr(key))
 	return nil
 }
 
@@ -86,8 +85,7 @@ func (r *ReconcileContext) DeleteWhenExist(key types.NamespacedName, objType cli
 		if err := r.Delete(r.Ctx, objType); err != nil {
 			return err
 		}
-		r.Log.Info("delete object: "+util.K8sObjKeyStr(key),
-			"kind", objType.GetObjectKind().GroupVersionKind().Kind)
+		r.Log.Info("delete object: " + util.K8sObjKeyStr(key))
 	}
 	return nil
 }
@@ -104,8 +102,7 @@ func (r *ReconcileContext) CreateOrUpdate(obj client.Object, objType client.Obje
 		if err := r.Create(r.Ctx, obj); err != nil {
 			return err
 		}
-		r.Log.Info("create object: "+util.K8sObjKeyStr(key),
-			"kind", objType.GetObjectKind().GroupVersionKind().Kind)
+		r.Log.Info("create object: " + util.K8sObjKeyStr(key))
 		return nil
 	} else {
 		return r.Update(r.Ctx, obj)

@@ -253,9 +253,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                   pvcRef:
                     properties:
@@ -263,9 +260,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                   ready:
                     type: boolean
@@ -275,9 +269,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                 type: object
               lastApplySpecHash:
@@ -314,9 +305,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                   pvcRef:
                     properties:
@@ -324,9 +312,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                   ready:
                     type: boolean
@@ -336,9 +321,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                 type: object
               prometheus:
@@ -371,9 +353,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                   pvcRef:
                     properties:
@@ -381,9 +360,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                   ready:
                     type: boolean
@@ -393,9 +369,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                 type: object
               promtail:
@@ -425,9 +398,6 @@ spec:
                         type: string
                       namespace:
                         type: string
-                    required:
-                    - name
-                    - namespace
                     type: object
                   ready:
                     type: boolean
