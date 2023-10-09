@@ -26,7 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
@@ -71,12 +70,9 @@ func (r *ReconcileContext) Find(key types.NamespacedName, obj client.Object) err
 }
 
 // CreateWhenNotExist creates the kubernetes object if it does not exist.
-func (r *ReconcileContext) CreateWhenNotExist(obj client.Object) error {
+func (r *ReconcileContext) CreateWhenNotExist(obj client.Object, objType client.Object) error {
 	key := client.ObjectKeyFromObject(obj)
-	objType := reflect.TypeOf(obj)
-	objTypeInstance := reflect.New(objType).Elem().Interface().(client.Object)
-
-	exist, err := r.Exist(key, objTypeInstance)
+	exist, err := r.Exist(key, objType)
 	if err != nil {
 		return err
 	}
@@ -86,7 +82,8 @@ func (r *ReconcileContext) CreateWhenNotExist(obj client.Object) error {
 	if err := r.Create(r.Ctx, obj); err != nil {
 		return err
 	}
-	r.Log.Info("create object: " + util.K8sObjKeyStr(key))
+	r.Log.Info("create object: "+util.K8sObjKeyStr(key),
+		"kind", objType.GetObjectKind().GroupVersionKind().Kind)
 	return nil
 }
 
@@ -100,18 +97,16 @@ func (r *ReconcileContext) DeleteWhenExist(key types.NamespacedName, objType cli
 		if err := r.Delete(r.Ctx, objType); err != nil {
 			return err
 		}
-		r.Log.Info("delete object: " + util.K8sObjKeyStr(key))
+		r.Log.Info("delete object: "+util.K8sObjKeyStr(key),
+			"kind", objType.GetObjectKind().GroupVersionKind().Kind)
 	}
 	return nil
 }
 
 // CreateOrUpdate creates or updates the kubernetes object.
-func (r *ReconcileContext) CreateOrUpdate(obj client.Object) error {
+func (r *ReconcileContext) CreateOrUpdate(obj client.Object, objType client.Object) error {
 	key := client.ObjectKeyFromObject(obj)
-	objType := reflect.TypeOf(obj)
-	prevObj := reflect.New(objType).Elem().Interface().(client.Object)
-
-	exist, err := r.Exist(key, prevObj)
+	exist, err := r.Exist(key, objType)
 	if err != nil {
 		return err
 	}
@@ -120,7 +115,8 @@ func (r *ReconcileContext) CreateOrUpdate(obj client.Object) error {
 		if err := r.Create(r.Ctx, obj); err != nil {
 			return err
 		}
-		r.Log.Info("create object: " + util.K8sObjKeyStr(key))
+		r.Log.Info("create object: "+util.K8sObjKeyStr(key),
+			"kind", objType.GetObjectKind().GroupVersionKind().Kind)
 		return nil
 	} else {
 		return r.Update(r.Ctx, obj)

@@ -159,7 +159,7 @@ func mergeHostAlias(items []dapi.HostnameIpItem, hostAliasList []corev1.HostAlia
 	if len(items) == 0 {
 		return hostAliasList
 	}
-	var ipHostAliasMap map[string]*corev1.HostAlias
+	ipHostAliasMap := make(map[string]*corev1.HostAlias)
 
 	// handle items
 	for _, item := range items {
@@ -191,4 +191,14 @@ func mergeHostAlias(items []dapi.HostnameIpItem, hostAliasList []corev1.HostAlia
 		result = append(result, *hostAlias)
 	}
 	return result
+}
+
+// Format the resource requirement for Pod container
+func formatContainerResourcesRequirement(req corev1.ResourceRequirements) corev1.ResourceRequirements {
+	reqCopy := req.DeepCopy()
+	delete(reqCopy.Limits, corev1.ResourceEphemeralStorage)
+	delete(reqCopy.Limits, corev1.ResourceStorage)
+	delete(reqCopy.Requests, corev1.ResourceEphemeralStorage)
+	delete(reqCopy.Requests, corev1.ResourceStorage)
+	return *reqCopy
 }

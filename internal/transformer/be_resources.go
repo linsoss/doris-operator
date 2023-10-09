@@ -118,11 +118,12 @@ func MakeBeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 	if cr.Spec.BE == nil {
 		return nil
 	}
-	cr.Spec.BE.Configs["be_node_role"] = "mix"
 
+	configs := util.MapFallback(cr.Spec.BE.Configs, make(map[string]string))
+	configs["be_node_role"] = "mix"
 	configMapRef := GetBeConfigMapKey(cr.ObjKey())
 	data := map[string]string{
-		"be.conf": dumpCppBasedComponentConf(cr.Spec.BE.Configs),
+		"be.conf": dumpCppBasedComponentConf(configs),
 	}
 	// merge hadoop config data
 	if cr.Spec.HadoopConf != nil {
@@ -232,9 +233,7 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		Name:            "be",
 		Image:           GetBeImage(cr),
 		ImagePullPolicy: cr.Spec.ImagePullPolicy,
-		Resources: corev1.ResourceRequirements{
-			Requests: cr.Spec.BE.Requests,
-		},
+		Resources:       formatContainerResourcesRequirement(cr.Spec.BE.ResourceRequirements),
 		Ports: []corev1.ContainerPort{
 			{Name: "webserver-port", ContainerPort: GetBeWebserverPort(cr)},
 			{Name: "heart-port", ContainerPort: GetBeHeartbeatServicePort(cr)},

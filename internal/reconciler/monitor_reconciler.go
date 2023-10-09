@@ -23,7 +23,9 @@ import (
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	tran "github.com/al-assad/doris-operator/internal/transformer"
 	"github.com/al-assad/doris-operator/internal/util"
+	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	rabcv1 "k8s.io/api/rbac/v1"
 )
 
 var (
@@ -81,22 +83,25 @@ func mnrStageSucc(stage dapi.DorisMonitorOprStage, action dapi.OprStageAction) M
 }
 
 func mnrStageFail(stage dapi.DorisMonitorOprStage, action dapi.OprStageAction, err error) MonitorStageRecResult {
-	return MonitorStageRecResult{Stage: stage, Status: dapi.StageResultSucceeded, Action: action, Err: err}
+	return MonitorStageRecResult{Stage: stage, Status: dapi.StageResultFailed, Action: action, Err: err}
 }
 
 // reconcile rbac resources used by the DorisMonitor
 func (r *DorisMonitorReconciler) recRbacResources() MonitorStageRecResult {
 	action := dapi.StageActionApply
 	// global cluster role
-	if err := r.CreateWhenNotExist(tran.MakeMonitorGlobalClusterRole()); err != nil {
+	clusterRole := tran.MakeMonitorGlobalClusterRole()
+	if err := r.CreateWhenNotExist(clusterRole, &rabcv1.ClusterRole{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGlobalClusterRole, action, err)
 	}
 	// namespaced service account
-	if err := r.CreateWhenNotExist(tran.MakeMonitorNamespacedServiceAccount(r.CR.Namespace)); err != nil {
+	serviceAccount := tran.MakeMonitorNamespacedServiceAccount(r.CR.Namespace)
+	if err := r.CreateWhenNotExist(serviceAccount, &corev1.ServiceAccount{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStageNamespacedServiceAccount, action, err)
 	}
 	// namespaced role binding
-	if err := r.CreateWhenNotExist(tran.MakeMonitorNamespacedRoleBinding(r.CR.Namespace)); err != nil {
+	roleBinding := tran.MakeMonitorNamespacedRoleBinding(r.CR.Namespace)
+	if err := r.CreateWhenNotExist(roleBinding, &rabcv1.RoleBinding{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStageNamespacedRoleBinding, action, err)
 	}
 	return mnrStageSucc(dapi.MnrOprStageRbac, action)
@@ -110,23 +115,24 @@ func (r *DorisMonitorReconciler) recPrometheusResources() MonitorStageRecResult 
 	if genConfErr != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusConfigMap, action, genConfErr)
 	}
-	if err := r.CreateOrUpdate(configMap); err != nil {
+	if err := r.CreateOrUpdate(configMap, &corev1.ConfigMap{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusConfigMap, action, err)
 	}
 	// service
 	service := tran.MakePrometheusService(r.CR, r.Schema)
-	if err := r.CreateOrUpdate(service); err != nil {
+	if err := r.CreateOrUpdate(service, &corev1.Service{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusService, action, err)
 	}
 	// pvc
 	pvc := tran.MakePrometheusPVC(r.CR, r.Schema)
-	if err := r.CreateOrUpdate(pvc); err != nil {
+	if err := r.CreateOrUpdate(pvc, &corev1.PersistentVolumeClaim{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusPVC, action, err)
 	}
 	// deployment
 	deployment := tran.MakePrometheusDeployment(r.CR, r.Schema)
+	deployment.Annotations = util.MapFallback(deployment.Annotations, make(map[string]string))
 	deployment.Annotations[PrometheusConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
-	if err := r.CreateOrUpdate(deployment); err != nil {
+	if err := r.CreateOrUpdate(deployment, &appv1.Deployment{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusDeployment, action, err)
 	}
 	return mnrStageSucc(dapi.MnrOprStagePrometheus, action)
@@ -140,28 +146,29 @@ func (r *DorisMonitorReconciler) recGrafanaResources() MonitorStageRecResult {
 	if genConfErr != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaConfigMap, action, genConfErr)
 	}
-	if err := r.CreateOrUpdate(configMap); err != nil {
+	if err := r.CreateOrUpdate(configMap, &corev1.ConfigMap{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaConfigMap, action, err)
 	}
 	// secret
 	secret := tran.MakeGrafanaSecret(r.CR, r.Schema)
-	if err := r.CreateOrUpdate(secret); err != nil {
+	if err := r.CreateOrUpdate(secret, &corev1.Service{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaSecret, action, err)
 	}
 	// service
 	service := tran.MakeGrafanaService(r.CR, r.Schema)
-	if err := r.CreateOrUpdate(service); err != nil {
+	if err := r.CreateOrUpdate(service, &corev1.Service{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaService, action, err)
 	}
 	// pvc
 	pvc := tran.MakeGrafanaPVC(r.CR, r.Schema)
-	if err := r.CreateOrUpdate(pvc); err != nil {
+	if err := r.CreateOrUpdate(pvc, &corev1.PersistentVolumeClaim{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaPVC, action, err)
 	}
 	// deployment
 	deployment := tran.MakeGrafanaDeployment(r.CR, r.Schema)
+	deployment.Annotations = util.MapFallback(deployment.Annotations, make(map[string]string))
 	deployment.Annotations[GrafanaConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
-	if err := r.CreateOrUpdate(deployment); err != nil {
+	if err := r.CreateOrUpdate(deployment, &appv1.Deployment{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaDeployment, action, err)
 	}
 	return mnrStageSucc(dapi.MnrOprStageGrafana, action)
@@ -177,23 +184,24 @@ func (r *DorisMonitorReconciler) recLokiResources() MonitorStageRecResult {
 		if genErr != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiConfigMap, action, genErr)
 		}
-		if err := r.CreateOrUpdate(configMap); err != nil {
+		if err := r.CreateOrUpdate(configMap, &corev1.ConfigMap{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiConfigMap, action, err)
 		}
 		// service
 		service := tran.MakeLokiService(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(service); err != nil {
+		if err := r.CreateOrUpdate(service, &corev1.Service{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiService, action, err)
 		}
 		// pvc
 		pvc := tran.MakeLokiPVC(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(pvc); err != nil {
+		if err := r.CreateOrUpdate(pvc, &corev1.PersistentVolumeClaim{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiPVC, action, err)
 		}
 		// deployment
 		deployment := tran.MakeLokiDeployment(r.CR, r.Schema)
+		deployment.Annotations = util.MapFallback(deployment.Annotations, make(map[string]string))
 		deployment.Annotations[LokiConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
-		if err := r.CreateOrUpdate(deployment); err != nil {
+		if err := r.CreateOrUpdate(deployment, &appv1.Deployment{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiDeployment, action, err)
 		}
 		return mnrStageSucc(dapi.MnrOprStageLoki, action)
@@ -238,13 +246,14 @@ func (r *DorisMonitorReconciler) recPromtailResources() MonitorStageRecResult {
 		if genErr != nil {
 			return mnrStageFail(dapi.MnrOprStagePromtailConfigMap, action, genErr)
 		}
-		if err := r.CreateOrUpdate(configMap); err != nil {
+		if err := r.CreateOrUpdate(configMap, &corev1.ConfigMap{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStagePromtailConfigMap, action, err)
 		}
 		// daemonset
 		daemonSet := tran.MakePromtailDaemonSet(r.CR, r.Schema)
+		daemonSet.Annotations = util.MapFallback(daemonSet.Annotations, make(map[string]string))
 		daemonSet.Annotations[PromtailConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
-		if err := r.CreateOrUpdate(daemonSet); err != nil {
+		if err := r.CreateOrUpdate(daemonSet, &appv1.DaemonSet{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStagePromtailDaemonSet, action, err)
 		}
 		return mnrStageSucc(dapi.MnrOprStagePromtail, action)

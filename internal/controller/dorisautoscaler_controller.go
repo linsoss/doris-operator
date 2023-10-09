@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	"github.com/al-assad/doris-operator/internal/reconciler"
 	"github.com/al-assad/doris-operator/internal/util"
@@ -48,18 +49,21 @@ func (r *DorisAutoscalerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 	// skip reconciling process when it has been deleted
 	if cr == nil {
-		recCtx.Log.Info("DorisAutoscaler has been deleted")
+		recCtx.Log.Info(fmt.Sprintf("DorisAutoscaler(%s) has been deleted", util.K8sObjKeyStr(req.NamespacedName)))
 		return ctrl.Result{}, nil
 	}
 	rec := reconciler.DorisAutoScalerReconciler{ReconcileContext: recCtx, CR: cr}
 
 	curSpecHash := util.Md5HashOr(cr.Spec, "")
 	isFirstCreated := cr.Status.LastApplySpecHash == nil
-	specHasChanged := *cr.Status.LastApplySpecHash != curSpecHash
+	specHasChanged := isFirstCreated || *cr.Status.LastApplySpecHash != curSpecHash
 	preRecCompleted := cr.Status.CN.Phase == dapi.AutoScalePhaseCompleted
 
 	if isFirstCreated && cr.Status.CN.Phase == "" {
-		recCtx.Log.Info("DorisAutoscaler is created for the first time")
+		recCtx.Log.Info(fmt.Sprintf("DorisAutoscaler(%s) is created for the first time", util.K8sObjKeyStr(req.NamespacedName)))
+	}
+	if specHasChanged {
+		recCtx.Log.Info(fmt.Sprintf("DorisAutoscaler(%s) spec has been updated", util.K8sObjKeyStr(req.NamespacedName)))
 	}
 
 	// reconcile the sub resources

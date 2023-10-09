@@ -102,7 +102,7 @@ func (e *MultiTaggedError) Error() string {
 
 // MergeErrorsWithTag merges multiple errors into one with tags.
 func MergeErrorsWithTag(errors map[string]error) *MultiTaggedError {
-	errMap := make(map[string]error, len(errors))
+	errMap := make(map[string]error)
 	for tag, err := range errors {
 		if err != nil {
 			errMap[tag] = err

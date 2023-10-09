@@ -84,7 +84,7 @@ func clusterStageSucc(stage dapi.DorisClusterOprStage, action dapi.OprStageActio
 }
 
 func clusterStageFail(stage dapi.DorisClusterOprStage, action dapi.OprStageAction, err error) ClusterStageRecResult {
-	return ClusterStageRecResult{Stage: stage, Status: dapi.StageResultSucceeded, Action: action, Err: err}
+	return ClusterStageRecResult{Stage: stage, Status: dapi.StageResultFailed, Action: action, Err: err}
 }
 
 // reconcile secret object that using to store the sql query account info
@@ -93,7 +93,7 @@ func (r *DorisClusterReconciler) recOprAccountSecret() ClusterStageRecResult {
 	action := dapi.StageActionApply
 	// create secret if not exists
 	secret := tran.MakeOprSqlAccountSecret(r.CR)
-	if err := r.CreateWhenNotExist(secret); err != nil {
+	if err := r.CreateWhenNotExist(secret, &corev1.Secret{}); err != nil {
 		return clusterStageFail(dapi.StageSqlAccountSecret, action, err)
 	}
 	return clusterStageSucc(dapi.StageSqlAccountSecret, action)
@@ -107,22 +107,23 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 		action := dapi.StageActionApply
 		// fe configmap
 		configMap := tran.MakeFeConfigMap(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(configMap); err != nil {
+		if err := r.CreateOrUpdate(configMap, &corev1.ConfigMap{}); err != nil {
 			return clusterStageFail(dapi.StageFeConfigmap, action, err)
 		}
 		// fe service
 		service := tran.MakeFeService(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(service); err != nil {
+		if err := r.CreateOrUpdate(service, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageFeService, action, err)
 		}
 		peerService := tran.MakeFePeerService(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(peerService); err != nil {
+		if err := r.CreateOrUpdate(peerService, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageFeService, action, err)
 		}
 		// fe statefulset
 		statefulSet := tran.MakeFeStatefulSet(r.CR, r.Schema)
+		statefulSet.Annotations = util.MapFallback(statefulSet.Annotations, make(map[string]string))
 		statefulSet.Annotations[FeConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
-		if err := r.CreateOrUpdate(statefulSet); err != nil {
+		if err := r.CreateOrUpdate(statefulSet, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageFeStatefulSet, action, err)
 		}
 		return clusterStageSucc(dapi.StageFe, action)
@@ -164,22 +165,23 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 		action := dapi.StageActionApply
 		// be configmap
 		configMap := tran.MakeBeConfigMap(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(configMap); err != nil {
+		if err := r.CreateOrUpdate(configMap, &corev1.ConfigMap{}); err != nil {
 			return clusterStageFail(dapi.StageBeConfigmap, action, err)
 		}
 		// be service
 		service := tran.MakeBeService(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(service); err != nil {
+		if err := r.CreateOrUpdate(service, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageBeService, action, err)
 		}
 		peerService := tran.MakeBePeerService(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(peerService); err != nil {
+		if err := r.CreateOrUpdate(peerService, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageBeService, action, err)
 		}
 		// be statefulset
 		statefulSet := tran.MakeBeStatefulSet(r.CR, r.Schema)
+		statefulSet.Annotations = util.MapFallback(statefulSet.Annotations, make(map[string]string))
 		statefulSet.Annotations[BeConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
-		if err := r.CreateOrUpdate(statefulSet); err != nil {
+		if err := r.CreateOrUpdate(statefulSet, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageBeStatefulSet, action, err)
 		}
 		return clusterStageSucc(dapi.StageBe, action)
@@ -221,21 +223,22 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 		action := dapi.StageActionApply
 		// cn configmap
 		configMap := tran.MakeCnConfigMap(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(configMap); err != nil {
+		if err := r.CreateOrUpdate(configMap, &corev1.ConfigMap{}); err != nil {
 			return clusterStageFail(dapi.StageCnConfigmap, action, err)
 		}
 		// cn service
 		service := tran.MakeCnService(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(service); err != nil {
+		if err := r.CreateOrUpdate(service, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageCnService, action, err)
 		}
 		peerService := tran.MakeCnPeerService(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(peerService); err != nil {
+		if err := r.CreateOrUpdate(peerService, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageCnService, action, err)
 		}
 
 		// cn statefulset
 		statefulSet := tran.MakeCnStatefulSet(r.CR, r.Schema)
+		statefulSet.Annotations = util.MapFallback(statefulSet.Annotations, make(map[string]string))
 		statefulSet.Annotations[CnConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
 		// when the corresponding DorisAutoScaler resource exists,
 		// the replica of statefulset would not be overridden
@@ -246,7 +249,7 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 		if autoScaler != nil {
 			statefulSet.Spec.Replicas = nil
 		}
-		if err := r.CreateOrUpdate(statefulSet); err != nil {
+		if err := r.CreateOrUpdate(statefulSet, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageCnStatefulSet, action, err)
 		}
 
@@ -289,18 +292,19 @@ func (r *DorisClusterReconciler) recBrokerResources() ClusterStageRecResult {
 		action := dapi.StageActionApply
 		// broker configmap
 		configMap := tran.MakeBrokerConfigMap(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(configMap); err != nil {
+		if err := r.CreateOrUpdate(configMap, &corev1.ConfigMap{}); err != nil {
 			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
 		}
 		// broker service
 		peerService := tran.MakeBrokerPeerService(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(peerService); err != nil {
+		if err := r.CreateOrUpdate(peerService, &corev1.Service{}); err != nil {
 			return clusterStageFail(dapi.StageBrokerService, action, err)
 		}
 		// broker statefulset
 		statefulSet := tran.MakeBrokerStatefulSet(r.CR, r.Schema)
+		statefulSet.Annotations = util.MapFallback(statefulSet.Annotations, make(map[string]string))
 		statefulSet.Annotations[BrokerConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
-		if err := r.CreateOrUpdate(statefulSet); err != nil {
+		if err := r.CreateOrUpdate(statefulSet, &appv1.StatefulSet{}); err != nil {
 			return clusterStageFail(dapi.StageBrokerStatefulSet, action, err)
 		}
 		return clusterStageSucc(dapi.StageBroker, action)

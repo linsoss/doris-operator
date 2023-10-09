@@ -113,11 +113,11 @@ func MakeCnConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 	if cr.Spec.CN == nil {
 		return nil
 	}
-	cr.Spec.BE.Configs["be_node_role"] = "computation"
-
+	configs := util.MapFallback(cr.Spec.CN.Configs, make(map[string]string))
+	configs["enable_fqdn_mode"] = "true"
 	configMapRef := GetCnConfigMapKey(cr.ObjKey())
 	data := map[string]string{
-		"be.conf": dumpCppBasedComponentConf(cr.Spec.CN.Configs),
+		"be.conf": dumpCppBasedComponentConf(configs),
 	}
 	// merge hadoop config data
 	if cr.Spec.HadoopConf != nil {
@@ -211,9 +211,7 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		Name:            "cn",
 		Image:           GetCnImage(cr),
 		ImagePullPolicy: cr.Spec.ImagePullPolicy,
-		Resources: corev1.ResourceRequirements{
-			Requests: cr.Spec.CN.Requests,
-		},
+		Resources:       formatContainerResourcesRequirement(cr.Spec.CN.ResourceRequirements),
 		Ports: []corev1.ContainerPort{
 			{Name: "webserver-port", ContainerPort: GetCnWebserverPort(cr)},
 			{Name: "heart-port", ContainerPort: GetCnHeartbeatServicePort(cr)},

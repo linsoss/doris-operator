@@ -25,10 +25,10 @@ import (
 // MergeMaps merges two maps into one,
 // when there is a key conflict, prioritize using the value of m2.
 func MergeMaps[K comparable, V any](m1, m2 map[K]V) map[K]V {
-	if len(m1) == 0 {
+	if len(m1) == 0 || m1 == nil {
 		return m2
 	}
-	if len(m2) == 0 {
+	if len(m2) == 0 || m2 == nil {
 		return m1
 	}
 	merged := make(map[K]V, len(m1)+len(m2))
@@ -43,6 +43,12 @@ func MergeMaps[K comparable, V any](m1, m2 map[K]V) map[K]V {
 
 // MapEqual checks if two maps are equal.
 func MapEqual[K comparable, V comparable](m1, m2 map[K]V) bool {
+	if m1 == nil && m2 == nil {
+		return true
+	}
+	if m1 == nil || m2 == nil {
+		return false
+	}
 	if len(m1) != len(m2) {
 		return false
 	}

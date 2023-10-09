@@ -42,6 +42,14 @@ func ArrayFallback[T any](array []T, fallback []T) []T {
 	}
 }
 
+func MapFallback[K comparable, V any](mapValue map[K]V, fallback map[K]V) map[K]V {
+	if mapValue == nil || len(mapValue) == 0 {
+		return fallback
+	} else {
+		return mapValue
+	}
+}
+
 // PointerFallback returns the first pointer if it is not nil, otherwise the second pointer.
 func PointerFallback[T any](pointer *T, fallback *T) *T {
 	if pointer != nil {

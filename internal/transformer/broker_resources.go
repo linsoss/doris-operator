@@ -90,8 +90,9 @@ func MakeBrokerConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.
 		return nil
 	}
 	configMapRef := GetBrokerConfigMapKey(cr.ObjKey())
+	configs := util.MapFallback(cr.Spec.Broker.Configs, make(map[string]string))
 	data := map[string]string{
-		"apache_hdfs_broker.conf": dumpJavaBasedComponentConf(cr.Spec.Broker.Configs),
+		"apache_hdfs_broker.conf": dumpJavaBasedComponentConf(configs),
 		"log4j.properties":        DefaultBrokerLog4jContent,
 	}
 	// merge hadoop config data
@@ -154,9 +155,7 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 		Name:            "broker",
 		Image:           GetBrokerImage(cr),
 		ImagePullPolicy: cr.Spec.ImagePullPolicy,
-		Resources: corev1.ResourceRequirements{
-			Requests: cr.Spec.Broker.Requests,
-		},
+		Resources:       formatContainerResourcesRequirement(cr.Spec.Broker.ResourceRequirements),
 		Ports: []corev1.ContainerPort{
 			{Name: "ipc-port", ContainerPort: GetBrokerIpcPort(cr)},
 		},

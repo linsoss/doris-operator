@@ -63,7 +63,7 @@ func ShowBrokerNameHosts(db *sql.DB) (map[string]string, error) {
 		return map[string]string{}, ut.MergeErrors(errors.New("failed to execute sql 'show broker'"), err)
 	}
 	rowSet := ReadAllRowsAsString(rows)
-	var nameHosts map[string]string
+	nameHosts := make(map[string]string)
 	for _, row := range rowSet {
 		nameHosts[row["Name"]] = row["Host"]
 	}

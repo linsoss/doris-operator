@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	"github.com/al-assad/doris-operator/internal/reconciler"
 	"github.com/al-assad/doris-operator/internal/util"
@@ -55,18 +56,21 @@ func (r *DorisMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 	// skip reconciling process when it has been deleted
 	if cr == nil {
-		recCtx.Log.Info("DorisMonitor has been deleted")
+		recCtx.Log.Info(fmt.Sprintf("DorisMonitor(%s) has been deleted", util.K8sObjKeyStr(req.NamespacedName)))
 		return ctrl.Result{}, nil
 	}
 	rec := reconciler.DorisMonitorReconciler{ReconcileContext: recCtx, CR: cr}
 
 	curSpecHash := util.Md5HashOr(cr.Spec, "")
 	isFirstCreated := cr.Status.LastApplySpecHash == nil
-	specHasChanged := *cr.Status.LastApplySpecHash != curSpecHash
+	specHasChanged := isFirstCreated || *cr.Status.LastApplySpecHash != curSpecHash
 	preRecCompleted := cr.Status.Stage == dapi.MnrOprStageCompleted
 
 	if isFirstCreated && cr.Status.Stage == "" {
-		recCtx.Log.Info("DorisMonitor is created for the first time")
+		recCtx.Log.Info(fmt.Sprintf("DorisMonitor(%s) is created for the first time", util.K8sObjKeyStr(req.NamespacedName)))
+	}
+	if specHasChanged {
+		recCtx.Log.Info(fmt.Sprintf("DorisMonitor(%s) spec has been updated", util.K8sObjKeyStr(req.NamespacedName)))
 	}
 
 	// reconcile the sub resource of CR

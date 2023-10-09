@@ -30,19 +30,15 @@ type StCtrlErrSet struct {
 	Update error
 }
 
-func (r *StCtrlErrSet) Merged() error {
+func (r *StCtrlErrSet) AsResult() (ctrl.Result, error) {
 	mergedErr := util.MergeErrorsWithTag(map[string]error{
 		"rec":           r.Rec,
 		"sync":          r.Sync,
 		"update-status": r.Update,
 	})
-	return mergedErr
-}
-
-func (r *StCtrlErrSet) AsResult() (ctrl.Result, error) {
-	merged := r.Merged()
-	if merged == nil {
+	if mergedErr == nil {
 		return ctrl.Result{}, nil
+	} else {
+		return ctrl.Result{Requeue: true}, mergedErr
 	}
-	return ctrl.Result{Requeue: true}, merged
 }

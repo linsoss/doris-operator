@@ -165,7 +165,7 @@ func (r *DorisDiscovery) recDorisBroker() *RecErr {
 	actualBkNames := maps.Keys(bkNameHosts)
 
 	addBkNames := u.Difference(expectBkNames, actualBkNames)
-	var addBkNameHosts map[string]string
+	addBkNameHosts := make(map[string]string)
 	for _, name := range addBkNames {
 		addBkNameHosts[name] = fmt.Sprintf(
 			"%s.%s.%s.svc.cluster.local",

@@ -121,11 +121,11 @@ func MakeFeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 	if cr.Spec.FE == nil {
 		return nil
 	}
-	cr.Spec.FE.Configs["enable_fqdn_mode"] = "true"
-
+	configs := util.MapFallback(cr.Spec.FE.Configs, make(map[string]string))
+	configs["enable_fqdn_mode"] = "true"
 	configMapRef := GetFeConfigMapKey(cr.ObjKey())
 	data := map[string]string{
-		"fe.conf": dumpJavaBasedComponentConf(cr.Spec.FE.Configs),
+		"fe.conf": dumpJavaBasedComponentConf(configs),
 	}
 	// merge hadoop config data
 	if cr.Spec.HadoopConf != nil {
@@ -254,9 +254,7 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		Name:            "fe",
 		Image:           GetFeImage(cr),
 		ImagePullPolicy: cr.Spec.ImagePullPolicy,
-		Resources: corev1.ResourceRequirements{
-			Requests: cr.Spec.FE.Requests,
-		},
+		Resources:       formatContainerResourcesRequirement(cr.Spec.FE.ResourceRequirements),
 		Ports: []corev1.ContainerPort{
 			{Name: "http-port", ContainerPort: GetFeHttpPort(cr)},
 			{Name: "edit-log-port", ContainerPort: GetFeEditLogPort(cr)},

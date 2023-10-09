@@ -80,12 +80,12 @@ func (r *DorisAutoScalerReconciler) Reconcile() (dapi.AutoscalerRecStatus, error
 		}
 		// apply hpa resources
 		if cnUpHpa := tran.MakeCnScaleUpHpa(r.CR, r.Schema); cnUpHpa != nil {
-			if err := r.CreateOrUpdate(cnUpHpa); err != nil {
+			if err := r.CreateOrUpdate(cnUpHpa, &acv2.HorizontalPodAutoscaler{}); err != nil {
 				return err
 			}
 		}
 		if cnDownHpa := tran.MakeCnScaleDownHpa(r.CR, r.Schema); cnDownHpa != nil {
-			if err := r.CreateOrUpdate(cnDownHpa); err != nil {
+			if err := r.CreateOrUpdate(cnDownHpa, &acv2.HorizontalPodAutoscaler{}); err != nil {
 				return err
 			}
 		}
