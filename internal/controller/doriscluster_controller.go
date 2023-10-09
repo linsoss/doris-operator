@@ -49,11 +49,12 @@ func (r *DorisClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// obtain CR
 	cr := &dapi.DorisCluster{}
-	if err := recCtx.Find(req.NamespacedName, cr); err != nil {
+	exist, err := recCtx.Exist(req.NamespacedName, cr)
+	if err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
 	// skip reconciling process when it has been deleted
-	if cr == nil {
+	if !exist {
 		recCtx.Log.Info(fmt.Sprintf("DorisCluster(%s) has been deleted", util.K8sObjKeyStr(req.NamespacedName)))
 		return ctrl.Result{}, nil
 	}

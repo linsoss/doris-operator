@@ -46,10 +46,11 @@ func (r *DorisInitializerReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	// obtain DorisInitializerReconciler CR and skip reconciling process when it has been deleted
 	cr := &dapi.DorisInitializer{}
-	if err := recCtx.Find(req.NamespacedName, cr); err != nil {
+	exist, err := recCtx.Exist(req.NamespacedName, cr)
+	if err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
-	if cr == nil {
+	if !exist {
 		recCtx.Log.Info(fmt.Sprintf("DorisInitializer(%s) has been deleted", util.K8sObjKeyStr(req.NamespacedName)))
 		return ctrl.Result{}, nil
 	}

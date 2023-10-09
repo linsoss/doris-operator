@@ -111,10 +111,11 @@ func (r *DorisMonitorReconciler) syncPromtailStatus() (dapi.PromtailStatus, erro
 
 	// Get daemonset status
 	daemonset := &appv1.DaemonSet{}
-	if err := r.Find(daemonsetKey, daemonset); err != nil {
+	exist, err := r.Exist(daemonsetKey, daemonset)
+	if err != nil {
 		return status, err
 	}
-	if daemonset != nil {
+	if exist {
 		status.Ready = daemonset.Status.NumberReady > 0
 		status.Conditions = daemonset.Status.Conditions
 	}
@@ -133,10 +134,11 @@ func (r *DorisMonitorReconciler) fillMonitorComponentStatus(
 
 	// Get deployment status
 	deploy := &appv1.Deployment{}
-	if err := r.Find(deploymentKey, deploy); err != nil {
+	exist, err := r.Exist(deploymentKey, deploy)
+	if err != nil {
 		return err
 	}
-	if deploy != nil {
+	if exist {
 		baseStatus.Ready = deploy.Status.ReadyReplicas > 0
 		baseStatus.Conditions = deploy.Status.Conditions
 	}

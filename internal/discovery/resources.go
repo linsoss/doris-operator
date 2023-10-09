@@ -32,10 +32,11 @@ import (
 // check if the fe service is alive and ready
 func (r *DorisDiscovery) checkFeSvcReady() *RecErr {
 	statefulset := &appv1.StatefulSet{}
-	if err := r.Find(tran.GetFeStatefulSetKey(r.CR.ObjKey()), statefulset); err != nil {
+	exist, err := r.Exist(tran.GetFeStatefulSetKey(r.CR.ObjKey()), statefulset)
+	if err != nil {
 		return NewRecErr(err)
 	}
-	if statefulset == nil {
+	if !exist {
 		return NewRecErr(errors.New("FE statefulset has not been created yet"))
 	}
 	if statefulset.Status.ReadyReplicas < 1 {
@@ -63,10 +64,11 @@ func (r *DorisDiscovery) createSqlConnConf() (*DorisSqlConnConf, *RecErr) {
 func (r *DorisDiscovery) getOprSqlAccount() (SqlAccount, error) {
 	secretRef := tran.GetOprSqlAccountSecretKey(r.CR.ObjKey())
 	secret := &corev1.Secret{}
-	if err := r.Find(secretRef, secret); err != nil {
+	exist, err := r.Exist(secretRef, secret)
+	if err != nil {
 		return SqlAccount{}, err
 	}
-	if secret == nil {
+	if !exist {
 		return SqlAccount{}, nil
 	}
 	sqlAccount := SqlAccount{

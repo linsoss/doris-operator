@@ -130,7 +130,6 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 
 	// delete resources
 	deleteRes := func() ClusterStageRecResult {
-		r.Log.Info("delete Doris FE resources")
 		action := dapi.StageActionDelete
 		// fe statefulset
 		statefulsetRef := tran.GetFeStatefulSetKey(r.CR.ObjKey())
@@ -188,7 +187,6 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 
 	// delete resources
 	deleteRes := func() ClusterStageRecResult {
-		r.Log.Info("delete Doris BE resources")
 		action := dapi.StageActionDelete
 		// be statefulset
 		statefulsetRef := tran.GetBeStatefulSetKey(r.CR.ObjKey())
@@ -257,7 +255,6 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 
 	// delete resources
 	deleteRes := func() ClusterStageRecResult {
-		r.Log.Info("delete Doris CN resources")
 		action := dapi.StageActionDelete
 		// cn statefulset
 		statefulsetRef := tran.GetCnStatefulSetKey(r.CR.ObjKey())
@@ -311,7 +308,6 @@ func (r *DorisClusterReconciler) recBrokerResources() ClusterStageRecResult {
 
 	// delete resources
 	deleteRes := func() ClusterStageRecResult {
-		r.Log.Info("delete Doris Broker resources")
 		action := dapi.StageActionDelete
 		// broker statefulset
 		statefulsetRef := tran.GetBrokerStatefulSetKey(r.CR.ObjKey())

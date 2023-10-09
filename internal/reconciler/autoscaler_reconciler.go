@@ -111,10 +111,11 @@ func (r *DorisAutoScalerReconciler) Sync() (dapi.CNAutoscalerSyncStatus, error) 
 	syncCnUpHpa := func() error {
 		hpaRef := tran.GetCnScaleUpHpaKey(r.CR.ObjKey())
 		hpa := &hpaType{}
-		if err := r.Find(hpaRef, hpa); err != nil {
+		exist, err := r.Exist(hpaRef, hpa)
+		if err != nil {
 			return err
 		}
-		if hpa != nil {
+		if exist {
 			status.ScaleUpHpaRef = &dapi.AutoScalerRef{
 				NamespacedName: dapi.NewNamespacedName(hpaRef),
 				TypeMeta:       hpa.TypeMeta,
@@ -127,10 +128,11 @@ func (r *DorisAutoScalerReconciler) Sync() (dapi.CNAutoscalerSyncStatus, error) 
 	syncCnDownHpa := func() error {
 		hpaRef := tran.GetCnScaleDownHpaKey(r.CR.ObjKey())
 		hpa := &hpaType{}
-		if err := r.Find(hpaRef, hpa); err != nil {
+		exist, err := r.Exist(hpaRef, hpa)
+		if err != nil {
 			return err
 		}
-		if hpa != nil {
+		if exist {
 			status.ScaleDownHpaRef = &dapi.AutoScalerRef{
 				NamespacedName: dapi.NewNamespacedName(hpaRef),
 				TypeMeta:       hpa.TypeMeta,

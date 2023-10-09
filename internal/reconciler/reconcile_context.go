@@ -58,17 +58,6 @@ func (r *ReconcileContext) Exist(key types.NamespacedName, objType client.Object
 	return true, nil
 }
 
-// Find finds the kubernetes object, when it does not exist, the obj pointer will be set to nil.
-func (r *ReconcileContext) Find(key types.NamespacedName, obj client.Object) error {
-	err := r.Get(r.Ctx, key, obj)
-	if errors.IsNotFound(err) {
-		obj = nil
-		return nil
-	} else {
-		return err
-	}
-}
-
 // CreateWhenNotExist creates the kubernetes object if it does not exist.
 func (r *ReconcileContext) CreateWhenNotExist(obj client.Object, objType client.Object) error {
 	key := client.ObjectKeyFromObject(obj)

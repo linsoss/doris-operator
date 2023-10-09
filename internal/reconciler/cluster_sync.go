@@ -183,10 +183,11 @@ func (r *DorisClusterReconciler) fillDorisComponentStatus(
 
 	// collect members status via ref statefulset
 	sts := &appv1.StatefulSet{}
-	if err := r.Find(statefulSetKey, sts); err != nil {
+	exist, err := r.Exist(statefulSetKey, sts)
+	if err != nil {
 		return err
 	}
-	if sts != nil {
+	if exist {
 		baseStatus.Members = r.getComponentMembers(sts)
 		baseStatus.Conditions = sts.Status.Conditions
 		readyMembers, err := r.getComponentReadyMembers(r.CR.Namespace, tran.GetFeComponentLabels(r.CR.ObjKey()))

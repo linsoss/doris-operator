@@ -50,10 +50,11 @@ func (r *DorisInitializerReconciler) Reconcile() (dapi.DorisInitializerRecStatus
 	apply := func() error {
 		// check if target DorisCluster exist
 		clusterCr := &dapi.DorisCluster{}
-		if err := r.Find(clusterRef, clusterCr); err != nil {
+		exist, err := r.Exist(clusterRef, clusterCr)
+		if err != nil {
 			return err
 		}
-		if clusterCr == nil {
+		if !exist {
 			return fmt.Errorf("target DorisCluster[name=%s][namespace=%s] not exist",
 				clusterRef.Name, clusterRef.Name)
 		}
@@ -114,10 +115,11 @@ func (r *DorisInitializerReconciler) Sync() (dapi.DorisInitializerSyncStatus, er
 
 	jobRef := tran.GetInitializerJobKey(r.CR.ObjKey())
 	job := &batchv1.Job{}
-	if err := r.Find(jobRef, job); err != nil {
+	exist, err := r.Exist(jobRef, job)
+	if err != nil {
 		return status, err
 	}
-	if job != nil {
+	if exist {
 		status.JobRef = dapi.NewNamespacedName(jobRef)
 		status.JobStatus = job.Status
 		inferJobState := func() dapi.InitializeJobStatus {
