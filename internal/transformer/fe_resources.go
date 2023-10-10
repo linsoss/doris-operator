@@ -178,10 +178,10 @@ func MakeFeService(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Servic
 			service.Spec.ExternalTrafficPolicy = *crSvc.ExternalTrafficPolicy
 		}
 		if crSvc.QueryPort != nil {
-			httpPort.NodePort = *crSvc.QueryPort
+			queryPort.NodePort = *crSvc.QueryPort
 		}
 		if crSvc.HttpPort != nil {
-			queryPort.NodePort = *crSvc.HttpPort
+			httpPort.NodePort = *crSvc.HttpPort
 		}
 	}
 	service.Spec.Ports = []corev1.ServicePort{httpPort, queryPort}

@@ -70,12 +70,14 @@ func (r *DorisClusterReconciler) Sync() (dapi.DorisClusterSyncStatus, error) {
 			}
 		},
 	}
-	//muteFnRes := util.ParallelRun(syncFns...)
-	//for _, muteFn := range muteFnRes {
+	// serial collect
+	//for _, fn := range syncFns {
+	//	muteFn := fn()
 	//	muteFn(syncRes, errCtr)
 	//}
-	for _, fn := range syncFns {
-		muteFn := fn()
+	// parallel collect
+	muteFnRes := util.ParallelRun(syncFns...)
+	for _, muteFn := range muteFnRes {
 		muteFn(syncRes, errCtr)
 	}
 

@@ -200,7 +200,6 @@ fi
 if [[ -f ${DORIS_HOME}/fe/doris-meta/image/ROLE ]]; then
   # start fe with meta role exist.
   doris_note "Start FE with role meta exits."
-  add_self
   override_fe_conf
   doris_note "Ready to start FE!"
   start_fe.sh

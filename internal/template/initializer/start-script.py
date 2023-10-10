@@ -11,7 +11,12 @@ acc_password = os.environ.get('ACC_PWD')
 retry_count = 0
 for i in range(0, 10):
     try:
-        conn = MySQLdb.connect(host=host, port=int(port), user=acc_user, passwd=acc_password, connect_timeout=5)
+        conn = MySQLdb.connect(host=host,
+                               port=int(port),
+                               user=acc_user,
+                               passwd=acc_password,
+                               connect_timeout=5,
+                               charset='utf8')
     except MySQLdb.OperationalError as e:
         print(e)
         retry_count += 1
@@ -53,11 +58,21 @@ for file in os.listdir(password_dir):
 if os.path.isfile('/etc/doris/init.sql'):
     with open('/etc/doris/init.sql', 'r') as f:
         sql = f.read()
-        if len(sql) > 0:
-            print("Execute init.sql script:")
-            print(sql)
-            conn.cursor().execute(sql)
-            conn.commit()
+        # split sqls
+        stmts = sql.split(';')
+        sql_stmts = [stmt.strip() for stmt in stmts if stmt.strip()]
+
+        # execute sql
+        for stmt in sql_stmts:
+            print("Execute sql: " + stmt)
+            try:
+                conn.cursor().execute(stmt)
+                conn.commit()
+            except MySQLdb.OperationalError as e:
+                print("Fail to execute sql:" + stmt)
+                print(e)
+                conn.close()
+                sys.exit(1)
 else:
     print("init.sql is empty, skip executing init sql scripts.")
 

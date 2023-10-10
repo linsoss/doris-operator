@@ -19,6 +19,7 @@
 package reconciler
 
 import (
+	"errors"
 	"fmt"
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	tran "github.com/al-assad/doris-operator/internal/transformer"
@@ -26,6 +27,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"time"
 )
 
 var (
@@ -35,6 +37,17 @@ var (
 type DorisInitializerReconciler struct {
 	ReconcileContext
 	CR *dapi.DorisInitializer
+}
+
+type PendingError struct {
+	Reason string
+}
+
+func NewPendingError(format string, a ...any) *PendingError {
+	return &PendingError{Reason: fmt.Sprintf(format, a...)}
+}
+func (e PendingError) Error() string {
+	return e.Reason
 }
 
 // Reconcile initializer resources
@@ -63,8 +76,8 @@ func (r *DorisInitializerReconciler) Reconcile() (dapi.DorisInitializerRecStatus
 		if bErr != nil {
 			return bErr
 		}
-		if bound != nil {
-			return fmt.Errorf("target DorisCluster already bound another Dorisinitializer[name=%s][namespace=%s]",
+		if bound != nil && bound.Name != r.CR.Name && bound.Namespace != r.CR.Namespace {
+			return NewPendingError("target DorisCluster already bound another DorisInitializer[name=%s][namespace=%s]",
 				bound.Name, bound.Name)
 		}
 		// check if target DorisCluster already to write data
@@ -87,11 +100,11 @@ func (r *DorisInitializerReconciler) Reconcile() (dapi.DorisInitializerRecStatus
 				return err
 			}
 		}
-		// job
+		// replace job
 		feQueryPort := tran.GetFeQueryPort(clusterCr)
 		if job := tran.MakeInitializerJob(r.CR, feQueryPort, r.Schema); job != nil {
 			job.Spec.Template.Annotations[InitializerConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
-			if err := r.CreateOrUpdate(job, &batchv1.Job{}); err != nil {
+			if err := r.Replace(job, &batchv1.Job{}, 30*time.Second); err != nil {
 				return err
 			}
 		}
@@ -99,10 +112,12 @@ func (r *DorisInitializerReconciler) Reconcile() (dapi.DorisInitializerRecStatus
 	}
 
 	err := apply()
-	if err != nil {
-		return dapi.DorisInitializerRecStatus{Phase: dapi.InitializeRecFailed}, err
-	} else {
+	if err == nil {
 		return dapi.DorisInitializerRecStatus{Phase: dapi.InitializeRecCompleted}, nil
+	} else if errors.As(err, &PendingError{}) {
+		return dapi.DorisInitializerRecStatus{Phase: dapi.InitializeRecWaiting}, err
+	} else {
+		return dapi.DorisInitializerRecStatus{Phase: dapi.InitializeRecFailed}, err
 	}
 }
 

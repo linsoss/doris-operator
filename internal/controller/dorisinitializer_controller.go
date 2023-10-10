@@ -86,12 +86,20 @@ func (r *DorisInitializerReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	updateErr := r.Status().Update(ctx, cr)
 
 	// merged error as result
+	isRecPending := cr.Status.DorisInitializerRecStatus.Phase == dapi.InitializeRecWaiting
+	if isRecPending {
+		recErr = nil
+	}
 	errSet := StCtrlErrSet{
 		Rec:    recErr,
 		Sync:   syncErr,
 		Update: updateErr,
 	}
-	return errSet.AsResult()
+	result, fErr := errSet.AsResult()
+	if isRecPending {
+		result.Requeue = true
+	}
+	return result, fErr
 }
 
 // SetupWithManager sets up the controller with the Manager.

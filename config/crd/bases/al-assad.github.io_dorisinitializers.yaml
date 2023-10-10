@@ -97,7 +97,6 @@ spec:
                 type: array
             required:
             - cluster
-            - image
             type: object
           status:
             properties:

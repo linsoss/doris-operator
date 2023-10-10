@@ -26,8 +26,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"time"
 )
 
 // ReconcileContext is the context for reconciling CRD.
@@ -76,13 +78,13 @@ func (r *ReconcileContext) CreateWhenNotExist(obj client.Object, objType client.
 }
 
 // DeleteWhenExist deletes the kubernetes object if it exists.
-func (r *ReconcileContext) DeleteWhenExist(key types.NamespacedName, objType client.Object) error {
+func (r *ReconcileContext) DeleteWhenExist(key types.NamespacedName, objType client.Object, deleteOpts ...client.DeleteOption) error {
 	exist, err := r.Exist(key, objType)
 	if err != nil {
 		return err
 	}
 	if exist {
-		if err := r.Delete(r.Ctx, objType); err != nil {
+		if err := r.Delete(r.Ctx, objType, deleteOpts...); err != nil {
 			return err
 		}
 		r.Log.Info("delete object: " + util.K8sObjKeyStr(key))
@@ -107,6 +109,41 @@ func (r *ReconcileContext) CreateOrUpdate(obj client.Object, objType client.Obje
 	} else {
 		return r.Update(r.Ctx, obj)
 	}
+}
+
+// Replace deletes and creates the kubernetes object.
+func (r *ReconcileContext) Replace(obj client.Object, objType client.Object, timeout time.Duration) error {
+	key := client.ObjectKeyFromObject(obj)
+	exist, err := r.Exist(key, objType)
+	if err != nil {
+		return err
+	}
+	// create
+	if !exist {
+		if err := r.Create(r.Ctx, obj); err != nil {
+			return err
+		}
+		r.Log.Info("create object: " + util.K8sObjKeyStr(key))
+		return nil
+	}
+	// delete and create
+	if err := r.Delete(r.Ctx, obj); err != nil {
+		return err
+	}
+	r.Log.Info("delete object: " + util.K8sObjKeyStr(key))
+	waitErr := wait.PollUntilContextTimeout(r.Ctx, 500*time.Millisecond, timeout, true, func(context.Context) (done bool, err error) {
+		exist, e := r.Exist(key, objType)
+		done = !exist && e == nil
+		return done, nil
+	})
+	if waitErr != nil {
+		return waitErr
+	}
+	if err := r.Create(r.Ctx, obj); err != nil {
+		return err
+	}
+	r.Log.Info("create object: " + util.K8sObjKeyStr(key))
+	return nil
 }
 
 // FindRefDorisAutoScaler finds the DorisAutoscaler CR that refer to the DorisCluster CR.

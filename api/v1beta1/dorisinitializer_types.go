@@ -49,6 +49,8 @@ type DorisInitializerSpec struct {
 	Cluster string `json:"cluster"`
 
 	// Image tags of the python-sql executor container
+	// Default to tnir/mysqlclient:1.4.6
+	// +optional
 	Image string `json:"image"`
 
 	// ImagePullPolicy of Doris cluster Pods
@@ -110,8 +112,9 @@ type DorisInitializerSyncStatus struct {
 type InitializeRecPhase string
 
 const (
+	InitializeRecWaiting   InitializeRecPhase = "waiting"
 	InitializeRecFailed    InitializeRecPhase = "failed"
-	InitializeRecCompleted InitializeRecPhase = "completed"
+	InitializeRecCompleted InitializeRecPhase = "applied"
 )
 
 type InitializeJobStatus string
