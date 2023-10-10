@@ -262,7 +262,7 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	podTemplate := corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:      cnLabels,
-			Annotations: MakePrometheusAnnotations("/metrics", GetCnHeartbeatServicePort(cr)),
+			Annotations: MakePrometheusAnnotations("/metrics", GetBeWebserverPort(cr)),
 		},
 		Spec: corev1.PodSpec{
 			Volumes:            volumes,

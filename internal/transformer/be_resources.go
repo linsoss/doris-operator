@@ -285,7 +285,7 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	podTemplate := corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:      beLabels,
-			Annotations: MakePrometheusAnnotations("/metrics", GetBeHeartbeatServicePort(cr)),
+			Annotations: MakePrometheusAnnotations("/metrics", GetBeWebserverPort(cr)),
 		},
 		Spec: corev1.PodSpec{
 			Volumes:            volumes,
