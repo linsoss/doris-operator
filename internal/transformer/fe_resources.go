@@ -93,7 +93,7 @@ func GetFeRpcPort(cr *dapi.DorisCluster) int32 {
 	if cr.Spec.FE == nil {
 		return DefaultFeRpcPort
 	}
-	return getPortValueFromRawConf(cr.Spec.FE.Configs, "query_port", DefaultFeRpcPort)
+	return getPortValueFromRawConf(cr.Spec.FE.Configs, "rpc_port", DefaultFeRpcPort)
 }
 
 func GetFeEditLogPort(cr *dapi.DorisCluster) int32 {
@@ -272,7 +272,7 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			{Name: "fe-log", MountPath: "/opt/apache-doris/fe/log"},
 		},
 		ReadinessProbe: &corev1.Probe{
-			ProbeHandler:        util.NewTcpSocketProbeHandler(GetFeQueryPort(cr)),
+			ProbeHandler:        util.NewTcpSocketProbeHandler(GetFeEditLogPort(cr)),
 			InitialDelaySeconds: 3,
 			TimeoutSeconds:      1,
 			PeriodSeconds:       5,
