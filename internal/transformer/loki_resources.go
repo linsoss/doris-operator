@@ -160,9 +160,12 @@ func MakeLokiPVC(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev1.Persiste
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{
 			AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-			Resources:        cr.Spec.Loki.ResourceRequirements,
 			StorageClassName: cr.Spec.StorageClassName,
 		},
+	}
+	storageRequest := cr.Spec.Loki.Requests.Storage()
+	if storageRequest != nil {
+		pvc.Spec.Resources.Requests = corev1.ResourceList{corev1.ResourceStorage: *storageRequest}
 	}
 	_ = controllerutil.SetOwnerReference(cr, pvc, scheme)
 	return pvc
@@ -205,8 +208,8 @@ func MakeLokiDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.De
 				Name:            "loki",
 				Image:           util.StringFallback(cr.Spec.Loki.Image, DefaultLokiImage),
 				ImagePullPolicy: cr.Spec.ImagePullPolicy,
-				Resources:       cr.Spec.Loki.ResourceRequirements,
-				Args:            []string{"-config.file=/etc/loki/loki.yaml"},
+				Resources:       formatContainerResourcesRequirement(cr.Spec.Loki.ResourceRequirements),
+				Args:            []string{"-config.file=/etc/loki/loki.yml"},
 				Ports: []corev1.ContainerPort{
 					{
 						Name:          "http-metrics",

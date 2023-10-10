@@ -125,7 +125,7 @@ func (r *DorisMonitorReconciler) recPrometheusResources() MonitorStageRecResult 
 	}
 	// pvc
 	pvc := tran.MakePrometheusPVC(r.CR, r.Schema)
-	if err := r.CreateOrUpdate(pvc, &corev1.PersistentVolumeClaim{}); err != nil {
+	if err := r.CreateWhenNotExist(pvc, &corev1.PersistentVolumeClaim{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusPVC, action, err)
 	}
 	// deployment
@@ -150,7 +150,7 @@ func (r *DorisMonitorReconciler) recGrafanaResources() MonitorStageRecResult {
 	}
 	// secret
 	secret := tran.MakeGrafanaSecret(r.CR, r.Schema)
-	if err := r.CreateOrUpdate(secret, &corev1.Service{}); err != nil {
+	if err := r.CreateOrUpdate(secret, &corev1.Secret{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaSecret, action, err)
 	}
 	// service
@@ -160,7 +160,7 @@ func (r *DorisMonitorReconciler) recGrafanaResources() MonitorStageRecResult {
 	}
 	// pvc
 	pvc := tran.MakeGrafanaPVC(r.CR, r.Schema)
-	if err := r.CreateOrUpdate(pvc, &corev1.PersistentVolumeClaim{}); err != nil {
+	if err := r.CreateWhenNotExist(pvc, &corev1.PersistentVolumeClaim{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaPVC, action, err)
 	}
 	// deployment
@@ -192,7 +192,7 @@ func (r *DorisMonitorReconciler) recLokiResources() MonitorStageRecResult {
 		}
 		// pvc
 		pvc := tran.MakeLokiPVC(r.CR, r.Schema)
-		if err := r.CreateOrUpdate(pvc, &corev1.PersistentVolumeClaim{}); err != nil {
+		if err := r.CreateWhenNotExist(pvc, &corev1.PersistentVolumeClaim{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiPVC, action, err)
 		}
 		// deployment

@@ -19,6 +19,9 @@ limits_config:
   max_entries_limit_per_query: 5000
   reject_old_samples: true
   reject_old_samples_max_age: 168h
+memberlist:
+  join_members:
+    - rabbit-hole
 schema_config:
   configs:
     - from: "2020-10-24"

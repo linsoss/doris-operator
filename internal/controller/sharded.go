@@ -56,6 +56,6 @@ func (r *StCtrlErrSet) AsResult() (ctrl.Result, error) {
 			return ctrl.Result{}, nil
 		}
 	} else {
-		return ctrl.Result{Requeue: true}, nil
+		return ctrl.Result{Requeue: true}, mergedErr
 	}
 }

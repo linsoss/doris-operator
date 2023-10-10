@@ -178,7 +178,7 @@ func MakeGrafanaService(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev1.S
 	}
 	httpPort := corev1.ServicePort{
 		Name: "http-port",
-		Port: 9090,
+		Port: 3000,
 	}
 	crSvc := cr.Spec.Grafana.Service
 	if crSvc != nil {
@@ -216,9 +216,12 @@ func MakeGrafanaPVC(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev1.Persi
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{
 			AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-			Resources:        cr.Spec.Grafana.ResourceRequirements,
 			StorageClassName: cr.Spec.StorageClassName,
 		},
+	}
+	storageRequest := cr.Spec.Grafana.Requests.Storage()
+	if storageRequest != nil {
+		pvc.Spec.Resources.Requests = corev1.ResourceList{corev1.ResourceStorage: *storageRequest}
 	}
 	_ = controllerutil.SetOwnerReference(cr, pvc, scheme)
 	return pvc
@@ -270,7 +273,7 @@ func MakeGrafanaDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1
 				Name:            "grafana",
 				Image:           util.StringFallback(cr.Spec.Grafana.Image, DefaultGrafanaImage),
 				ImagePullPolicy: cr.Spec.ImagePullPolicy,
-				Resources:       cr.Spec.Grafana.ResourceRequirements,
+				Resources:       formatContainerResourcesRequirement(cr.Spec.Grafana.ResourceRequirements),
 				Ports: []corev1.ContainerPort{{
 					Name:          "http-port",
 					ContainerPort: 3000,
@@ -289,14 +292,14 @@ func MakeGrafanaDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1
 					ProbeHandler:     util.NewHttpGetProbeHandler("/api/health", 3000),
 					TimeoutSeconds:   5,
 					PeriodSeconds:    10,
-					SuccessThreshold: 5,
+					SuccessThreshold: 1,
 					FailureThreshold: 3,
 				},
 				LivenessProbe: &corev1.Probe{
 					ProbeHandler:     util.NewHttpGetProbeHandler("/api/health", 3000),
 					TimeoutSeconds:   5,
 					PeriodSeconds:    10,
-					SuccessThreshold: 5,
+					SuccessThreshold: 1,
 					FailureThreshold: 3,
 				},
 			}},

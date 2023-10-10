@@ -162,9 +162,12 @@ func MakePrometheusPVC(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev1.Pe
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{
 			AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-			Resources:        cr.Spec.Prometheus.ResourceRequirements,
 			StorageClassName: cr.Spec.StorageClassName,
 		},
+	}
+	storageRequest := cr.Spec.Prometheus.Requests.Storage()
+	if storageRequest != nil {
+		pvc.Spec.Resources.Requests = corev1.ResourceList{corev1.ResourceStorage: *storageRequest}
 	}
 	_ = controllerutil.SetOwnerReference(cr, pvc, scheme)
 	return pvc
@@ -219,7 +222,7 @@ func MakePrometheusDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *ap
 				Name:            "prometheus",
 				Image:           util.StringFallback(cr.Spec.Prometheus.Image, DefaultPrometheusImage),
 				ImagePullPolicy: cr.Spec.ImagePullPolicy,
-				Resources:       cr.Spec.Prometheus.ResourceRequirements,
+				Resources:       formatContainerResourcesRequirement(cr.Spec.Prometheus.ResourceRequirements),
 				Args:            promArgs,
 				Ports: []corev1.ContainerPort{{
 					Name:          "http-port",

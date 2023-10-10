@@ -42,9 +42,9 @@ type DorisMonitorReconciler struct {
 //+kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles,verbs=get;create
 //+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=get;create
-//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=serviceaccount,verbs=get;create
 
 func (r *DorisMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	recCtx := reconciler.NewReconcileContext(r.Client, r.Scheme, ctx)
@@ -76,7 +76,7 @@ func (r *DorisMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// reconcile the sub resource of CR
 	var recErr error
-	if isFirstCreated || specHasChanged || !preRecCompleted {
+	if specHasChanged || !preRecCompleted {
 		recRs := rec.Reconcile()
 		recErr = recRs.Err
 		cr.Status.DorisMonitorRecStatus = recRs.AsDorisClusterRecStatus()

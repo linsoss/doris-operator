@@ -159,6 +159,18 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - persistentvolumeclaims
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - pods
   verbs:
   - get
@@ -211,13 +223,6 @@ rules:
   - rbac.authorization.k8s.io
   resources:
   - clusterroles
-  verbs:
-  - create
-  - get
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
-  - serviceaccount
   verbs:
   - create
   - get

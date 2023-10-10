@@ -5620,7 +5620,7 @@
               "refId": "F"
             }
           ],
-          "title": "[$cluster_name] fe_txn_status",
+          "title": "fe_txn_status",
           "type": "timeseries"
         },
         {
@@ -8477,7 +8477,7 @@
               "refId": "A"
             }
           ],
-          "title": "[$cluster_name] BE Push Rows",
+          "title": "BE Push Rows",
           "type": "timeseries"
         },
         {
