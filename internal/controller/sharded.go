@@ -34,15 +34,21 @@ type StCtrlErrSet struct {
 func (r *StCtrlErrSet) AsResult() (ctrl.Result, error) {
 	// Silent update conflict error
 	updateConflict := false
-	if errors.IsConflict(r.Update) {
+	if r.Update != nil && errors.IsConflict(r.Update) {
 		r.Update = nil
 		updateConflict = true
 	}
-	mergedErr := util.MergeErrorsWithTag(map[string]error{
-		"rec":           r.Rec,
-		"sync":          r.Sync,
-		"update-status": r.Update,
-	})
+	errMap := make(map[string]error)
+	if r.Rec != nil {
+		errMap["rec"] = r.Rec
+	}
+	if r.Sync != nil {
+		errMap["sync"] = r.Sync
+	}
+	if r.Update != nil {
+		errMap["update-status"] = r.Update
+	}
+	mergedErr := util.MergeErrorsWithTag(errMap)
 	if mergedErr == nil {
 		if updateConflict {
 			return ctrl.Result{Requeue: true}, nil
@@ -50,6 +56,6 @@ func (r *StCtrlErrSet) AsResult() (ctrl.Result, error) {
 			return ctrl.Result{}, nil
 		}
 	} else {
-		return ctrl.Result{Requeue: true}, mergedErr
+		return ctrl.Result{Requeue: true}, nil
 	}
 }

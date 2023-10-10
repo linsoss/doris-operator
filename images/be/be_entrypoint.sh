@@ -87,4 +87,4 @@ collect_env
 override_be_conf
 add_self
 doris_note "Ready to start BE!"
-start_be.sh
+start_be.sh --console

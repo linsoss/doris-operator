@@ -197,16 +197,16 @@ if [[ -z $FE_SVC ]]; then
   doris_error "Missing environment variable FE_SVC for the FE service name"
 fi
 
+opts="--console "
 if [[ -f ${DORIS_HOME}/fe/doris-meta/image/ROLE ]]; then
   # start fe with meta role exist.
   doris_note "Start FE with role meta exits."
   override_fe_conf
   doris_note "Ready to start FE!"
-  start_fe.sh
+  start_fe.sh $opts
 else
   # start fe with meta role does not exist
   doris_note "Meta role does not exist, FE starts for the first time."
-  opts=""
   collect_env
   override_fe_conf
   probe_leader

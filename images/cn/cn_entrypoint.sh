@@ -61,7 +61,7 @@ add_self() {
       doris_note "Myself($SELF_HOST:$HEARTBEAT_PORT) already exists in cluster."
       break
     fi
-    timeout 15 mysql --connect-timeout 2 -h "$FE_SVC" -P "$FE_QUERY_PORT" --skip-column-names --batch -e "ALTER SYSTEM ADD BACKEND \"$SELF_HOST:$HEARTBEAT_PORT\";"
+    timeout 15 mysql --connect-timeout 2 -h "$FE_SVC" -P "$FE_QUERY_PORT" -u"$ACC_USER" -p"$ACC_PWD" --skip-column-names --batch -e "ALTER SYSTEM ADD BACKEND \"$SELF_HOST:$HEARTBEAT_PORT\";"
 
     # check if it was added successfully
     if show_backends | grep -q -w "$SELF_HOST" &>/dev/null; then
@@ -86,4 +86,4 @@ collect_env
 override_be_conf
 add_self
 doris_note "Ready to start BE(Compute Node)!"
-start_be.sh
+start_be.sh --console

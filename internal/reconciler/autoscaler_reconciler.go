@@ -73,7 +73,7 @@ func (r *DorisAutoScalerReconciler) Reconcile() (dapi.AutoscalerRecStatus, error
 		if bErr != nil {
 			return err
 		}
-		if bound != nil {
+		if bound != nil && bound.Name != r.CR.Name && bound.Namespace != r.CR.Namespace {
 			return errors.New(
 				fmt.Sprintf("target DorisCluster already bound another DorisAutoscaler[name=%s][namespace=%s]",
 					bound.Name, bound.Name))

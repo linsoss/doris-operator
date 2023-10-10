@@ -66,7 +66,6 @@ func (r *DorisAutoscalerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	if specHasChanged {
 		recCtx.Log.Info(fmt.Sprintf("DorisAutoscaler(%s) spec has been updated", util.K8sObjKeyStr(req.NamespacedName)))
 	}
-
 	// reconcile the sub resources
 	var recErr error
 	if isFirstCreated || specHasChanged || !preRecCompleted {
