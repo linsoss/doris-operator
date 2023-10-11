@@ -164,3 +164,25 @@ $(CONTROLLER_GEN): $(LOCALBIN)
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+
+
+# Generate deploy/kustomize
+.PHONY: gen-deploy-kustomize
+gen-deploy-kustomize: manifests kustomize
+	$(KUSTOMIZE) build config/crd > deploy/kustomize/crds.yaml
+	$(KUSTOMIZE) build config/rbac > deploy/kustomize/rbac.yaml
+	$(KUSTOMIZE) build config/manager > deploy/kustomize/manager.yaml
+	cp config/default/manager_auth_proxy_patch.yaml deploy/kustomize/manager_auth_proxy.yaml
+	$(KUSTOMIZE) build deploy/kustomize > deploy/kustomize/operator.yaml
+
+
+#HELMIFY ?= $(LOCALBIN)/helmify
+#.PHONY: helmify
+#helmify:
+#	GOBIN=$(LOCALBIN) go install github.com/arttor/helmify/cmd/helmify@v0.4.6
+#
+## Generate Helm chart from Kustomize
+#.PHONY: helm
+#helm: manifests kustomize helmify
+#	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir helm

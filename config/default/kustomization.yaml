@@ -15,9 +15,9 @@ namePrefix: doris-operator-
 #    someName: someValue
 
 resources:
-- ../crd
-- ../rbac
-- ../manager
+  - ../crd
+  - ../rbac
+  - ../manager
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix including the one in
 # crd/kustomization.yaml
 #- ../webhook
@@ -27,10 +27,10 @@ resources:
 #- ../prometheus
 
 patchesStrategicMerge:
-# Protect the /metrics endpoint by putting it behind auth.
-# If you want your controller-manager to expose the /metrics
-# endpoint w/o any authn/z, please comment the following line.
-- manager_auth_proxy_patch.yaml
+  # Protect the /metrics endpoint by putting it behind auth.
+  # If you want your controller-manager to expose the /metrics
+  # endpoint w/o any authn/z, please comment the following line.
+  - manager_auth_proxy_patch.yaml
 
 
 

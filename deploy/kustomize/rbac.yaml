@@ -1,0 +1,432 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: doris-operator
+    app.kubernetes.io/instance: controller-manager-sa
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: serviceaccount
+    app.kubernetes.io/part-of: doris-operator
+  name: controller-manager
+  namespace: system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: doris-operator
+    app.kubernetes.io/instance: leader-election-role
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: role
+    app.kubernetes.io/part-of: doris-operator
+  name: leader-election-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisautoscalers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisautoscalers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisautoscalers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisclusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisclusters/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisclusters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisinitializers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisinitializers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorisinitializers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorismonitors
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorismonitors/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - al-assad.github.io
+  resources:
+  - dorismonitors/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterrolebindings
+  verbs:
+  - create
+  - get
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterroles
+  verbs:
+  - create
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/component: kube-rbac-proxy
+    app.kubernetes.io/created-by: doris-operator
+    app.kubernetes.io/instance: metrics-reader
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/part-of: doris-operator
+  name: metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/component: kube-rbac-proxy
+    app.kubernetes.io/created-by: doris-operator
+    app.kubernetes.io/instance: proxy-role
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/part-of: doris-operator
+  name: proxy-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: doris-operator
+    app.kubernetes.io/instance: leader-election-rolebinding
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: rolebinding
+    app.kubernetes.io/part-of: doris-operator
+  name: leader-election-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: controller-manager
+  namespace: system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: doris-operator
+    app.kubernetes.io/instance: manager-rolebinding
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: clusterrolebinding
+    app.kubernetes.io/part-of: doris-operator
+  name: manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: manager-role
+subjects:
+- kind: ServiceAccount
+  name: controller-manager
+  namespace: system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: kube-rbac-proxy
+    app.kubernetes.io/created-by: doris-operator
+    app.kubernetes.io/instance: proxy-rolebinding
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: clusterrolebinding
+    app.kubernetes.io/part-of: doris-operator
+  name: proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: proxy-role
+subjects:
+- kind: ServiceAccount
+  name: controller-manager
+  namespace: system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: kube-rbac-proxy
+    app.kubernetes.io/created-by: doris-operator
+    app.kubernetes.io/instance: controller-manager-metrics-service
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: service
+    app.kubernetes.io/part-of: doris-operator
+    control-plane: controller-manager
+  name: controller-manager-metrics-service
+  namespace: system
+spec:
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: https
+  selector:
+    control-plane: controller-manager

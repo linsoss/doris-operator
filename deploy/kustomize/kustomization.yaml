@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+  - name: controller
+    newName: 192.168.3.42:30002/hs/doris-operator
+    newTag: 1.0.0
+
+namespace: doris-operator-system
+namePrefix: doris-operator-
+
+resources:
+  - crds.yaml
+  - rbac.yaml
+  - manager.yaml
+patches:
+  - path: manager_auth_proxy.yaml
+
+
