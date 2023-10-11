@@ -21,6 +21,7 @@ package util
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/utils/strings/slices"
 	"testing"
 )
 
@@ -43,7 +44,7 @@ func TestMergeErrorsWithTags(t *testing.T) {
 		"tag1": fmt.Errorf("foo"),
 		"tag2": fmt.Errorf("bar"),
 	})
-	assert.Equal(t, "[tag1] foo; [tag2] bar", err1.Error())
+	assert.True(t, slices.Contains([]string{"[tag1] foo; [tag2] bar", "[tag2] bar; [tag1] foo"}, err1.Error()))
 
 	err2 := MergeErrorsWithTag(map[string]error{
 		"tag1": fmt.Errorf("foo"),

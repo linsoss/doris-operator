@@ -27,3 +27,4 @@ Dockerfile.cross
 
 /images/resource/
 /images/buildkitd.toml
+/buildkitd.toml
