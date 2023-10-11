@@ -11,6 +11,8 @@ spec:
     kind: DorisAutoscaler
     listKind: DorisAutoscalerList
     plural: dorisautoscalers
+    shortNames:
+    - da
     singular: dorisautoscaler
   scope: Namespaced
   versions:

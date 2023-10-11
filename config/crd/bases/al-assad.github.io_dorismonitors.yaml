@@ -11,6 +11,8 @@ spec:
     kind: DorisMonitor
     listKind: DorisMonitorList
     plural: dorismonitors
+    shortNames:
+    - dm
     singular: dorismonitor
   scope: Namespaced
   versions:

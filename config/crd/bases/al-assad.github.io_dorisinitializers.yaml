@@ -11,6 +11,8 @@ spec:
     kind: DorisInitializer
     listKind: DorisInitializerList
     plural: dorisinitializers
+    shortNames:
+    - di
     singular: dorisinitializer
   scope: Namespaced
   versions:

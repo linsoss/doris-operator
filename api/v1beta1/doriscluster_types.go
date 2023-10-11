@@ -26,6 +26,8 @@ import (
 // DorisCluster is the Schema for the doris clusters API
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:shortName=dc
+
 type DorisCluster struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

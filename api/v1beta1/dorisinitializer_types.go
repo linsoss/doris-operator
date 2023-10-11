@@ -26,6 +26,8 @@ import (
 // DorisInitializer is the Schema for the doris initializers API
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:shortName=di
+
 type DorisInitializer struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

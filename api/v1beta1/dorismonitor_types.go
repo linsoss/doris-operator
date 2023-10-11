@@ -26,6 +26,8 @@ import (
 // DorisMonitor is the Schema for the Doris cluster monitors API
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:shortName=dm
+
 type DorisMonitor struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
