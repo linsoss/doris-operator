@@ -25,6 +25,8 @@ import (
 // DorisAutoscaler is the Schema for the Doris cluster autoscaling API
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:shortName=da
+
 type DorisAutoscaler struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

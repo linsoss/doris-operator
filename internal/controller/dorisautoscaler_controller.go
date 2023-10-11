@@ -37,7 +37,7 @@ type DorisAutoscalerReconciler struct {
 //+kubebuilder:rbac:groups=al-assad.github.io,resources=dorisautoscalers,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=al-assad.github.io,resources=dorisautoscalers/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=al-assad.github.io,resources=dorisautoscalers/finalizers,verbs=update
-//+kubebuilder:rbac:groups=autoscaling/v2,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 
 func (r *DorisAutoscalerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	recCtx := reconciler.NewReconcileContext(r.Client, r.Scheme, ctx)
