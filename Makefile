@@ -177,12 +177,14 @@ gen-deploy-kustomize: manifests kustomize
 	$(KUSTOMIZE) build deploy/kustomize > deploy/kustomize/operator.yaml
 
 
-#HELMIFY ?= $(LOCALBIN)/helmify
-#.PHONY: helmify
-#helmify:
-#	GOBIN=$(LOCALBIN) go install github.com/arttor/helmify/cmd/helmify@v0.4.6
-#
-## Generate Helm chart from Kustomize
-#.PHONY: helm
-#helm: manifests kustomize helmify
-#	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir helm
+HELMIFY ?= $(LOCALBIN)/helmify
+
+# Install helmify
+.PHONY: helmify
+helmify:
+	GOBIN=$(LOCALBIN) go install github.com/arttor/helmify/cmd/helmify@v0.4.6
+
+# Generate Helm chart from Kustomize
+.PHONY: gen-deploy-helm
+gen-deploy-helm: manifests kustomize helmify
+	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir deploy/helm/doris-operator

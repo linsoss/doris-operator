@@ -1,0 +1,23 @@
+# doris operator controller main container configuration
+manager:
+  # controller container image
+  image: 192.168.3.42:30002/hs/doris-operator:1.0.0
+  # controller container resources
+  resources: { }
+
+# doris operator controller rbac proxy sidecar container configuration
+rbacProxy:
+  # rbac-proxy container image
+  image: bitnami/kube-rbac-proxy:0.14.1
+  # rbac-proxy container resources
+  resources: { }
+
+# controller metrics configuration
+metricsService:
+  metricsPort: 8080
+  type: ClusterIP
+
+# image pull policy
+imagePullPolicy: IfNotPresent
+# image pull secrets
+imagePullSecrets: [ ]
