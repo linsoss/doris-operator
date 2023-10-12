@@ -36,12 +36,17 @@ spec:
     # retentionTime: 15d
 
     ## The resource requirements
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
     requests:
       # cpu: 500m
       # memory: 500Mi
-      # The storage size of prometheus,
+      ## The storage size of prometheus,
       # it is recommended to be greater than 50Gi in the production env.
       storage: 5Gi
+    ##  Describes the resource limit
+    # limits:
+    #   cpu: 4
+    #   memory: 8Gi
 
     ## Defines Kubernetes service for prometheus-service
     # service:
@@ -60,12 +65,17 @@ spec:
     # adminUser: admin
     # adminPassword: admin
 
-    # The resource requirements
+    ## Describes the resource requirements
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
     requests:
       # cpu: 250m
       # memory: 500Mi
-      # It is recommended to be 10Gi in the production env.
+      ## It is recommended to be 10Gi in the production env.
       storage: 1Gi
+    ##  Describes the resource limit
+    # limits:
+    #   cpu: 4
+    #   memory: 8Gi
 
     ## The storageClassName of the persistent volume for grafana data storage.
     # storageClassName: ""
@@ -86,12 +96,17 @@ spec:
     ## When this field is not set, all data from Loki will be retained.
     retentionTime: 15d
 
-    ## The resource requirements
+    ## Describes the resource requirements
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
     requests:
       # cpu: 500m
       # memory: 500Mi
       ## It is recommended to be greater than 50Gi in the production env.
       storage: 5Gi
+    ##  Describes the resource limit
+    # limits:
+    #   cpu: 4
+    #   memory: 8Gi
 
     ## The storageClassName of the persistent volume for grafana data storage.
     # storageClassName: ""
@@ -106,3 +121,6 @@ spec:
     # requests:
     #   cpu: 250m
     #   memory: 256Mi
+    # limits:
+    #   cpu: 4
+    #   memory: 8Gi

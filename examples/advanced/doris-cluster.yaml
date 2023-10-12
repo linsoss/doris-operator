@@ -105,12 +105,15 @@ spec:
     #   prefer_compute_node_for_external_table: 'true'
     #   qe_max_connection: '2048'
 
-    # The resource requirements. For production environments,
-    # please refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    ## Describe the resource requirements. For production environments, please refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
     requests:
       cpu: '8'
       memory: 8Gi
       storage: 100Gi
+    # limits:
+    #   cpu: '32'
+    #   memory: 64Gi
 
     ## The storageClassName of the persistent volume for FE persistent data.
     ## If storageClassName is not set, the default Storage Class of the Kubernetes cluster will be used.
@@ -195,17 +198,20 @@ spec:
     ## The replica of the BE component
     replicas: 3
 
-    # Extra BE config, see: https://doris.apache.org/docs/dev/admin-manual/config/be-config
+    ## Extra BE config, see: https://doris.apache.org/docs/dev/admin-manual/config/be-config
     # config:
     #  external_table_connect_timeout_sec: '30 seconds'
     #  mem_limit: '90%'
 
-    # The resource requirements. For production environments, please
-    # refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    ## Describes the resource requirements. For production environments, please refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
     requests:
       cpu: '8'
       memory: 32Gi
       storage: 500Gi
+    # limits:
+    #   cpu: '32'
+    #   memory: 64Gi
 
     ## The storageClassName of the persistent volume for FE persistent data.
     ## If storageClassName is not set, the default Storage Class of the Kubernetes cluster will be used.
@@ -282,16 +288,19 @@ spec:
     ## The actual number of replicas adjusted by DorisAutoscaler shall prevail.
     replicas: 2
 
-    # Extra BE config, see: https://doris.apache.org/docs/dev/admin-manual/config/be-config
+    ## Extra BE config, see: https://doris.apache.org/docs/dev/admin-manual/config/be-config
     # config:
     #  external_table_connect_timeout_sec: '30 seconds'
     #  mem_limit: '90%'
 
-    # The resource requirements. For production environments, please
-    # refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    ## The resource requirements. For production environments, please refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
     requests:
       cpu: '8'
       memory: 32Gi
+    # limits:
+    #   cpu: '32'
+    #   memory: 64Gi
 
     ############################
     # CN Advanced Configuration #
@@ -362,14 +371,17 @@ spec:
     ## The replica of the Broker component
     replicas: 1
 
-    # Extra Broker config.
+    ## Extra Broker config.
     config: { }
 
-    # The resource requirements. For production environments, please
-    # refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    ## Describe the resource requirements. For production environments, please refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment.
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
     requests:
-      cpu: 500m
-      memory: 512Mi
+      cpu: '1'
+      memory: 2Gi
+    #    limits:
+    #      cpu: 8
+    #      memory: 16Gi
 
     ################################
     # Broker Advanced Configuration #
