@@ -5,8 +5,6 @@ Find out more on the official website: https://linsoss.github.io/doris-operator 
 
 ![image-20231012171944138](static/operator-architecture.png)
 
-<br/>
-
 ## Some Convincing Benefits
 
 The Doris Operator encompasses the following key features:
@@ -43,20 +41,14 @@ The Doris Operator encompasses the following key features:
 
   Allows users to effortlessly deploy and manage multiple Doris clusters on a single Kubernetes cluster, promoting efficient multi-tenant utilization.
 
-<br/>
-
 ## Deploying a Doris Cluster in 3 minutes!
 
 You can follow our [Get Started]() guide to quickly start a testing Kubernetes cluster and play with Doris Operator on your own machine.
 
-<br/>
-
 ## Documentation
 
 - English
-- 简体中文
-
-<br/>
+- [简体中文]()
 
 ## License
 
