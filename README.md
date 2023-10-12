@@ -1,40 +1,70 @@
 # Doris Operator
-// TODO(user): Add simple overview of use/purpose
+The Doris Operator is designed to streamlines the management of [Apache Doris](https://github.com/apache/doris) clusters on [Kubernetes](https://kubernetes.io/), automating operational tasks and monitoring of the Doris cluster, with the primary goal of transforming Doris into a truly **cloud-native** database.
 
+Find out more on the official website: https://linsoss.github.io/doris-operator 😆
 
+![image-20231012171944138](static/operator-architecture.png)
 
-## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+<br/>
 
-## Getting Started
-You’ll need a Kubernetes cluster to run against. You can use [KIND](https://sigs.k8s.io/kind) to get a local cluster for testing, or run against a remote cluster.
+## Some Convincing Benefits
 
+The Doris Operator encompasses the following key features:
 
+- **Kubernetes Package Management Support**
 
-### Modifying the API definitions
-If you are editing the API definitions, generate the manifests such as CRs or CRDs using:
+  Doris Operator supports installation via [Helm](https://helm.sh/) or [Kustomize](https://kustomize.io/), enabling easy deployment with a single command.
 
-```sh
-make manifests
+- **Rolling Updates for Doris Cluster**
+
+  Orchestrates a smooth rolling update for the Doris cluster, allowing for non-disruptive configuration updates and version upgrades.
+
+- **Secure Scalability of Doris Cluster**
+
+  The Doris Operator facilitates horizontal scalability for Doris in the cloud, ensuring a secure and efficient scaling process.
+
+- **Automated Compute Node Scaling Based on Load**
+
+  Automatically adjusts the cluster's compute nodes based on Doris load, optimizing performance through horizontal scaling.
+
+- **Automatic Failover**
+
+  In case of cluster failures, the Doris Operator seamlessly initiates automatic failover procedures to ensure uninterrupted service.
+
+- **Automatic Monitoring Setup Upon Creation of Doris Cluster**
+
+  Automatically deploys monitoring components such as [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/) for monitoring, as well as [Loki](https://grafana.com/oss/loki/) for logging, to maintain observability of the Doris cluster.
+
+- **Automatic Data Backup (WIP)**
+
+  Provides a user-friendly and customizable periodic data backup mechanism with automatic retry capabilities.
+
+- **Multi-tenancy Support**
+
+  Allows users to effortlessly deploy and manage multiple Doris clusters on a single Kubernetes cluster, promoting efficient multi-tenant utilization.
+
+<br/>
+
+## Deploying a Doris Cluster in 3 minutes!
+
+You can follow our [Get Started]() guide to quickly start a testing Kubernetes cluster and play with Doris Operator on your own machine.
+
+```shell
+kubectl apply -f https://github.com/Al-assad/doris-operator/deploy/kustomized.yaml
 ```
 
-**NOTE:** Run `make --help` for more information on all potential `make` targets
 
-More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
+
+<br/>
+
+## Documentation
+
+- English
+- 简体中文
+
+<br/>
 
 ## License
 
-Copyright 2023.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Doris Operator is under the Apache 2.0 license. See the [LICENSE](LICENSE) file for details.
 

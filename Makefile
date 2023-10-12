@@ -174,7 +174,7 @@ gen-deploy-kustomize: manifests kustomize
 	$(KUSTOMIZE) build config/rbac > deploy/kustomize/rbac.yaml
 	$(KUSTOMIZE) build config/manager > deploy/kustomize/manager.yaml
 	cp config/default/manager_auth_proxy_patch.yaml deploy/kustomize/manager_auth_proxy.yaml
-	$(KUSTOMIZE) build deploy/kustomize > deploy/kustomize/operator.yaml
+	$(KUSTOMIZE) build deploy/kustomize > deploy/kustomize/kustomized.yaml
 
 
 HELMIFY ?= $(LOCALBIN)/helmify
