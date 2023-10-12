@@ -1,0 +1,40 @@
+apiVersion: al-assad.github.io/v1beta1
+kind: DorisAutoscaler
+metadata:
+  name: basic-autoscale
+spec:
+  # The doris cluster name to be scaled
+  cluster: basic
+
+  # Whether to disable the behavior of scaling down.
+  # disableScaleDown: false
+
+  # The period of time in seconds for each scaling operation.
+  # scalePeriodSeconds:
+  #   scaleUp: 60
+  #   scaleDown: 60
+
+  cn:
+    # The maximum and minimum CN replicas of automatic scaling.
+    replicas:
+      min: 1
+      max: 5
+    # Metrics rules for scaling
+    rules:
+      # Use CPU metrics as scaling rules (optional)
+      # The maximum and minimum CPU utilization of CN, the value is a percentage, such as 80 represents 80%.
+      #
+      # When the average overall cpu usage of a CN cluster is greater than the max value for a period of time,
+      # one replica would be automatically added until the next round of computation is below this max value.
+      # When the average overall cpu usage of a CN cluster is less than the min value for a period of time,
+      # one replica would be automatically removed until the next round of computation is above this min value.
+      cpu:
+        max: 90
+        min: 20
+      # Use Memory metrics as scaling rules (optional)
+      # The maximum and minimum CPU utilization of CN, the value is a percentage, such as 80 represents 80%.
+      memory:
+        max: 80
+        min: 20
+
+

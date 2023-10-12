@@ -1,0 +1,41 @@
+apiVersion: al-assad.github.io/v1beta1
+kind: DorisCluster
+metadata:
+  name: basic
+spec:
+  version: 2.0.2
+  fe:
+    baseImage: ghcr/hs/doris-fe
+    replicas: 3
+    requests:
+      storage: 50Gi
+  be:
+    baseImage: ghcr.io/linsoss/doris-be
+    replicas: 3
+    requests:
+      storage: 100Gi
+  broker:
+    baseImage: ghcr.io/linsoss/doris-broker
+    replicas: 1
+
+  # Hadoop's configuration that injected into FE, BE, CN and Broker pods (optional)
+  hadoopConf:
+    # Host name and IP address of Hadoop cluster
+    hosts:
+      - ip: 10.233.123.189
+        name: hadoop-01
+      - ip: 10.233.123.179
+        name: hadoop-02
+      - ip: 10.233.123.179
+        name: hadoop-03
+    # Hadoop conf files
+    configs:
+      hdfs-site.xml: |
+        <configuration>
+        ...
+        </configuration>
+      hive-site.xml: |
+        <configuration>
+        ...
+        </configuration>
+

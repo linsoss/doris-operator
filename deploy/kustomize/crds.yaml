@@ -8984,7 +8984,7 @@ spec:
             properties:
               cluster:
                 type: string
-              enableLoki:
+              disableLoki:
                 type: boolean
               grafana:
                 properties:

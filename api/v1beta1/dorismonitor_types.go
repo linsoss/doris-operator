@@ -58,7 +58,7 @@ type DorisMonitorSpec struct {
 
 	// DisableLoki to disable Loki for log collection
 	// Default to false
-	DisableLoki bool `json:"enableLoki,omitempty"`
+	DisableLoki bool `json:"disableLoki,omitempty"`
 
 	// ImagePullPolicy of DorisMonitor Pods
 	// +optional

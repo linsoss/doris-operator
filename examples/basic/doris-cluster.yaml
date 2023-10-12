@@ -1,0 +1,78 @@
+# IT IS NOT SUITABLE FOR PRODUCTION USE.
+# This YAML describes a basic Doris cluster with minimum resource requirements,
+# which should be able to run in any Kubernetes cluster with storage support.
+
+apiVersion: al-assad.github.io/v1beta1
+kind: DorisCluster
+metadata:
+  name: basic
+spec:
+  # Image tag of fe, be, cn and broker components.
+  version: 2.0.2
+
+  ## Doris FE configuration.
+  # When this "fe" configuration key is not set, the Doris FE component will not be deployed,
+  # and the FE components on the cluster will be deleted (but the pvc for fe persistent data
+  # will be retained).
+  fe:
+    baseImage: ghcr/hs/doris-fe
+    # The replica of fe must be an odd number, it is recommended to  3 in the production env.
+    replicas: 1
+    # Extra FE config, see: https://doris.apache.org/docs/dev/admin-manual/config/fe-config/
+    config:
+      prefer_compute_node_for_external_table: "true"
+    # The resource requirements. For production environments,
+    # please refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    requests:
+      cpu: 500m
+      memory: 1Gi
+      storage: 2Gi
+    # If storageClassName is not set, the default Storage Class of the Kubernetes cluster will be used.
+    # storageClassName: local
+
+  ## Doris BE (mixed mode) configuration.
+  # When this "be" configuration key is not set, the Doris BE component will not be deployed,
+  # and the BE components on the cluster will be deleted (but the pvc for be persistent data
+  # will be retained).
+  be:
+    baseImage: ghcr.io/linsoss/doris-be
+    replicas: 1
+    # Extra BE config, see: https://doris.apache.org/docs/dev/admin-manual/config/be-config
+    config: { }
+    # The resource requirements. For production environments, please
+    # refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    requests:
+      cpu: 500m
+      memory: 1Gi
+      storage: 5Gi
+    # If storageClassName is not set, the default Storage Class of the Kubernetes cluster will be used.
+    # storageClassName: local
+
+
+  ## Doris BE (computation mode) configuration.
+  # When this "cn" configuration key is not set, the Doris CN component will not be deployed,
+  # and the CN components on the cluster will be deleted.
+  cn:
+    baseImage: ghcr.io/linsoss/doris-cn
+    replicas: 1
+    # Extra BE config, see: https://doris.apache.org/docs/dev/admin-manual/config/be-config
+    config: { }
+    # The resource requirements. For production environments, please
+    # refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+  ## Doris Broker configuration
+  # When this "broker" configuration key is not set, the Doris broker component will not be deployed,
+  # and the broker components on the cluster will be deleted.
+  broker:
+    baseImage: ghcr.io/linsoss/doris-broker
+    replicas: 1
+    # Extra Broker config.
+    config: { }
+    # The resource requirements. For production environments, please
+    # refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    requests:
+      cpu: 500m
+      memory: 512Mi

@@ -1,0 +1,26 @@
+apiVersion: al-assad.github.io/v1beta1
+kind: DorisMonitor
+metadata:
+  name: basic-monitor
+spec:
+  cluster: basic
+
+  prometheus:
+    image: prom/prometheus:v2.37.8
+    retentionTime: 15d
+    requests:
+      storage: 50Gi
+
+  grafana:
+    image: grafana/grafana:9.5.2
+    requests:
+      storage: 10Gi
+
+  loki:
+    image: grafana/loki:2.9.1
+    retentionTime: 15d
+    requests:
+      storage: 50Gi
+
+  promtail:
+    image: grafana/promtail:2.9.1

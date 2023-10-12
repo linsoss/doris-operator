@@ -1,0 +1,108 @@
+apiVersion: al-assad.github.io/v1beta1
+kind: DorisMonitor
+metadata:
+  name: basic-monitor
+spec:
+  ## The doris cluster name to be monitored
+  cluster: basic
+
+  ## ImagePullPolicy of Doris monitor Pods
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/overview/#container-images
+  # imagePullPolicy: IfNotPresent
+
+  ## Ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
+  # imagePullSecrets:
+  # - name: secretName
+
+  ## The storageClassName of the persistent volume for prometheus/grafana/loki data storage.
+  # Kubernetes default storage class is used if not setting this field.
+  # storageClassName: ""
+
+  ## Specifies the service account for prometheus/grafana/loki/promtail components.
+  # serviceAccount: ""
+
+  ## Whether to disable Loki for log collection
+  # disableLoki: false
+
+  ###########################
+  # Prometheus Configuration #
+  ###########################
+  prometheus:
+    ## Image of the prometheus
+    image: prom/prometheus:v2.37.8
+
+    ## The retention time of the prometheus data in the storage
+    ## When this field is not set, all data from Prometheus will be retained.
+    # retentionTime: 15d
+
+    ## The resource requirements
+    requests:
+      # cpu: 500m
+      # memory: 500Mi
+      # The storage size of prometheus,
+      # it is recommended to be greater than 50Gi in the production env.
+      storage: 5Gi
+
+    ## Defines Kubernetes service for prometheus-service
+    # service:
+    #  type: NodePort
+    #  httpPort: 0
+
+
+  ########################
+  # Grafana Configuration #
+  ########################
+  grafana:
+    ## Image of the grafana
+    image: grafana/grafana:9.5.2
+
+    ## The default admin user and password of grafana (optional)
+    # adminUser: admin
+    # adminPassword: admin
+
+    # The resource requirements
+    requests:
+      # cpu: 250m
+      # memory: 500Mi
+      # It is recommended to be 10Gi in the production env.
+      storage: 1Gi
+
+    ## The storageClassName of the persistent volume for grafana data storage.
+    # storageClassName: ""
+
+    ## Defines Kubernetes service for grafana-service
+    # service:
+    #  type: NodePort
+    #  httpPort: 0
+
+  #####################
+  # Loki Configuration #
+  #####################
+  loki:
+    ## Image of the loki
+    image: grafana/loki:2.9.1
+
+    ## The retention time of the loki data in the storage
+    ## When this field is not set, all data from Loki will be retained.
+    retentionTime: 15d
+
+    ## The resource requirements
+    requests:
+      # cpu: 500m
+      # memory: 500Mi
+      ## It is recommended to be greater than 50Gi in the production env.
+      storage: 5Gi
+
+    ## The storageClassName of the persistent volume for grafana data storage.
+    # storageClassName: ""
+
+  #########################
+  # Promtail Configuration #
+  #########################
+  promtail:
+    ## Image of the promtail
+    image: grafana/promtail:2.9.1
+    ## The resource requirements
+    # requests:
+    #   cpu: 250m
+    #   memory: 256Mi

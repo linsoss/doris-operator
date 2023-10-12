@@ -1,0 +1,45 @@
+apiVersion: al-assad.github.io/v1beta1
+kind: DorisInitializer
+metadata:
+  name: basic-init
+spec:
+  ## Target doris cluster name
+  cluster: basic
+
+  ## Doris initializer image, it's actually a mysql client image with python runtime.
+  image: tnir/mysqlclient:1.4.6
+
+  ## ImagePullPolicy of Doris monitor Pods
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/overview/#container-images
+  # imagePullPolicy: IfNotPresent
+
+  ## Ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
+  # imagePullSecrets:
+  # - name: secretName
+
+  ## Specifies the service account for prometheus/grafana/loki/promtail components.
+  # serviceAccount: ""
+
+  ## Tolerations are applied to Doris cluster pods, allowing (but do not require) pods to be scheduled onto nodes
+  ##  with matching taints.
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  # tolerations: []
+
+  ## Describes the compute resource requirements.
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+  # requests:
+  #   cpu: 100m
+  #   memory: 100Mi
+  # limits:
+  #   cpu: 2000m
+  #   memory: 2Gi
+
+  # The number of retries for the initialization script.
+  maxRetry: 3
+
+  # Changes the default root & admin user password for Doris.(optional)
+  rootPassword: ""
+  adminPassword: ""
+
+  # Doris initialization sql script content.(optional)
+  initSqlScript: ""

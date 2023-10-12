@@ -1,0 +1,423 @@
+apiVersion: al-assad.github.io/v1beta1
+kind: DorisCluster
+metadata:
+  name: basic
+spec:
+  # Image tag of fe, be, cn and broker components.
+  version: 2.0.2
+
+  ###############################
+  # Cluster Global Configuration #
+  ###############################
+
+  ## ImagePullPolicy of Doris Cluster Pods
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/overview/#container-images
+  # imagePullPolicy: IfNotPresent
+
+  ## Ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
+  # imagePullSecrets:
+  # - name: secretName
+
+  ## Customized busybox image for init container used by BE and CN.
+  # busyBoxImage: busybox:1.36
+
+  ## Specifies the service account for FE/BE/CN/Broker components.
+  # serviceAccount: ""
+
+  ## Affinity for pod scheduling
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  # affinity:
+  #   podAntiAffinity:
+  #     # require not to run FE pods on nodes where there's already a FE pod running
+  #     # if setting this, you must ensure that at least `replicas` nodes are available in the cluster
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #     - labelSelector:
+  #         matchExpressions:
+  #         - key: app.kubernetes.io/component
+  #           operator: In
+  #           values:
+  #           - fe
+  #       topologyKey: kubernetes.io/hostname
+
+  ## Tolerations are applied to Doris cluster pods, allowing (but do not require) pods to be scheduled onto nodes
+  ##  with matching taints.
+  ## This cluster-level `tolerations` only take effect when no component-level `tolerations` are set.
+  ## E.g., if `fe.tolerations` is not empty, `tolerations` here will be ignored.
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  # tolerations:
+  #   - effect: NoSchedule
+  #     key: dedicated
+  #     operator: Equal
+  #     value: doris
+
+  ## Specify pod priorities of pods in DorisCluster, default to empty.
+  ## Can be overwritten by component settings.
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+  # priorityClassName: system-cluster-critical
+
+  ## Set update strategy of StatefulSet can be overwritten by the setting of each component.
+  ## Defaults to RollingUpdate.
+  ## Ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
+  # statefulSetUpdateStrategy: RollingUpdate
+
+  ## Hadoop's configuration that injected into FE, BE, CN and Broker pods.
+  # hadoopConf:
+  #    ## Host name and IP address of Hadoop cluster
+  #    hosts:
+  #      - ip: 10.233.123.189
+  #        name: hadoop-01
+  #      - ip: 10.233.123.179
+  #        name: hadoop-02
+  #      - ip: 10.233.123.179
+  #        name: hadoop-03
+  #    ## Hadoop conf files
+  #    configs:
+  #      hdfs-site.xml: |
+  #        <configuration>
+  #        ...
+  #        </configuration>
+  #      hive-site.xml: |
+  #        <configuration>
+  #        ...
+  #        </configuration>
+
+
+  ###################
+  # FE Configuration #
+  ###################
+  # When this "fe" configuration key is not set, the Doris FE component will not be deployed,
+  # and the FE components on the cluster will be deleted (but the pvc for fe persistent data
+  # will be retained).
+
+  fe:
+    #########################
+    # FE Basic Configuration #
+    #########################
+
+    ## Base image of the FE component
+    baseImage: ghcr/hs/doris-fe
+
+    ## The replica of fe must be an odd number, it is recommended to 3 in the production env.
+    replicas: 3
+
+    ## Extra FE config, see: https://doris.apache.org/docs/dev/admin-manual/config/fe-config/
+    # config:
+    #   prefer_compute_node_for_external_table: 'true'
+    #   qe_max_connection: '2048'
+
+    # The resource requirements. For production environments,
+    # please refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    requests:
+      cpu: '8'
+      memory: 8Gi
+      storage: 100Gi
+
+    ## The storageClassName of the persistent volume for FE persistent data.
+    ## If storageClassName is not set, the default Storage Class of the Kubernetes cluster will be used.
+    # storageClassName: local
+
+    ## Defines Kubernetes service for doris-fe
+    # service:
+    #  ## service type, only ClusterIP and NodePort support is available.
+    #  type: NodePort
+    #  ## Expose the FE query port to the Node Port, default 0 is a random port.
+    #  queryPort: 0
+    #  ## Expose the FE http port to the Node Port, default 0 is a random port.
+    #  httpPort: 0
+
+    ############################
+    # FE Advanced Configuration #
+    ############################
+
+    ## Host aliases for FE pods, it will be merged with the hadoopConf field
+    ## Ref: https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
+    # hostAliases:
+    #  - ip: 10.233.123.122
+    #    hostnames:
+    #      - bg01
+    #  - ip: 10.233.123.123
+    #    hostnames:
+    #      - bg02
+
+    ## List of environment variables to set in the container
+    ## Ref: https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/
+    # additionalEnvs:
+    # - name: MY_ENV_1
+    #   value: value1
+    # - name: MY_ENV_2
+    #   valueFrom:
+    #     fieldRef:
+    #       fieldPath: status.myEnv2
+
+    ## Custom sidecar containers can be injected into the FE pods,
+    ## which can act as a tracing agent or for any other use case
+    # additionalContainers:
+    # - name: myCustomContainer
+    #   image: ubuntu
+
+    ## Custom additional volumes in FE pods.
+    ## Ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#types-of-persistent-volumes
+    # additionalVolumes:
+    # - name: nfs
+    #   nfs:
+    #     server: 192.168.0.2
+    #     path: /nfs
+
+    ## Custom additional volume mounts in FE pods.
+    # additionalVolumeMounts:
+    # # this must match `name` in `additionalVolumes`
+    # - name: nfs
+    #   mountPath: /nfs
+
+    ## The following block overwrites cluster-level configurations in `spec`
+    # serviceAccount: ""
+    # affinity: {}
+    # tolerations: {}
+    # priorityClassName: ""
+    # statefulSetUpdateStrategy: RollingUpdate
+
+
+  ###############################
+  # BE(mixed mode) Configuration #
+  ###############################
+  # When this "be" configuration key is not set, the Doris BE component will not be deployed,
+  # and the BE components on the cluster will be deleted (but the pvc for be persistent data
+  # will be retained).
+
+  be:
+    #########################
+    # BE Basic Configuration #
+    #########################
+
+    ## Base image of the BE component
+    baseImage: ghcr.io/linsoss/doris-be
+
+    ## The replica of the BE component
+    replicas: 3
+
+    # Extra BE config, see: https://doris.apache.org/docs/dev/admin-manual/config/be-config
+    # config:
+    #  external_table_connect_timeout_sec: '30 seconds'
+    #  mem_limit: '90%'
+
+    # The resource requirements. For production environments, please
+    # refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    requests:
+      cpu: '8'
+      memory: 32Gi
+      storage: 500Gi
+
+    ## The storageClassName of the persistent volume for FE persistent data.
+    ## If storageClassName is not set, the default Storage Class of the Kubernetes cluster will be used.
+    # storageClassName: local
+
+    ############################
+    # BE Advanced Configuration #
+    ############################
+
+    ## Host aliases for BE pods, it will be merged with the hadoopConf field
+    ## Ref: https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
+    # hostAliases:
+    #  - ip: 10.233.123.122
+    #    hostnames:
+    #      - bg01
+    #  - ip: 10.233.123.123
+    #    hostnames:
+    #      - bg02
+
+    ## List of environment variables to set in the container
+    ## Ref: https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/
+    # additionalEnvs:
+    # - name: MY_ENV_1
+    #   value: value1
+    # - name: MY_ENV_2
+    #   valueFrom:
+    #     fieldRef:
+    #       fieldPath: status.myEnv2
+
+    ## Custom sidecar containers can be injected into the BE pods,
+    ## which can act as a tracing agent or for any other use case
+    # additionalContainers:
+    # - name: myCustomContainer
+    #   image: ubuntu
+
+    ## Custom additional volumes in BE pods.
+    ## Ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#types-of-persistent-volumes
+    # additionalVolumes:
+    # - name: nfs
+    #   nfs:
+    #     server: 192.168.0.2
+    #     path: /nfs
+
+    ## Custom additional volume mounts in BE pods.
+    # additionalVolumeMounts:
+    # # this must match `name` in `additionalVolumes`
+    # - name: nfs
+    #   mountPath: /nfs
+
+    ## The following block overwrites cluster-level configurations in `spec`
+    # serviceAccount: ""
+    # affinity: {}
+    # tolerations: {}
+    # priorityClassName: ""
+    # statefulSetUpdateStrategy: RollingUpdate
+
+
+  #####################################
+  # BE(computation mode) Configuration #
+  #####################################
+  # When this "cn" configuration key is not set, the Doris CN component will not be deployed,
+  # and the CN components on the cluster will be deleted.
+
+  cn:
+    #########################
+    # CN Basic Configuration #
+    #########################
+
+    ## Base image of the CN component
+    baseImage: ghcr.io/linsoss/doris-cn
+
+    ## The replica of the CN component
+    ## When there is a DorisAutoscaler bound to the current DorisCluster, cn.replicas will not take effect.
+    ## The actual number of replicas adjusted by DorisAutoscaler shall prevail.
+    replicas: 2
+
+    # Extra BE config, see: https://doris.apache.org/docs/dev/admin-manual/config/be-config
+    # config:
+    #  external_table_connect_timeout_sec: '30 seconds'
+    #  mem_limit: '90%'
+
+    # The resource requirements. For production environments, please
+    # refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    requests:
+      cpu: '8'
+      memory: 32Gi
+
+    ############################
+    # CN Advanced Configuration #
+    ############################
+
+    ## Host aliases for BE pods, it will be merged with the hadoopConf field
+    ## Ref: https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
+    # hostAliases:
+    #  - ip: 10.233.123.122
+    #    hostnames:
+    #      - bg01
+    #  - ip: 10.233.123.123
+    #    hostnames:
+    #      - bg02
+
+    ## List of environment variables to set in the container
+    ## Ref: https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/
+    # additionalEnvs:
+    # - name: MY_ENV_1
+    #   value: value1
+    # - name: MY_ENV_2
+    #   valueFrom:
+    #     fieldRef:
+    #       fieldPath: status.myEnv2
+
+    ## Custom sidecar containers can be injected into the BE pods,
+    ## which can act as a tracing agent or for any other use case
+    # additionalContainers:
+    # - name: myCustomContainer
+    #   image: ubuntu
+
+    ## Custom additional volumes in BE pods.
+    ## Ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#types-of-persistent-volumes
+    # additionalVolumes:
+    # - name: nfs
+    #   nfs:
+    #     server: 192.168.0.2
+    #     path: /nfs
+
+    ## Custom additional volume mounts in BE pods.
+    # additionalVolumeMounts:
+    # # this must match `name` in `additionalVolumes`
+    # - name: nfs
+    #   mountPath: /nfs
+
+    ## The following block overwrites cluster-level configurations in `spec`
+    # serviceAccount: ""
+    # affinity: {}
+    # tolerations: {}
+    # priorityClassName: ""
+    # statefulSetUpdateStrategy: RollingUpdate
+
+
+  #######################
+  # Broker Configuration #
+  #######################
+  # When this "broker" configuration key is not set, the Doris broker component will not be deployed,
+  # and the broker components on the cluster will be deleted.
+
+  broker:
+    #############################
+    # Broker Basic Configuration #
+    #############################
+
+    ## Base image of the Broker component
+    baseImage: ghcr.io/linsoss/doris-broker
+
+    ## The replica of the Broker component
+    replicas: 1
+
+    # Extra Broker config.
+    config: { }
+
+    # The resource requirements. For production environments, please
+    # refer to: https://doris.apache.org/docs/dev/install/standard-deployment/#production-environment
+    requests:
+      cpu: 500m
+      memory: 512Mi
+
+    ################################
+    # Broker Advanced Configuration #
+    ################################
+
+    ## Host aliases for BE pods, it will be merged with the hadoopConf field
+    ## Ref: https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
+    # hostAliases:
+    #  - ip: 10.233.123.122
+    #    hostnames:
+    #      - bg01
+    #  - ip: 10.233.123.123
+    #    hostnames:
+    #      - bg02
+
+    ## List of environment variables to set in the container
+    ## Ref: https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/
+    # additionalEnvs:
+    # - name: MY_ENV_1
+    #   value: value1
+    # - name: MY_ENV_2
+    #   valueFrom:
+    #     fieldRef:
+    #       fieldPath: status.myEnv2
+
+    ## Custom sidecar containers can be injected into the BE pods,
+    ## which can act as a tracing agent or for any other use case
+    # additionalContainers:
+    # - name: myCustomContainer
+    #   image: ubuntu
+
+    ## Custom additional volumes in BE pods.
+    ## Ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#types-of-persistent-volumes
+    # additionalVolumes:
+    # - name: nfs
+    #   nfs:
+    #     server: 192.168.0.2
+    #     path: /nfs
+
+    ## Custom additional volume mounts in BE pods.
+    # additionalVolumeMounts:
+    # # this must match `name` in `additionalVolumes`
+    # - name: nfs
+    #   mountPath: /nfs
+
+    ## The following block overwrites cluster-level configurations in `spec`
+    # serviceAccount: ""
+    # affinity: {}
+    # tolerations: {}
+    # priorityClassName: ""
+    # statefulSetUpdateStrategy: RollingUpdate
