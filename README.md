@@ -49,12 +49,6 @@ The Doris Operator encompasses the following key features:
 
 You can follow our [Get Started]() guide to quickly start a testing Kubernetes cluster and play with Doris Operator on your own machine.
 
-```shell
-kubectl apply -f https://github.com/Al-assad/doris-operator/deploy/kustomized.yaml
-```
-
-
-
 <br/>
 
 ## Documentation
