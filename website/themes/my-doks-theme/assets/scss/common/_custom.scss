@@ -1,1 +1,18 @@
 // Put your custom SCSS code here
+
+.logo-image {
+  margin-bottom: 20px
+}
+
+.bg-dots {
+  background-image: radial-gradient($gray-300 15%, transparent 15%);
+  background-position: 0 0;
+  background-size: 1rem 1rem;
+  -webkit-mask: linear-gradient(to top, #fff, transparent);
+  mask: linear-gradient(to top, #fff, transparent);
+  width: 100%;
+  height: 31rem;
+  margin-top: -30rem;
+  z-index: -1;
+}
+

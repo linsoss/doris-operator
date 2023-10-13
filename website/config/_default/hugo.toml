@@ -59,7 +59,8 @@ rel  = "sitemap"
 [permalinks]
   blog = "/blog/:slug/"
   docs = "/docs/:sections[1:]/:slug/"
-# docs = "/docs/1.0/:sections[1:]/:slug/"
+#  docs = "/:sections/:filename.md"
+#  docs = "/docs/1.0/:sections[1:]/:slug/"
 
 [minify.tdewolff.html]
   keepWhitespace = false

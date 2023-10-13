@@ -3,10 +3,15 @@
   url = "docs/guides/example-guide/"
   weight = 10
 
-#[[main]]
-#  name = "Blog"
-#  url = "/blog/"
-#  weight = 30
+[[main]]
+  name = "Discussions"
+  url = "https://github.com/linsoss/doris-operator/discussions"
+  weight = 15
+
+[[main]]
+name = "Packages"
+url = "https://github.com/orgs/linsoss/packages?repo_name=doris-operator"
+weight = 20
 
 [[social]]
   name = "GitHub"

@@ -31,7 +31,7 @@ bootstrapJavascript = false # false (default) or true
 
 # Nav
 sectionNav = ["docs"] # ["docs"] (default) or list of sections (e.g. ["docs", "guides"])
-toTopButton = true # false (default) or true
+toTopButton = false # false (default) or true
 breadcrumbTrail = false # false (default) or true
 headlineHash = true # true (default) or false
 scrollSpy = true # true (default) or false
@@ -59,11 +59,11 @@ katex = false
 
 # Repository
 editPage = true # false (default) or true
-lastMod = true # false (default) or true
+lastMod = false # false (default) or true
 repoHost = "GitHub" # GitHub (default), Gitea, GitLab, Bitbucket, or BitbucketServer
 docsRepo = "https://github.com/linsoss/doris-operator"
 docsRepoBranch = "dev" # main (default), master, or <branch name>
-docsRepoSubPath = "docs" # "" (none, default) or <sub path>
+docsRepoSubPath = "website" # "" (none, default) or <sub path>
 
 [menu]
   [menu.section]
