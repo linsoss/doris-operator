@@ -1,4 +1,4 @@
-title = "My Docs"
+title = "Doris Operator"
 baseurl = "/"
 canonifyURLs = false
 disableAliases = true
@@ -14,13 +14,13 @@ summarylength = 20 # 70 (default)
 
 # Multilingual
 defaultContentLanguage = "en"
-disableLanguages = ["de", "nl"]
+#disableLanguages = ["de", "nl"]
 defaultContentLanguageInSubdir = false
 
-copyRight = "Copyright (c) 2023 Hyas"
+copyRight = "Copyright (c) 2023 Linying Assad"
 
 [social]
-  twitter = "getdoks"
+  twitter = "Alassad_dev"
 
 [outputs]
   home = ["HTML", "RSS", "searchIndex"]

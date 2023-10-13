@@ -61,9 +61,9 @@ katex = false
 editPage = true # false (default) or true
 lastMod = true # false (default) or true
 repoHost = "GitHub" # GitHub (default), Gitea, GitLab, Bitbucket, or BitbucketServer
-docsRepo = "https://github.com/h-enk/doks"
-docsRepoBranch = "main" # main (default), master, or <branch name>
-docsRepoSubPath = "" # "" (none, default) or <sub path>
+docsRepo = "https://github.com/linsoss/doris-operator"
+docsRepoBranch = "dev" # main (default), master, or <branch name>
+docsRepoSubPath = "docs" # "" (none, default) or <sub path>
 
 [menu]
   [menu.section]

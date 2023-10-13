@@ -1,12 +1,7 @@
 [[main]]
   name = "Docs"
-  url = "docs/guides/example-guide/"
+  url = "zh/docs/guides/示例向导/"
   weight = 10
-
-#[[main]]
-#  name = "Blog"
-#  url = "/blog/"
-#  weight = 30
 
 [[social]]
   name = "GitHub"
@@ -15,12 +10,3 @@
   post = "v0.1.0"
   weight = 30
 
-#[[footer]]
-#  name = "Privacy Policy"
-#  url = "/privacy/"
-#  weight = 10
-
-# [[footer]]
-#   name = "Terms of Service"
-#   url = "/terms/"
-#   weight = 20
