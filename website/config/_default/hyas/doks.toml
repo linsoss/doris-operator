@@ -31,14 +31,14 @@ bootstrapJavascript = false # false (default) or true
 
 # Nav
 sectionNav = ["docs"] # ["docs"] (default) or list of sections (e.g. ["docs", "guides"])
-toTopButton = false # false (default) or true
+toTopButton = true # false (default) or true
 breadcrumbTrail = false # false (default) or true
 headlineHash = true # true (default) or false
 scrollSpy = true # true (default) or false
 
 # Multilingual
-multilingualMode = false # false (default) or true
-showMissingLanguages = true # whether or not to show untranslated languages in the language menu; true (default) or false
+multilingualMode = true # false (default) or true
+showMissingLanguages = false # whether or not to show untranslated languages in the language menu; true (default) or false
 
 # Versioning
 docsVersioning = false # false (default) or true
@@ -58,8 +58,8 @@ relatedPosts = false # false (default) or true
 katex = false
 
 # Repository
-editPage = false # false (default) or true
-lastMod = false # false (default) or true
+editPage = true # false (default) or true
+lastMod = true # false (default) or true
 repoHost = "GitHub" # GitHub (default), Gitea, GitLab, Bitbucket, or BitbucketServer
 docsRepo = "https://github.com/h-enk/doks"
 docsRepoBranch = "main" # main (default), master, or <branch name>
@@ -68,7 +68,7 @@ docsRepoSubPath = "" # "" (none, default) or <sub path>
 [menu]
   [menu.section]
     auto = true # true (default) or false
-    collapsibleSidebar = true # true (default) or false
+    collapsibleSidebar = false # true (default) or false
 
 # SCSS
 # backGround = "yellowgreen"
