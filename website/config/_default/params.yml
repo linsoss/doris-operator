@@ -28,7 +28,7 @@ image:
   attr_link_rel: "noopener, noreferrer" # noopener, noreferrer (default)
 
   ## Render hook
-  render_hook: true # false (default) or true
+  render_hook: false # false (default) or true
   render_hook_wrapper_class: img-wrapper # img-wrapper (default)
 
   ## Shortcode
@@ -56,7 +56,7 @@ seo:
   jsonld_article_types: [article, articles]
   jsonld_news_article_types: [news, updates]
   jsonld_blog_posting_types: [post, posts, blog]
-  image: "/images/hyas-schema-image.png" 
+  image: "/images/hyas-schema-image.png"
   private: false
 
 # Inline SVG (@hyas/inline-svg)

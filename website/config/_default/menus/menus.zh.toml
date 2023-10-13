@@ -1,6 +1,6 @@
 [[main]]
   name = "Docs"
-  url = "zh/docs/guides/示例向导/"
+  url = "zh/docs/prologue/简介/"
   weight = 10
 
 [[main]]

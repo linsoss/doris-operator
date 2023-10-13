@@ -16,3 +16,27 @@
   z-index: -1;
 }
 
+
+.docs-content h1, .h1 {
+  font-size: calc(1.375rem + 0.8vw);
+}
+
+.docs-content h2, .h2 {
+  font-size: calc(1.325rem + 0.3vw);
+}
+
+.docs-content h3, .h3 {
+  font-size: calc(1.3rem + 0.1vw);
+}
+
+.docs-content h4, .h4 {
+  font-size: 1.275rem;
+}
+
+.docs-content h5, .h5 {
+  font-size: 1.25rem;
+}
+
+.docs-content h6, .h6 {
+  font-size: 1rem;
+}
