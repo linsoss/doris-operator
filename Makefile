@@ -166,6 +166,7 @@ $(ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 
+##@ Generate deployment resources under /deploy
 
 # Generate deploy/kustomize
 .PHONY: gen-deploy-kustomize
@@ -188,3 +189,28 @@ helmify:
 .PHONY: gen-deploy-helm
 gen-deploy-helm: manifests kustomize helmify
 	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir deploy/helm/doris-operator
+
+
+##@ Website development
+WEBSITE_DIR ?= website
+
+# Prepare website pnpm environment, require pnpm installed.
+.PHONY: website-env
+website-env:
+	cd website && pnpm install
+
+# Copy docs contents to website directory
+.PHONY: website-sync
+website-sync:
+	rsync -a --delete docs ${WEBSITE_DIR}/content/
+	rsync -a --delete examples ${WEBSITE_DIR}/content/
+
+# Run website in dev mode
+.PHONY: website-dev
+website-dev: website-sync
+	cd ${WEBSITE_DIR} && pnpm run dev
+
+# Clean website build resources
+.PHONY: website-clean
+website-clean:
+	cd ${WEBSITE_DIR} && pnpm run clean
