@@ -8,17 +8,22 @@ Doris Operator使用 Flux 通过OCI打包 Kustomize文件，这和 Helm 的发�
 
 ## 安装 Flux Cli
 
-Mac
+{{< tabs "install-flux" >}}
+{{< tab "Mac" >}}
 
 ```shell
 brew install fluxcd/tap/flux
 ```
 
-Linux
+{{< /tab >}}
+{{< tab "Linux" >}}
 
 ```shell
 curl -s https://fluxcd.io/install.sh | sudo bash
 ```
+
+{{< /tab >}}
+{{< /tabs >}}
 
 ## 下载 Kustomize文件
 

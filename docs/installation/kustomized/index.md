@@ -10,17 +10,22 @@ download the Kustomize manifest you need to install the [Flux cli](https://fluxc
 
 ## Install Flux Cli
 
-Mac
+{{< tabs "install-flux" >}}
+{{< tab "Mac" >}}
 
 ```shell
 brew install fluxcd/tap/flux
 ```
 
-Linux
+{{< /tab >}}
+{{< tab "Linux" >}}
 
 ```shell
 curl -s https://fluxcd.io/install.sh | sudo bash
 ```
+
+{{< /tab >}}
+{{< /tabs >}}
 
 ## Download Kustomize files
 

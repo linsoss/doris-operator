@@ -1,5 +1,5 @@
 ---
-title: "Operator 架构"
+title: "架构"
 weight: 120
 ---
 
