@@ -73,7 +73,7 @@ After enabling volume expansion, you can expand the PV using the following metho
     kubectl get pv | grep ${pvc_name}
     ```
 
-## Local PV Configuration
+## Local PV configuration
 
 Kubernetes currently supports statically allocated local storage. You can use the `local-volume-provisioner` program
 from the [local-static-provisioner](https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner) project to
