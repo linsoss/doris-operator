@@ -1,6 +1,6 @@
 [[main]]
   name = "Docs"
-  url = "docs/prologue/introduction/"
+  url = "zh/docs/prologue/简介/"
   weight = 10
 
 [[main]]
@@ -20,12 +20,3 @@ weight = 20
   post = "v0.1.0"
   weight = 30
 
-#[[footer]]
-#  name = "Privacy Policy"
-#  url = "/privacy/"
-#  weight = 10
-
-# [[footer]]
-#   name = "Terms of Service"
-#   url = "/terms/"
-#   weight = 20

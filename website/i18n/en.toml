@@ -17,13 +17,13 @@ other = "Prev"
 other = "Edit this page on"
 
 [get-started]
-other = "Example Guide"
+other = "Quick Start"
 
 [last_updated]
 other = "Last updated on"
 
 [on-this-page]
-other = "Example Guide"
+other = "Outline"
 
 [search_loading]
 other = "Loading search index…"
