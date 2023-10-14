@@ -1,4 +1,4 @@
 ---
-title: "Quick Start"
+title: "Get Started"
 weight: 130
 ---

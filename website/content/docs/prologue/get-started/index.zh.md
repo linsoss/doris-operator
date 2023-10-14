@@ -1,5 +1,4 @@
 ---
-title: "快速开始"
+title: "快速上手"
 weight: 130
-toc: true
 ---
