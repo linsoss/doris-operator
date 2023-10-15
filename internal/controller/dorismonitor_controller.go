@@ -44,8 +44,8 @@ type DorisMonitorReconciler struct {
 //+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles,verbs=get;create
-//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=get;create
+//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=get;list;watch;create;bind;escalate
+//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create
 
 func (r *DorisMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	recCtx := reconciler.NewReconcileContext(r.Client, r.Scheme, ctx)
@@ -56,7 +56,7 @@ func (r *DorisMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	if err != nil {
 		return ctrl.Result{Requeue: true}, err
 	}
-	// skip reconciling process when it has been deleted
+	// skip the reconciling process when it has been deleted
 	if !exist {
 		recCtx.Log.Info(fmt.Sprintf("DorisMonitor(%s) has been deleted", util.K8sObjKeyStr(req.NamespacedName)))
 		return ctrl.Result{}, nil

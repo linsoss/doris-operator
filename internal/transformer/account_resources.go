@@ -57,33 +57,31 @@ func MakeOprSqlAccountSecret(cr *dapi.DorisCluster) *corev1.Secret {
 // Doris Monitor RBAC resources
 
 const (
-	MonitorClusterRoleName           = "doris-monitor"
+	MonitorNamespacedRoleName        = "doris-monitor"
 	MonitorNamespacedRoleBindingName = "doris-monitor-binding"
 	MonitorNamespacedAccountName     = "doris-monitor"
 )
 
-func MakeMonitorGlobalClusterRole() *rbacv1.ClusterRole {
-	clusterRole := &rbacv1.ClusterRole{
+func MakeMonitorNamespacedRole(namespace string) *rbacv1.Role {
+	role := &rbacv1.Role{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   MonitorClusterRoleName,
-			Labels: MakeResourceLabels("", "monitor"),
+			Name:      MonitorNamespacedRoleName,
+			Namespace: namespace,
+			Labels:    MakeResourceLabels("", "monitor"),
 		},
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{""},
-				Resources: []string{"nodes", "nodes/proxy", "services", "endpoints", "pods"},
+				Resources: []string{"nodes", "nodes", "services", "endpoints", "pods"},
 				Verbs:     []string{"get", "list", "watch"},
 			}, {
 				APIGroups: []string{"extensions"},
 				Resources: []string{"ingresses"},
 				Verbs:     []string{"get", "list", "watch"},
-			}, {
-				NonResourceURLs: []string{"/metrics"},
-				Verbs:           []string{"get"},
 			},
 		},
 	}
-	return clusterRole
+	return role
 }
 
 func MakeMonitorNamespacedServiceAccount(namespace string) *corev1.ServiceAccount {
@@ -105,9 +103,9 @@ func MakeMonitorNamespacedRoleBinding(namespace string) *rbacv1.RoleBinding {
 			Labels:    MakeResourceLabels("", "monitor"),
 		},
 		RoleRef: rbacv1.RoleRef{
-			Kind:     "ClusterRole",
+			Kind:     "Role",
 			APIGroup: "rbac.authorization.k8s.io",
-			Name:     MonitorClusterRoleName,
+			Name:     MonitorNamespacedRoleName,
 		},
 		Subjects: []rbacv1.Subject{{
 			Kind:      "ServiceAccount",

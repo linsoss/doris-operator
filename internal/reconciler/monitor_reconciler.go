@@ -89,10 +89,10 @@ func mnrStageFail(stage dapi.DorisMonitorOprStage, action dapi.OprStageAction, e
 // reconcile rbac resources used by the DorisMonitor
 func (r *DorisMonitorReconciler) recRbacResources() MonitorStageRecResult {
 	action := dapi.StageActionApply
-	// global cluster role
-	clusterRole := tran.MakeMonitorGlobalClusterRole()
-	if err := r.CreateWhenNotExist(clusterRole, &rabcv1.ClusterRole{}); err != nil {
-		return mnrStageFail(dapi.MnrOprStageGlobalClusterRole, action, err)
+	// namespaced role
+	role := tran.MakeMonitorNamespacedRole(r.CR.Namespace)
+	if err := r.CreateWhenNotExist(role, &rabcv1.Role{}); err != nil {
+		return mnrStageFail(dapi.MnrOprStageNamespacedRole, action, err)
 	}
 	// namespaced service account
 	serviceAccount := tran.MakeMonitorNamespacedServiceAccount(r.CR.Namespace)
