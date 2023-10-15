@@ -98,7 +98,7 @@ kubectl apply -f ${cluster_name}/doris-monitor.yaml --namespace=${namespace}
 View the status of the monitor components:
 
 ```yaml
-kubectl get dorismonitor ${dorismonitor.metadata.name} -n ${namespace} -o yaml
+kubectl get dorismonitor ${dorismonitor_name} -n ${namespace} -o yaml
 ```
 
 ## Access the DorisMonitor
@@ -108,7 +108,7 @@ kubectl get dorismonitor ${dorismonitor.metadata.name} -n ${namespace} -o yaml
 You can access the Grafana monitoring dashboard using `kubectl port-forward`:
 
 ```other
-kubectl port-forward -n ${namespace} svc/${cluster_name}-grafana 3000:3000
+kubectl port-forward -n ${namespace} svc/${dorismonitor_name}-grafana 3000:3000
 ```
 
 Then open [http://localhost:3000](http://localhost:3000/) in your browser. The default username and password are
@@ -121,7 +121,7 @@ You can also set `spec.grafana.service.type` to `NodePort` to access the monitor
 For cases where direct access to monitoring data is needed, you can access Prometheus using `kubectl port-forward`:
 
 ```other
-kubectl port-forward -n ${namespace} svc/${cluster_name}-prometheus 9090:9090 
+kubectl port-forward -n ${namespace} svc/${dorismonitor_name}-prometheus 9090:9090 
 ```
 
 Then open [http://localhost:9090](http://localhost:9090/) in your browser or access this address through a client tool.
