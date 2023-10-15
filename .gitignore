@@ -28,3 +28,6 @@ Dockerfile.cross
 /images/resource/
 /images/buildkitd.toml
 /buildkitd.toml
+
+website/content/docs/
+website/content/examples/

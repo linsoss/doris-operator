@@ -1,0 +1,32 @@
+# IT IS NOT SUITABLE FOR PRODUCTION USE.
+# This YAML describes a basic Doris monitor components with minimum resource requirements,
+# which should be able to run in any Kubernetes cluster with storage support.
+
+apiVersion: al-assad.github.io/v1beta1
+kind: DorisMonitor
+metadata:
+  name: basic-monitor
+spec:
+  cluster: basic
+
+  prometheus:
+    image: dockerproxy.com/prom/prometheus:v2.37.8
+    retentionTime: 15d
+    requests:
+      storage: 5Gi
+
+  grafana:
+    image: dockerproxy.com/grafana/grafana:9.5.2
+    adminUser: admin
+    adminPassword: admin
+    requests:
+      storage: 1Gi
+
+  loki:
+    image: dockerproxy.com/grafana/loki:2.9.1
+    retentionTime: 15d
+    requests:
+      storage: 5Gi
+
+  promtail:
+    image: dockerproxy.com/grafana/promtail:2.9.1

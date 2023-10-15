@@ -193,7 +193,7 @@ type DorisMonitorOprStage string
 
 const (
 	MnrOprStageRbac                     DorisMonitorOprStage = "rbac"
-	MnrOprStageGlobalClusterRole        DorisMonitorOprStage = "global-rbac/ClusterRole"
+	MnrOprStageNamespacedRole           DorisMonitorOprStage = "rbac/Role"
 	MnrOprStageNamespacedServiceAccount DorisMonitorOprStage = "rbac/ServiceAccount"
 	MnrOprStageNamespacedRoleBinding    DorisMonitorOprStage = "rbac/RoleBinding"
 

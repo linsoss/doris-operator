@@ -41,7 +41,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: controller:latest
+        image: 192.168.3.42:30002/hs/doris-operator:1.0.0
         livenessProbe:
           httpGet:
             path: /healthz
