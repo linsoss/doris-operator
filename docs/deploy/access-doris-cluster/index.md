@@ -34,6 +34,21 @@ access it within the cluster using the following methods:
 - ClusterIP + ServicePort
 - Service domain name (`${serviceName}.${namespace}`) + ServicePort
 
+{{< callout context="caution" title="Note" icon="rocket" >}}
+You can directly access the Doris cluster on your local machine through `kubectl port-forward`:
+
+```shell
+kubectl port-forward -n ${namespace} svc/doris-fe 9030:9030 
+```
+
+Access through mysql-client:
+
+```shell
+mysql -h localhost -P9030 -u root -p
+```
+
+{{< /callout >}}
+
 ## NodePort
 
 NodePort exposes the service using the node's IP and a static port. By accessing `NodeIP + NodePort`, you can access a

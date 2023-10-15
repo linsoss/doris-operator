@@ -116,4 +116,4 @@ the [Initialize Doris Cluster](../initialize-doris-cluster) documentation.
 
 If you require Doris Operator to automatically deploy observability components for your Doris cluster, including
 Prometheus and Grafana for monitoring the Doris cluster, as well as Loki for centralized log collection and querying,
-please refer to the [Deploy Doris Monitoring Components](..//monitor-doris-cluster/) documentation.
+please refer to the [Deploy Doris Monitoring Components](../deploy-monitor-for-doris-cluster/) documentation.

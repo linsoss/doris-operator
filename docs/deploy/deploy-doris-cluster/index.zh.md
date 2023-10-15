@@ -107,9 +107,9 @@ weight: 330
 ## 初始化 Doris 集群
 
 如果要在部署完 Doris 集群后做一些初始化工作，比如修改 root、admin 初始密码，执行初始化 SQL
-脚本，请参考 [初始化 Doris](../initialize-doris-cluster) 文档。
+脚本，请参考 [初始化 Doris 集群](../initialize-doris-cluster) 文档。
 
 ## 部署 Doris 监控组件
 
 如果您需要 Doris Operator 为您的 Doris 集群自动部署可观测性组件，包含自动监控该 Doris 集群的 Prometheus、Grafana
-，以及自动收集日志并集中查询的 Loki，请参考 [部署 Doris 监控组件](../monitor-doris-cluster) 文档。
+，以及自动收集日志并集中查询的 Loki，请参考 [部署 Doris 集群监控](../deploy-monitor-for-doris-cluster) 文档。

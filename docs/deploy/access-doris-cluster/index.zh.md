@@ -31,6 +31,21 @@ basic-fe   NodePort   10.233.7.47   <none>        8030:31851/TCP,9030:31068/TCP 
 - ClusterIP + ServicePort
 - Service 域名 (`${serviceName}.${namespace}`) + ServicePort
 
+{{< callout context="caution" title="Note" icon="rocket" >}}
+您可以直接通过 `kubectl port-forward` 在本机直接访问 Doris 集群：
+
+```shell
+kubectl port-forward -n ${namespace} svc/doris-fe 9030:9030 
+```
+
+通过 mysql-client 访问：
+
+```shell
+mysql -h localhost -P9030 -u root -p
+```
+
+{{< /callout >}}
+
 ## NodePort
 
 NodePort 是通过节点的 IP 和静态端口暴露服务。通过请求 `NodeIP + NodePort`，可以从集群的外部访问一个 NodePort 服务。
@@ -40,4 +55,5 @@ NodePort 是通过节点的 IP 和静态端口暴露服务。通过请求 `NodeI
 ```shell
 kubectl -n ${namespace} get svc ${cluster_name}-fe -ojsonpath="{.spec.ports[?(@.name=='query-port')].nodePort}{'\n'}"
 ```
+
 
