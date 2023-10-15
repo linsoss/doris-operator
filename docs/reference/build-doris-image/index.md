@@ -1,6 +1,6 @@
 ---
 title: "Build the Doris image"
-weight: 710
+weight: 720
 ---
 
 The Doris Operator uses special cross-architecture Doris images which are not compatible with
