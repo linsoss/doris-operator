@@ -1,0 +1,46 @@
+# IT IS NOT SUITABLE FOR PRODUCTION USE.
+# This YAML describes a basic Doris cluster with minimum resource requirements,
+# which should be able to run in any Kubernetes cluster with storage support.
+
+apiVersion: al-assad.github.io/v1beta1
+kind: DorisCluster
+metadata:
+  name: basic
+spec:
+  version: 2.0.2
+  busyBoxImage: dockerproxy.com/library/busybox:1.36
+
+  fe:
+    baseImage: ghcr.dockerproxy.com/linsoss/doris-fe
+    replicas: 1
+    config:
+      prefer_compute_node_for_external_table: "true"
+    requests:
+      cpu: 500m
+      memory: 1Gi
+      storage: 2Gi
+
+  be:
+    baseImage: ghcr.dockerproxy.com/linsoss/doris-be
+    replicas: 1
+    config: { }
+    requests:
+      cpu: 500m
+      memory: 1Gi
+      storage: 5Gi
+
+  cn:
+    baseImage: ghcr.dockerproxy.com/linsoss/doris-cn
+    replicas: 1
+    config: { }
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+  broker:
+    baseImage: ghcr.dockerproxy.com/linsoss/doris-broker
+    replicas: 1
+    config: { }
+    requests:
+      cpu: 500m
+      memory: 512Mi

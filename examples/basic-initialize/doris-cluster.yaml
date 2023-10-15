@@ -5,7 +5,7 @@ metadata:
 spec:
   version: 2.0.2
   fe:
-    baseImage: ghcr/hs/doris-fe
+    baseImage: ghcr.io/linsoss/doris-fe
     replicas: 1
     requests:
       storage: 10Gi

@@ -95,7 +95,7 @@ spec:
     #########################
 
     ## Base image of the FE component
-    baseImage: ghcr/hs/doris-fe
+    baseImage: ghcr.io/linsoss/doris-fe
 
     ## The replica of fe must be an odd number, it is recommended to 3 in the production env.
     replicas: 3

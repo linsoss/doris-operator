@@ -15,7 +15,7 @@ spec:
   # and the FE components on the cluster will be deleted (but the pvc for fe persistent data
   # will be retained).
   fe:
-    baseImage: ghcr/hs/doris-fe
+    baseImage: ghcr.io/linsoss/doris-fe
     # The replica of fe must be an odd number, it is recommended to  3 in the production env.
     replicas: 1
     # Extra FE config, see: https://doris.apache.org/docs/dev/admin-manual/config/fe-config/
