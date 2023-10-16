@@ -183,13 +183,20 @@ HELMIFY ?= $(LOCALBIN)/helmify
 # Install helmify
 .PHONY: helmify
 helmify:
-	GOBIN=$(LOCALBIN) go install github.com/arttor/helmify/cmd/helmify@v0.4.6
+	test -s $(HELMIFY) || GOBIN=$(LOCALBIN) go install github.com/arttor/helmify/cmd/helmify@v0.4.6
+
+# Init Helm chart from Kustomize
+.PHONY: init-deploy-helm
+init-deploy-helm: manifests kustomize helmify
+	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir deploy/helm/doris-operator
 
 # Generate Helm chart from Kustomize
 .PHONY: gen-deploy-helm
 gen-deploy-helm: manifests kustomize helmify
-	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir deploy/helm/doris-operator
-
+	mkdir -p deploy/helm/tmp/
+	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir deploy/helm/tmp
+	rsync -a --delete deploy/helm/tmp/crds deploy/helm/doris-operator/
+	rm -rf deploy/helm/tmp
 
 ##@ Website development
 WEBSITE_DIR ?= website

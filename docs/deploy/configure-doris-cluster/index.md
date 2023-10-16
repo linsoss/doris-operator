@@ -60,18 +60,18 @@ It is recommended to configure `spec.<fe/be/cn/broker>.baseImage` and `spec.vers
 Here are the formats of the parameters:
 
 - `spec.version`: the format is `imageTag`, such as `2.0.2`
-- `spec.<<fe/be/cn/broker>.baseImage`: the format is `imageName`, such as `ghcr.io/linsoss/doris-fe`
+- `spec.<fe/be/cn/broker>.baseImage`: the format is `imageName`, such as `ghcr.io/linsoss/doris-fe`
 
 Please note that you must use the Doris images built
 using [doris-operator/images](https://github.com/linsoss/doris-operator/tree/dev/images).
 Of course, you can also directly use the Doris images released by [linsoss](https://github.com/orgs/linsoss/packages) 😃:
 
-| Component | Image                                                               |
-|-----------|---------------------------------------------------------------------|
-| FE        | [ghcr.io/linsoss/doris-fe](http://ghcr.io/linsoss/doris-fe)         |
-| BE        | [ghcr.io/linsoss/doris-be](http://ghcr.io/linsoss/doris-be)         |
-| CN        | [ghcr.io/linsoss/doris-cn](http://ghcr.io/linsoss/doris-cn)         |
-| Broker    | [ghcr.io/linsoss/doris-broker](http://ghcr.io/linsoss/doris-broker) |
+| Component | Image                                                                                                 |
+|-----------|-------------------------------------------------------------------------------------------------------|
+| FE        | [ghcr.io/linsoss/doris-fe](https://github.com/linsoss/doris-operator/pkgs/container/doris-fe)         |
+| BE        | [ghcr.io/linsoss/doris-be](https://github.com/linsoss/doris-operator/pkgs/container/doris-be)         |
+| CN        | [ghcr.io/linsoss/doris-cn](https://github.com/linsoss/doris-operator/pkgs/container/doris-cn)         |
+| Broker    | [ghcr.io/linsoss/doris-broker](https://github.com/linsoss/doris-operator/pkgs/container/doris-broker) |
 
 ### Storage
 

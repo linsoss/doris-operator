@@ -54,12 +54,12 @@ Doris 集群中。
 请注意必须使用 [doris-operator/images](https://github.com/linsoss/doris-operator/tree/dev/images)  进行构建的 Doris
 组件镜像，当然您也可以直接使用 linsoss 发布的 doris 组件镜像 😃：
 
-| Component | Image                                                               |
-|-----------|---------------------------------------------------------------------|
-| FE        | [ghcr.io/linsoss/doris-fe](http://ghcr.io/linsoss/doris-fe)         |
-| BE        | [ghcr.io/linsoss/doris-be](http://ghcr.io/linsoss/doris-be)         |
-| CN        | [ghcr.io/linsoss/doris-cn](http://ghcr.io/linsoss/doris-cn)         |
-| Broker    | [ghcr.io/linsoss/doris-broker](http://ghcr.io/linsoss/doris-broker) |
+| Component | Image                                                                                                 |
+|-----------|-------------------------------------------------------------------------------------------------------|
+| FE        | [ghcr.io/linsoss/doris-fe](https://github.com/linsoss/doris-operator/pkgs/container/doris-fe)         |
+| BE        | [ghcr.io/linsoss/doris-be](https://github.com/linsoss/doris-operator/pkgs/container/doris-be)         |
+| CN        | [ghcr.io/linsoss/doris-cn](https://github.com/linsoss/doris-operator/pkgs/container/doris-cn)         |
+| Broker    | [ghcr.io/linsoss/doris-broker](https://github.com/linsoss/doris-operator/pkgs/container/doris-broker) |
 
 ### 存储
 

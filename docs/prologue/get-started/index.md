@@ -17,6 +17,8 @@ production environments, refer to the instructions in [See also](https://#see-al
 
 [kind](https://kind.sigs.k8s.io/) is suitable for running a local Kubernetes cluster using Docker containers.
 
+Install kind and kubectl with the following commands:
+
 {{< tabs "Install kind & kubectl" >}}
 
 {{< tab "Mac" >}}
@@ -146,7 +148,7 @@ Once all the Pods are in the "Running" state, you can proceed to the next step.
 
   Then open [http://localhost:8030](http://localhost:3000/) in your browser.
 
-- Access Grafana Dashboard
+- **Access Grafana Dashboard**
 
   Forward the Grafana Service in Kubernetes for local access:
 
