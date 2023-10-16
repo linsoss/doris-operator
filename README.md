@@ -8,8 +8,6 @@ primary goal of transforming Doris into a truly **cloud-native** database.
 
 😆 Find out more on [our official website](https://linsoss.github.io/doris-operator).
 
-## Architecture Overview
-
 ![image-arch](docs/img/arch.png)
 
 ## Some Convincing Benefits
