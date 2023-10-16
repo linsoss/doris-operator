@@ -99,7 +99,7 @@ type DorisClusterSpec struct {
 type FESpec struct {
 	DorisComponentSpec `json:",inline"`
 
-	// The storageClassName of the persistent volume for TiDB data storage.
+	// The storageClassName of the persistent volume for FE data storage.
 	// Defaults to Kubernetes default storage class.
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
@@ -113,7 +113,7 @@ type FESpec struct {
 type BESpec struct {
 	DorisComponentSpec `json:",inline"`
 
-	// The storageClassName of the persistent volume for TiDB data storage.
+	// The storageClassName of the persistent volume for BE data storage.
 	// Defaults to Kubernetes default storage class.
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
