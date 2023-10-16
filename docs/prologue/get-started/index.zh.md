@@ -9,6 +9,7 @@ weight: 130
 
 [kind](https://kind.sigs.k8s.io/) 十分适合用于使用 Docker 容器作为集群节点运行本地 Kubernetes 集群。
 
+以下命令快速安装 kind 和 kubectl:
 {{< tabs "安装 kind 和 kubectl" >}}
 {{< tab "Mac" >}}
 

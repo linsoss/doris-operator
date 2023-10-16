@@ -9880,7 +9880,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: 192.168.3.42:30002/hs/doris-operator:1.0.0
+        image: ghcr.io/linsoss/doris-operator:1.0.0
         livenessProbe:
           httpGet:
             path: /healthz

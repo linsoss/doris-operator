@@ -1,12 +1,14 @@
+![image-banner](docs/img/banner.png)
+
 # Doris Operator
 
 The Doris Operator is designed to streamlines the management of [Apache Doris](https://github.com/apache/doris) clusters
 on [Kubernetes](https://kubernetes.io/), automating operational tasks and monitoring of the Doris cluster, with the
 primary goal of transforming Doris into a truly **cloud-native** database.
 
-Find out more on the official website: https://linsoss.github.io/doris-operator 😆
+😆 Find out more on [our official website](https://linsoss.github.io/doris-operator).
 
-![image-arch](docs/prologue/introduction/arch.png)
+![image-arch](docs/img/arch.png)
 
 ## Some Convincing Benefits
 
@@ -51,8 +53,6 @@ The Doris Operator encompasses the following key features:
 
   Allows users to effortlessly deploy and manage multiple Doris clusters on a single Kubernetes cluster, promoting
   efficient multi-tenant utilization.
-
-<br/>
 
 ## Deploying a Doris Cluster in 3 minutes!
 
