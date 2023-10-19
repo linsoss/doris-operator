@@ -9,9 +9,14 @@
   weight = 15
 
 [[main]]
-name = "Packages"
-url = "https://github.com/orgs/linsoss/packages?repo_name=doris-operator"
-weight = 20
+  name = "Packages"
+  url = "https://github.com/orgs/linsoss/packages?repo_name=doris-operator"
+  weight = 20
+
+[[main]]
+  name = "Releases"
+  url = "https://github.com/linsoss/doris-operator/releases"
+  weight = 25
 
 [[social]]
   name = "GitHub"
