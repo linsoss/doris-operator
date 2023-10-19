@@ -2,7 +2,7 @@
 <section class="section container-fluid mt-n3 pb-3">
   <div class="row justify-content-center">
     <div class="col-lg-12 text-center">
-      <img src="/images/logo.png" alt="Doris Logo" class="logo-image"/>
+      <img src="{{ .Site.BaseURL }}/images/logo.png" alt="Doris Logo" class="logo-image"/>
     </div>
     <div class="col-lg-12 text-center">
       <h1>{{ .Title }}</h1>
@@ -10,7 +10,7 @@
     <div class="col-lg-9 col-xl-8 text-center">
       <p class="lead">{{ .Params.lead | safeHTML }}</p>
       <a class="btn btn-primary btn-cta btn-lg my-3"
-         href="/docs/prologue/get-started/"
+         href="{{ .Site.BaseURL }}/docs/prologue/get-started/"
          role="button">{{ i18n "get-started" }}</a>
       <p class="meta">Open-source Apache-2.0 Licensed.<br/>
         <a href="https://github.com/linsoss/doris-operator/releases/">Github v1.0.0</a>
@@ -22,6 +22,7 @@
 
 {{ define "sidebar-prefooter" }}
 {{ if site.Data.doks.backgroundDots -}}
+<div class="d-flex justify-content-start">
 <div class="d-flex justify-content-start">
   <div class="bg-dots"></div>
 </div>
