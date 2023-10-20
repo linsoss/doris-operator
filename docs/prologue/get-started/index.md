@@ -159,12 +159,11 @@ Once all the Pods are in the "Running" state, you can proceed to the next step.
   Then open [http://localhost:3000](http://localhost:3000/) in your browser. The default username and password are
   both `admin`.
 
-  {{< callout context="caution" title="Explore Doris Grafana" icon="rocket" >}}
+- **Explore Doris Grafana**
 
     - [View Doris Grafana Dashboard](../../monitor/view-doris-grafana-dashboard/)
-    - [Query Doris Logs in Grafana](../../monitor/query-doris-logs-in-grafana/)
 
-  {{< /callout >}}
+    - [Query Doris Logs in Grafana](../../monitor/query-doris-logs-in-grafana/)
 
 ## Step 5: Destroy the Doris and Kubernetes cluster
 
