@@ -158,12 +158,10 @@ kubectl get pods -n doris-operator-system
 
   然后在浏览器中打开 [http://localhost:3000](http://localhost:3000/)，默认用户名和密码都为 `admin`。
 
-  {{< callout context="caution" title="探索 Doris Grafana" icon="rocket"  >}}
+- **探索 Doris Grafana**
 
     - [查看 Doris Grafana 仪表盘](../../monitor/%E6%9F%A5%E7%9C%8B-doris-grafana-%E4%BB%AA%E8%A1%A8%E7%9B%98/)
     - [在 Grafana 查询 Doris 日志](../../monitor/%E5%9C%A8-grafana-%E6%9F%A5%E8%AF%A2-doris-%E6%97%A5%E5%BF%97/)
-
-      {{< /callout >}}
 
 ## 第 5 步：销毁 Doris 和 Kubernetes
 
