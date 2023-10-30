@@ -18,7 +18,7 @@ The `DorisInitializer` CR defines the configuration for Doris visualization comp
 
 {{< details "A basic DorisMonitor CR sample" >}}
 
-[doris-minitor.yaml](https://github.com/linsoss/doris-operator/blob/dev/examples/basic/doris-monitor.yaml)
+[doris-monitor.yaml](https://github.com/linsoss/doris-operator/blob/dev/examples/basic/doris-monitor.yaml)
 
 {{< readfile file="/examples/basic/doris-monitor.yaml" code="true" lang="yaml" >}}
 
