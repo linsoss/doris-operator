@@ -30,7 +30,7 @@ Doris 集群、监控、初始化、备份等组件都过通过 CR 进行部署�
 
 - 用户通过 kubectl 创建 `DorisCluster` 和其他期望 CR 对象；
 - Doris Operator 监听 `DorisCluster` 以及其他相关对象，基于集群的实际状态不断调整 FE、BE、CN、Broker
-  或其他组件的 `StatefulSet`、`Deplotment`、`Service` 等对象资源；
-- Kubernetes 原生控制器根据 `StatefulSet`、`Deplotment`、`Service` 等对象创建、更新或删除对应子资源的 `Pod`；
+  或其他组件的 `StatefulSet`、`Deployment`、`Service` 等对象资源；
+- Kubernetes 原生控制器根据 `StatefulSet`、`Deployment`、`Service` 等对象创建、更新或删除对应子资源的 `Pod`；
 
 基于上述的声明式控制流程，Doris Operator 能够自动地进行集群节点健康检查和故障恢复。

@@ -16,7 +16,7 @@ Namespace，包括 Prometheus、Grafana、Loki、Promtail 四个组件。
 
 {{< details "A basic DorisMonitor CR sample" >}}
 
-[doris-minitor.yaml](https://github.com/linsoss/doris-operator/blob/dev/examples/basic/doris-monitor.yaml)
+[doris-monitor.yaml](https://github.com/linsoss/doris-operator/blob/dev/examples/basic/doris-monitor.yaml)
 
 {{< readfile file="/examples/basic/doris-monitor.yaml" code="true" lang="yaml" >}}
 
@@ -108,7 +108,7 @@ kubectl port-forward -n ${namespace} svc/${dorismonitor_name}-grafana 3000:3000
 
 也可以设置 `spec.grafana.service.type` 为 `NodePort`，通过 `NodePort`查看监控面板。
 
-### 访问 Prometehus 监控数据
+### 访问 Prometheus 监控数据
 
 对于需要直接访问监控数据的情况，可以通过 `kubectl port-forward` 来访问 Prometheus：
 
