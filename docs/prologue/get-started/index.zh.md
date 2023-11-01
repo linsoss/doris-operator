@@ -75,7 +75,7 @@ curl -s https://fluxcd.io/install.sh | sudo bash
 
 ```shell
 mkdir doris-operator
-flux pull artifact oci://ghcr.io/linsoss/kustomize/doris-operator:1.0.0 --output ./doris-operator/
+flux pull artifact oci://ghcr.io/linsoss/kustomize/doris-operator:1.0.1 --output ./doris-operator/
 kubectl apply -k doris-operator
 ```
 

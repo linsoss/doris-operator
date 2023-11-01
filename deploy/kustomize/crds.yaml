@@ -2898,6 +2898,10 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  nodeSelector:
+                    additionalProperties:
+                      type: string
+                    type: object
                   priorityClassName:
                     type: string
                   replicas:
@@ -4756,6 +4760,10 @@ spec:
                       - type: string
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
+                    type: object
+                  nodeSelector:
+                    additionalProperties:
+                      type: string
                     type: object
                   priorityClassName:
                     type: string
@@ -6616,6 +6624,10 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  nodeSelector:
+                    additionalProperties:
+                      type: string
+                    type: object
                   priorityClassName:
                     type: string
                   replicas:
@@ -8473,6 +8485,10 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  nodeSelector:
+                    additionalProperties:
+                      type: string
+                    type: object
                   priorityClassName:
                     type: string
                   replicas:
@@ -8559,6 +8575,10 @@ spec:
                   type: object
                   x-kubernetes-map-type: atomic
                 type: array
+              nodeSelector:
+                additionalProperties:
+                  type: string
+                type: object
               priorityClassName:
                 type: string
               serviceAccount:
@@ -8842,6 +8862,10 @@ spec:
               maxRetry:
                 format: int32
                 type: integer
+              nodeSelector:
+                additionalProperties:
+                  type: string
+                type: object
               requests:
                 additionalProperties:
                   anyOf:
@@ -9014,6 +9038,10 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  nodeSelector:
+                    additionalProperties:
+                      type: string
+                    type: object
                   requests:
                     additionalProperties:
                       anyOf:
@@ -9071,6 +9099,10 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  nodeSelector:
+                    additionalProperties:
+                      type: string
+                    type: object
                   requests:
                     additionalProperties:
                       anyOf:
@@ -9085,6 +9117,10 @@ spec:
                     type: string
                 required:
                 - image
+                type: object
+              nodeSelector:
+                additionalProperties:
+                  type: string
                 type: object
               prometheus:
                 properties:
@@ -9109,6 +9145,10 @@ spec:
                       - type: string
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
+                    type: object
+                  nodeSelector:
+                    additionalProperties:
+                      type: string
                     type: object
                   requests:
                     additionalProperties:
