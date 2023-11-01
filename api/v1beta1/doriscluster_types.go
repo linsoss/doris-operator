@@ -81,6 +81,10 @@ type DorisClusterSpec struct {
 	// +optional
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 
+	// NodeSelector of the Doris cluster.
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
 	// Tolerations are applied to Doris cluster pods, allowing pods to be scheduled onto nodes with matching taints.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
@@ -205,6 +209,10 @@ type DorisComponentSpec struct {
 	// Specify a Service Account
 	// +optional
 	ServiceAccount string `json:"serviceAccount,omitempty"`
+
+	// NodeSelector of the component.
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 
 	// Affinity for pod scheduling of Doris cluster.
 	// +optional

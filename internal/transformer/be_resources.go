@@ -293,6 +293,7 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			InitContainers:     []corev1.Container{initContainer},
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			ServiceAccountName: util.StringFallback(cr.Spec.BE.ServiceAccount, cr.Spec.ServiceAccount),
+			NodeSelector:       util.MapFallback(cr.Spec.BE.NodeSelector, cr.Spec.NodeSelector),
 			Affinity:           util.PointerFallback(cr.Spec.BE.Affinity, cr.Spec.Affinity),
 			Tolerations:        util.ArrayFallback(cr.Spec.BE.Tolerations, cr.Spec.Tolerations),
 			PriorityClassName:  util.StringFallback(cr.Spec.BE.PriorityClassName, cr.Spec.PriorityClassName),

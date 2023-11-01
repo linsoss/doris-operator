@@ -201,6 +201,7 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 			Containers:         containers,
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			ServiceAccountName: util.StringFallback(cr.Spec.Broker.ServiceAccount, cr.Spec.ServiceAccount),
+			NodeSelector:       util.MapFallback(cr.Spec.Broker.NodeSelector, cr.Spec.NodeSelector),
 			Affinity:           util.PointerFallback(cr.Spec.Broker.Affinity, cr.Spec.Affinity),
 			Tolerations:        util.ArrayFallback(cr.Spec.Broker.Tolerations, cr.Spec.Tolerations),
 			PriorityClassName:  util.StringFallback(cr.Spec.Broker.PriorityClassName, cr.Spec.PriorityClassName),
