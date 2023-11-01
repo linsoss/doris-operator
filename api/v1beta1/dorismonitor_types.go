@@ -77,6 +77,10 @@ type DorisMonitorSpec struct {
 	// Specify a Service Account
 	// +optional
 	ServiceAccount string `json:"serviceAccount,omitempty"`
+
+	// NodeSelector of the Doris monitor components.
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 // PrometheusSpec defines the desired state of Prometheus
@@ -98,6 +102,9 @@ type PrometheusSpec struct {
 
 	// +optional
 	StorageClassName string `json:"storageClassName,omitempty"`
+
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 // GrafanaSpec defines the desired state of Grafana
@@ -122,6 +129,9 @@ type GrafanaSpec struct {
 
 	// +optional
 	StorageClassName string `json:"storageClassName,omitempty"`
+
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 // LokiSpec defines the desired state of Loki
@@ -139,6 +149,9 @@ type LokiSpec struct {
 
 	// +optional
 	StorageClassName string `json:"storageClassName,omitempty"`
+
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 // PromtailSpec defines the desired state of Promtail
@@ -162,7 +175,7 @@ type MonitorServiceSpec struct {
 	HttpPort *int32 `json:"httpPort,omitempty"`
 
 	// ExternalTrafficPolicy of the service
-	// Optional: Defaults to omitted
+	// Optional: Defaults to nil
 	// +optional
 	ExternalTrafficPolicy *corev1.ServiceExternalTrafficPolicyType `json:"externalTrafficPolicy,omitempty"`
 }

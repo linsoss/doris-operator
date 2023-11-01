@@ -252,6 +252,7 @@ func MakeGrafanaDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1
 		Spec: corev1.PodSpec{
 			ServiceAccountName: cr.Spec.ServiceAccount,
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
+			NodeSelector:       util.MapFallback(cr.Spec.Grafana.NodeSelector, cr.Spec.NodeSelector),
 			Volumes: []corev1.Volume{
 				{
 					Name: "grafana-datasource",

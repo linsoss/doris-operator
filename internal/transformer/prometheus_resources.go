@@ -208,6 +208,7 @@ func MakePrometheusDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *ap
 		Spec: corev1.PodSpec{
 			ServiceAccountName: MonitorNamespacedAccountName,
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
+			NodeSelector:       util.MapFallback(cr.Spec.Prometheus.NodeSelector, cr.Spec.NodeSelector),
 			Volumes: []corev1.Volume{
 				{
 					Name: "prometheus-config",
