@@ -90,6 +90,10 @@ type DorisInitializerSpec struct {
 	// Tolerations of the Doris initializer Pod
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	// NodeSelector of the Doris initializer Pod.
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 // DorisInitializerStatus defines the observed state of DorisInitializer

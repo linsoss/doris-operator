@@ -69,6 +69,10 @@ spec:
               maxRetry:
                 format: int32
                 type: integer
+              nodeSelector:
+                additionalProperties:
+                  type: string
+                type: object
               requests:
                 additionalProperties:
                   anyOf:
