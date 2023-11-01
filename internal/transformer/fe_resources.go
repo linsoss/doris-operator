@@ -308,6 +308,7 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			Containers:         containers,
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			ServiceAccountName: util.StringFallback(cr.Spec.FE.ServiceAccount, cr.Spec.ServiceAccount),
+			NodeSelector:       util.MapFallback(cr.Spec.FE.NodeSelector, cr.Spec.NodeSelector),
 			Affinity:           util.PointerFallback(cr.Spec.FE.Affinity, cr.Spec.Affinity),
 			Tolerations:        util.ArrayFallback(cr.Spec.FE.Tolerations, cr.Spec.Tolerations),
 			PriorityClassName:  util.StringFallback(cr.Spec.FE.PriorityClassName, cr.Spec.PriorityClassName),

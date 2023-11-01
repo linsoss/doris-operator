@@ -270,6 +270,7 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			InitContainers:     []corev1.Container{initContainer},
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			ServiceAccountName: util.StringFallback(cr.Spec.CN.ServiceAccount, cr.Spec.ServiceAccount),
+			NodeSelector:       util.MapFallback(cr.Spec.CN.NodeSelector, cr.Spec.NodeSelector),
 			Affinity:           util.PointerFallback(cr.Spec.CN.Affinity, cr.Spec.Affinity),
 			Tolerations:        util.ArrayFallback(cr.Spec.CN.Tolerations, cr.Spec.Tolerations),
 			PriorityClassName:  util.StringFallback(cr.Spec.CN.PriorityClassName, cr.Spec.PriorityClassName),
