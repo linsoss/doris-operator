@@ -24,6 +24,11 @@ spec:
   ## Specifies the service account for FE/BE/CN/Broker components.
   # serviceAccount: ""
 
+  ## NodeSelector of pods。
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  # nodeSelector:
+  #   node-role.kubernetes.io/doris: true
+
   ## Affinity for pod scheduling
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   # affinity:
@@ -178,6 +183,8 @@ spec:
     # tolerations: {}
     # priorityClassName: ""
     # statefulSetUpdateStrategy: RollingUpdate
+    # nodeSelector:
+    #   app.kubernetes.io/component: fe
 
 
   ###############################
@@ -267,6 +274,8 @@ spec:
     # tolerations: {}
     # priorityClassName: ""
     # statefulSetUpdateStrategy: RollingUpdate
+    # nodeSelector:
+    #   app.kubernetes.io/component: be
 
 
   #####################################
@@ -352,6 +361,8 @@ spec:
     # tolerations: {}
     # priorityClassName: ""
     # statefulSetUpdateStrategy: RollingUpdate
+    # nodeSelector:
+    #   app.kubernetes.io/component: cn
 
 
   #######################
@@ -433,3 +444,5 @@ spec:
     # tolerations: {}
     # priorityClassName: ""
     # statefulSetUpdateStrategy: RollingUpdate
+    # nodeSelector:
+    #   app.kubernetes.io/component: broker

@@ -234,6 +234,7 @@ func MakeInitializerJob(cr *dapi.DorisInitializer, feSvcQueryPort int32, scheme 
 			Containers:       []corev1.Container{mainContainer},
 			ImagePullSecrets: cr.Spec.ImagePullSecrets,
 			Tolerations:      cr.Spec.Tolerations,
+			NodeSelector:     cr.Spec.NodeSelector,
 		},
 	}
 

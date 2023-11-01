@@ -194,6 +194,7 @@ func MakeLokiDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.De
 		Spec: corev1.PodSpec{
 			ServiceAccountName: cr.Spec.ServiceAccount,
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
+			NodeSelector:       util.MapFallback(cr.Spec.Loki.NodeSelector, cr.Spec.NodeSelector),
 			Volumes: []corev1.Volume{
 				{
 					Name: "config",

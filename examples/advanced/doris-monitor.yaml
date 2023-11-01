@@ -24,6 +24,11 @@ spec:
   ## Whether to disable Loki for log collection
   # disableLoki: false
 
+  ## NodeSelector of pods。
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  # nodeSelector:
+  #   node-role.kubernetes.io/doris-monitor: true
+
   ###########################
   # Prometheus Configuration #
   ###########################
@@ -53,6 +58,8 @@ spec:
     #  type: NodePort
     #  httpPort: 0
 
+    ## NodeSelector of pods。
+    # nodeSelector: {}
 
   ########################
   # Grafana Configuration #
@@ -85,6 +92,9 @@ spec:
     #  type: NodePort
     #  httpPort: 0
 
+    ## NodeSelector of pods。
+    # nodeSelector: {}
+
   #####################
   # Loki Configuration #
   #####################
@@ -110,6 +120,9 @@ spec:
 
     ## The storageClassName of the persistent volume for grafana data storage.
     # storageClassName: ""
+
+    ## NodeSelector of pods。
+    # nodeSelector: {}
 
   #########################
   # Promtail Configuration #
