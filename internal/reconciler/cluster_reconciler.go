@@ -20,6 +20,7 @@ package reconciler
 
 import (
 	"fmt"
+
 	dapi "github.com/al-assad/doris-operator/api/v1beta1"
 	tran "github.com/al-assad/doris-operator/internal/transformer"
 	"github.com/al-assad/doris-operator/internal/util"
@@ -134,16 +135,16 @@ func (r *DorisClusterReconciler) recFeResources() ClusterStageRecResult {
 		// fe statefulset
 		statefulsetRef := tran.GetFeStatefulSetKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
-			return clusterStageFail(dapi.StageFeConfigmap, action, err)
+			return clusterStageFail(dapi.StageFeStatefulSet, action, err)
 		}
 		// fe service
 		serviceRef := tran.GetFeServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(serviceRef, &corev1.Service{}); err != nil {
-			return clusterStageFail(dapi.StageFeConfigmap, action, err)
+			return clusterStageFail(dapi.StageFeService, action, err)
 		}
 		peerServiceRef := tran.GetFePeerServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
-			return clusterStageFail(dapi.StageFeConfigmap, action, err)
+			return clusterStageFail(dapi.StageFeService, action, err)
 		}
 		// fe configmap
 		configMapRef := tran.GetFeConfigMapKey(r.CR.ObjKey())
@@ -191,16 +192,16 @@ func (r *DorisClusterReconciler) recBeResources() ClusterStageRecResult {
 		// be statefulset
 		statefulsetRef := tran.GetBeStatefulSetKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
-			return clusterStageFail(dapi.StageBeConfigmap, action, err)
+			return clusterStageFail(dapi.StageBeStatefulSet, action, err)
 		}
 		// be service
 		serviceRef := tran.GetBeServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(serviceRef, &corev1.Service{}); err != nil {
-			return clusterStageFail(dapi.StageBeConfigmap, action, err)
+			return clusterStageFail(dapi.StageBeService, action, err)
 		}
 		peerServiceRef := tran.GetBePeerServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
-			return clusterStageFail(dapi.StageBeConfigmap, action, err)
+			return clusterStageFail(dapi.StageBeService, action, err)
 		}
 		// be configmap
 		configMapRef := tran.GetBeConfigMapKey(r.CR.ObjKey())
@@ -259,16 +260,16 @@ func (r *DorisClusterReconciler) recCnResources() ClusterStageRecResult {
 		// cn statefulset
 		statefulsetRef := tran.GetCnStatefulSetKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
-			return clusterStageFail(dapi.StageCnConfigmap, action, err)
+			return clusterStageFail(dapi.StageCnStatefulSet, action, err)
 		}
 		// cn service
 		serviceRef := tran.GetCnServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(serviceRef, &corev1.Service{}); err != nil {
-			return clusterStageFail(dapi.StageCnConfigmap, action, err)
+			return clusterStageFail(dapi.StageCnService, action, err)
 		}
 		peerServiceRef := tran.GetCnPeerServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
-			return clusterStageFail(dapi.StageCnConfigmap, action, err)
+			return clusterStageFail(dapi.StageCnService, action, err)
 		}
 		// cn configmap
 		configMapRef := tran.GetCnConfigMapKey(r.CR.ObjKey())
@@ -312,12 +313,12 @@ func (r *DorisClusterReconciler) recBrokerResources() ClusterStageRecResult {
 		// broker statefulset
 		statefulsetRef := tran.GetBrokerStatefulSetKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
-			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
+			return clusterStageFail(dapi.StageBrokerStatefulSet, action, err)
 		}
 		// broker service
 		peerServiceRef := tran.GetBrokerPeerServiceKey(r.CR.ObjKey())
 		if err := r.DeleteWhenExist(peerServiceRef, &corev1.Service{}); err != nil {
-			return clusterStageFail(dapi.StageBrokerConfigmap, action, err)
+			return clusterStageFail(dapi.StageBrokerService, action, err)
 		}
 		// broker configmap
 		configMapRef := tran.GetBrokerConfigMapKey(r.CR.ObjKey())
