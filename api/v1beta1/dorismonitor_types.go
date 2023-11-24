@@ -101,7 +101,7 @@ type PrometheusSpec struct {
 	corev1.ResourceRequirements `json:",inline"`
 
 	// +optional
-	StorageClassName string `json:"storageClassName,omitempty"`
+	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
@@ -128,7 +128,7 @@ type GrafanaSpec struct {
 	corev1.ResourceRequirements `json:",inline"`
 
 	// +optional
-	StorageClassName string `json:"storageClassName,omitempty"`
+	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
@@ -148,7 +148,7 @@ type LokiSpec struct {
 	corev1.ResourceRequirements `json:",inline"`
 
 	// +optional
-	StorageClassName string `json:"storageClassName,omitempty"`
+	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
@@ -215,12 +215,11 @@ const (
 	MnrOprStagePrometheusService     DorisMonitorOprStage = "prometheus/Service"
 	MnrOprStagePrometheusStatefulset DorisMonitorOprStage = "prometheus/Statefulset"
 
-	MnrOprStageGrafana           DorisMonitorOprStage = "grafana"
-	MnrOprStageGrafanaSecret     DorisMonitorOprStage = "grafana/Secret"
-	MnrOprStageGrafanaConfigMap  DorisMonitorOprStage = "grafana/ConfigMap"
-	MnrOprStageGrafanaService    DorisMonitorOprStage = "grafana/Service"
-	MnrOprStageGrafanaPVC        DorisMonitorOprStage = "grafana/PersistentVolumeClaim"
-	MnrOprStageGrafanaDeployment DorisMonitorOprStage = "grafana/Deployment"
+	MnrOprStageGrafana            DorisMonitorOprStage = "grafana"
+	MnrOprStageGrafanaSecret      DorisMonitorOprStage = "grafana/Secret"
+	MnrOprStageGrafanaConfigMap   DorisMonitorOprStage = "grafana/ConfigMap"
+	MnrOprStageGrafanaService     DorisMonitorOprStage = "grafana/Service"
+	MnrOprStageGrafanaStatefulset DorisMonitorOprStage = "grafana/Statefulset"
 
 	MnrOprStagePromtail          DorisMonitorOprStage = "promtail"
 	MnrOprStagePromtailConfigMap DorisMonitorOprStage = "promtail/ConfigMap"
