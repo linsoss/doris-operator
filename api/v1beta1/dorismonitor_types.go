@@ -225,11 +225,10 @@ const (
 	MnrOprStagePromtailConfigMap DorisMonitorOprStage = "promtail/ConfigMap"
 	MnrOprStagePromtailDaemonSet DorisMonitorOprStage = "promtail/DemonSet"
 
-	MnrOprStageLoki           DorisMonitorOprStage = "loki"
-	MnrOprStageLokiConfigMap  DorisMonitorOprStage = "loki/ConfigMap"
-	MnrOprStageLokiService    DorisMonitorOprStage = "loki/Service"
-	MnrOprStageLokiPVC        DorisMonitorOprStage = "loki/PersistentVolumeClaim"
-	MnrOprStageLokiDeployment DorisMonitorOprStage = "loki/Deployment"
+	MnrOprStageLoki            DorisMonitorOprStage = "loki"
+	MnrOprStageLokiConfigMap   DorisMonitorOprStage = "loki/ConfigMap"
+	MnrOprStageLokiService     DorisMonitorOprStage = "loki/Service"
+	MnrOprStageLokiStatefulset DorisMonitorOprStage = "loki/Statefulset"
 
 	MnrOprStageCompleted DorisMonitorOprStage = "completed"
 )

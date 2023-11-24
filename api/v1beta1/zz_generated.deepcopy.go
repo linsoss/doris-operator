@@ -1112,6 +1112,11 @@ func (in *GrafanaSpec) DeepCopyInto(out *GrafanaSpec) {
 		(*in).DeepCopyInto(*out)
 	}
 	in.ResourceRequirements.DeepCopyInto(&out.ResourceRequirements)
+	if in.StorageClassName != nil {
+		in, out := &in.StorageClassName, &out.StorageClassName
+		*out = new(string)
+		**out = **in
+	}
 	if in.NodeSelector != nil {
 		in, out := &in.NodeSelector, &out.NodeSelector
 		*out = make(map[string]string, len(*in))
@@ -1198,6 +1203,11 @@ func (in *LokiSpec) DeepCopyInto(out *LokiSpec) {
 		**out = **in
 	}
 	in.ResourceRequirements.DeepCopyInto(&out.ResourceRequirements)
+	if in.StorageClassName != nil {
+		in, out := &in.StorageClassName, &out.StorageClassName
+		*out = new(string)
+		**out = **in
+	}
 	if in.NodeSelector != nil {
 		in, out := &in.NodeSelector, &out.NodeSelector
 		*out = make(map[string]string, len(*in))
@@ -1287,6 +1297,11 @@ func (in *PrometheusSpec) DeepCopyInto(out *PrometheusSpec) {
 		(*in).DeepCopyInto(*out)
 	}
 	in.ResourceRequirements.DeepCopyInto(&out.ResourceRequirements)
+	if in.StorageClassName != nil {
+		in, out := &in.StorageClassName, &out.StorageClassName
+		*out = new(string)
+		**out = **in
+	}
 	if in.NodeSelector != nil {
 		in, out := &in.NodeSelector, &out.NodeSelector
 		*out = make(map[string]string, len(*in))

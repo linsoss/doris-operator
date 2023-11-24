@@ -62,14 +62,7 @@ func GetLokiServiceKey(monitorKey types.NamespacedName) types.NamespacedName {
 	}
 }
 
-func GetLokiPVCKey(monitorKey types.NamespacedName) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: monitorKey.Namespace,
-		Name:      fmt.Sprintf("%s-loki-pvc", monitorKey.Name),
-	}
-}
-
-func GetLokiDeploymentKey(monitorKey types.NamespacedName) types.NamespacedName {
+func GetLokiStatefulsetKey(monitorKey types.NamespacedName) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: monitorKey.Namespace,
 		Name:      fmt.Sprintf("%s-loki", monitorKey.Name),
@@ -141,7 +134,7 @@ func MakeLokiService(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev1.Serv
 	return service
 }
 
-func MakeLokiPVC(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev1.PersistentVolumeClaim {
+func MakeLokiStatefulset(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.StatefulSet {
 	if cr.Spec.Cluster == "" || cr.Spec.DisableLoki {
 		return nil
 	}
@@ -149,39 +142,8 @@ func MakeLokiPVC(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev1.Persiste
 		Namespace: cr.Namespace,
 		Name:      cr.Spec.Cluster,
 	}
-	pvcRef := GetLokiPVCKey(cr.ObjKey())
-	labels := GetLokiLabels(clusterRef)
-
-	pvc := &corev1.PersistentVolumeClaim{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      pvcRef.Name,
-			Namespace: pvcRef.Namespace,
-			Labels:    labels,
-		},
-		Spec: corev1.PersistentVolumeClaimSpec{
-			AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-			StorageClassName: cr.Spec.StorageClassName,
-		},
-	}
-	storageRequest := cr.Spec.Loki.Requests.Storage()
-	if storageRequest != nil {
-		pvc.Spec.Resources.Requests = corev1.ResourceList{corev1.ResourceStorage: *storageRequest}
-	}
-	_ = controllerutil.SetOwnerReference(cr, pvc, scheme)
-	return pvc
-}
-
-func MakeLokiDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.Deployment {
-	if cr.Spec.Cluster == "" || cr.Spec.DisableLoki {
-		return nil
-	}
-	clusterRef := types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      cr.Spec.Cluster,
-	}
-	deploymentRef := GetLokiDeploymentKey(cr.ObjKey())
+	statefulsetRef := GetLokiStatefulsetKey(cr.ObjKey())
 	configMapRef := GetLokiConfigMapKey(cr.ObjKey())
-	pvcRef := GetLokiPVCKey(cr.ObjKey())
 	labels := GetLokiLabels(clusterRef)
 	replicas := int32(1)
 
@@ -195,16 +157,11 @@ func MakeLokiDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.De
 			ServiceAccountName: cr.Spec.ServiceAccount,
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			NodeSelector:       util.MapFallback(cr.Spec.Loki.NodeSelector, cr.Spec.NodeSelector),
-			Volumes: []corev1.Volume{
-				{
-					Name: "config",
-					VolumeSource: util.NewConfigMapItemsVolumeSource(
-						configMapRef.Name, map[string]string{"loki.yml": "loki.yml"}),
-				}, {
-					Name: "data",
-					VolumeSource: corev1.VolumeSource{
-						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{ClaimName: pvcRef.Name}}},
-			},
+			Volumes: []corev1.Volume{{
+				Name: "config",
+				VolumeSource: util.NewConfigMapItemsVolumeSource(
+					configMapRef.Name, map[string]string{"loki.yml": "loki.yml"}),
+			}},
 			Containers: []corev1.Container{{
 				Name:            "loki",
 				Image:           util.StringFallback(cr.Spec.Loki.Image, DefaultLokiImage),
@@ -222,8 +179,8 @@ func MakeLokiDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.De
 						Protocol:      corev1.ProtocolTCP,
 					}},
 				VolumeMounts: []corev1.VolumeMount{
-					{Name: "config", MountPath: "/etc/loki"},
-					{Name: "data", MountPath: "/data"},
+					{Name: "loki-config", MountPath: "/etc/loki"},
+					{Name: "loki-data", MountPath: "/data"},
 				},
 				ReadinessProbe: &corev1.Probe{
 					ProbeHandler:        util.NewHttpGetProbeHandler("/ready", 3100),
@@ -244,20 +201,36 @@ func MakeLokiDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.De
 		},
 	}
 
-	// deployment
-	deployment := &appv1.Deployment{
+	// volume claim template
+	pvc := corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentRef.Name,
-			Namespace: deploymentRef.Namespace,
-			Labels:    labels,
+			Name: "loki-data",
 		},
-		Spec: appv1.DeploymentSpec{
-			Replicas: &replicas,
-			Selector: &metav1.LabelSelector{MatchLabels: labels},
-			Template: podTemplate,
+		Spec: corev1.PersistentVolumeClaimSpec{
+			AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+			StorageClassName: util.PointerFallback(cr.Spec.Loki.StorageClassName, cr.Spec.StorageClassName),
 		},
 	}
-	_ = controllerutil.SetOwnerReference(cr, deployment, scheme)
-	_ = controllerutil.SetControllerReference(cr, deployment, scheme)
-	return deployment
+	if storageRequest := cr.Spec.Loki.Requests.Storage(); storageRequest != nil {
+		pvc.Spec.Resources.Requests = corev1.ResourceList{corev1.ResourceStorage: *storageRequest}
+	}
+
+	// statefulset
+	statefulset := &appv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      statefulsetRef.Name,
+			Namespace: statefulsetRef.Namespace,
+			Labels:    labels,
+		},
+		Spec: appv1.StatefulSetSpec{
+			ServiceName:          GetLokiServiceKey(cr.ObjKey()).Name,
+			Replicas:             &replicas,
+			Selector:             &metav1.LabelSelector{MatchLabels: labels},
+			Template:             podTemplate,
+			VolumeClaimTemplates: []corev1.PersistentVolumeClaim{pvc},
+		},
+	}
+	_ = controllerutil.SetOwnerReference(cr, statefulset, scheme)
+	_ = controllerutil.SetControllerReference(cr, statefulset, scheme)
+	return statefulset
 }
