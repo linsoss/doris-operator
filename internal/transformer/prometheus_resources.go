@@ -57,14 +57,7 @@ func GetPrometheusServiceKey(monitorKey types.NamespacedName) types.NamespacedNa
 	}
 }
 
-func GetPrometheusPVCKey(monitorKey types.NamespacedName) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: monitorKey.Namespace,
-		Name:      fmt.Sprintf("%s-prometheus-pvc", monitorKey.Name),
-	}
-}
-
-func GetPrometheusDeploymentKey(monitorKey types.NamespacedName) types.NamespacedName {
+func GetPrometheusStatefulsetKey(monitorKey types.NamespacedName) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: monitorKey.Namespace,
 		Name:      fmt.Sprintf("%s-prometheus", monitorKey.Name),
@@ -143,7 +136,7 @@ func MakePrometheusService(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev
 	return service
 }
 
-func MakePrometheusPVC(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev1.PersistentVolumeClaim {
+func MakePrometheusStatefulset(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.StatefulSet {
 	if cr.Spec.Cluster == "" {
 		return nil
 	}
@@ -151,39 +144,8 @@ func MakePrometheusPVC(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev1.Pe
 		Namespace: cr.Namespace,
 		Name:      cr.Spec.Cluster,
 	}
-	pvcRef := GetPrometheusPVCKey(cr.ObjKey())
-	labels := GetMonitorPrometheusLabels(clusterRef)
-
-	pvc := &corev1.PersistentVolumeClaim{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      pvcRef.Name,
-			Namespace: pvcRef.Namespace,
-			Labels:    labels,
-		},
-		Spec: corev1.PersistentVolumeClaimSpec{
-			AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-			StorageClassName: cr.Spec.StorageClassName,
-		},
-	}
-	storageRequest := cr.Spec.Prometheus.Requests.Storage()
-	if storageRequest != nil {
-		pvc.Spec.Resources.Requests = corev1.ResourceList{corev1.ResourceStorage: *storageRequest}
-	}
-	_ = controllerutil.SetOwnerReference(cr, pvc, scheme)
-	return pvc
-}
-
-func MakePrometheusDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.Deployment {
-	if cr.Spec.Cluster == "" {
-		return nil
-	}
-	clusterRef := types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      cr.Spec.Cluster,
-	}
-	deploymentRef := GetPrometheusDeploymentKey(cr.ObjKey())
+	statefulsetRef := GetPrometheusStatefulsetKey(cr.ObjKey())
 	configMapRef := GetPrometheusConfigMapKey(cr.ObjKey())
-	pvcRef := GetPrometheusPVCKey(cr.ObjKey())
 	labels := GetMonitorPrometheusLabels(clusterRef)
 
 	replicas := int32(1)
@@ -209,16 +171,11 @@ func MakePrometheusDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *ap
 			ServiceAccountName: MonitorNamespacedAccountName,
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			NodeSelector:       util.MapFallback(cr.Spec.Prometheus.NodeSelector, cr.Spec.NodeSelector),
-			Volumes: []corev1.Volume{
-				{
-					Name: "prometheus-config",
-					VolumeSource: util.NewConfigMapItemsVolumeSource(
-						configMapRef.Name, map[string]string{"prometheus.yml": "prometheus.yml"}),
-				}, {
-					Name: "prometheus-data",
-					VolumeSource: corev1.VolumeSource{
-						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{ClaimName: pvcRef.Name}}},
-			},
+			Volumes: []corev1.Volume{{
+				Name: "prometheus-config",
+				VolumeSource: util.NewConfigMapItemsVolumeSource(
+					configMapRef.Name, map[string]string{"prometheus.yml": "prometheus.yml"}),
+			}},
 			Containers: []corev1.Container{{
 				Name:            "prometheus",
 				Image:           util.StringFallback(cr.Spec.Prometheus.Image, DefaultPrometheusImage),
@@ -251,20 +208,35 @@ func MakePrometheusDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *ap
 		},
 	}
 
-	// deployment
-	deployment := &appv1.Deployment{
+	// volume claim template
+	pvc := corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentRef.Name,
-			Namespace: deploymentRef.Namespace,
-			Labels:    labels,
+			Name: "prometheus-data",
 		},
-		Spec: appv1.DeploymentSpec{
-			Replicas: &replicas,
-			Selector: &metav1.LabelSelector{MatchLabels: labels},
-			Template: podTemplate,
+		Spec: corev1.PersistentVolumeClaimSpec{
+			AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+			StorageClassName: cr.Spec.StorageClassName,
 		},
 	}
-	_ = controllerutil.SetOwnerReference(cr, deployment, scheme)
-	_ = controllerutil.SetControllerReference(cr, deployment, scheme)
-	return deployment
+	if storageRequest := cr.Spec.Prometheus.Requests.Storage(); storageRequest != nil {
+		pvc.Spec.Resources.Requests = corev1.ResourceList{corev1.ResourceStorage: *storageRequest}
+	}
+
+	// statefulset
+	statefulset := &appv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      statefulsetRef.Name,
+			Namespace: statefulsetRef.Namespace,
+			Labels:    labels,
+		},
+		Spec: appv1.StatefulSetSpec{
+			Replicas:             &replicas,
+			Selector:             &metav1.LabelSelector{MatchLabels: labels},
+			Template:             podTemplate,
+			VolumeClaimTemplates: []corev1.PersistentVolumeClaim{pvc},
+		},
+	}
+	_ = controllerutil.SetOwnerReference(cr, statefulset, scheme)
+	_ = controllerutil.SetControllerReference(cr, statefulset, scheme)
+	return statefulset
 }

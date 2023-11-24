@@ -210,11 +210,10 @@ const (
 	MnrOprStageNamespacedServiceAccount DorisMonitorOprStage = "rbac/ServiceAccount"
 	MnrOprStageNamespacedRoleBinding    DorisMonitorOprStage = "rbac/RoleBinding"
 
-	MnrOprStagePrometheus           DorisMonitorOprStage = "prometheus"
-	MnrOprStagePrometheusConfigMap  DorisMonitorOprStage = "prometheus/ConfigMap"
-	MnrOprStagePrometheusService    DorisMonitorOprStage = "prometheus/Service"
-	MnrOprStagePrometheusPVC        DorisMonitorOprStage = "prometheus/PersistentVolumeClaim"
-	MnrOprStagePrometheusDeployment DorisMonitorOprStage = "prometheus/Deployment"
+	MnrOprStagePrometheus            DorisMonitorOprStage = "prometheus"
+	MnrOprStagePrometheusConfigMap   DorisMonitorOprStage = "prometheus/ConfigMap"
+	MnrOprStagePrometheusService     DorisMonitorOprStage = "prometheus/Service"
+	MnrOprStagePrometheusStatefulset DorisMonitorOprStage = "prometheus/Statefulset"
 
 	MnrOprStageGrafana           DorisMonitorOprStage = "grafana"
 	MnrOprStageGrafanaSecret     DorisMonitorOprStage = "grafana/Secret"
@@ -260,11 +259,10 @@ type PromtailStatus struct {
 
 // DorisMonitorComponentStatus defines the status of the doris monitor component
 type DorisMonitorComponentStatus struct {
-	ServiceRef    NamespacedName             `json:"serviceRef,omitempty"`
-	DeploymentRef NamespacedName             `json:"deploymentRef,omitempty"`
-	PVCRef        NamespacedName             `json:"pvcRef,omitempty"`
-	Ready         bool                       `json:"ready,omitempty"`
-	Conditions    []apps.DeploymentCondition `json:"conditions,omitempty"`
+	ServiceRef     NamespacedName             `json:"serviceRef,omitempty"`
+	StatefulsetRef NamespacedName             `json:"statefulsetRef,omitempty"`
+	Ready          bool                       `json:"ready,omitempty"`
+	Conditions     []apps.DeploymentCondition `json:"conditions,omitempty"`
 }
 
 func init() {

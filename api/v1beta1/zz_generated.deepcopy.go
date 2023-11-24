@@ -870,8 +870,7 @@ func (in *DorisMonitor) DeepCopyObject() runtime.Object {
 func (in *DorisMonitorComponentStatus) DeepCopyInto(out *DorisMonitorComponentStatus) {
 	*out = *in
 	out.ServiceRef = in.ServiceRef
-	out.DeploymentRef = in.DeploymentRef
-	out.PVCRef = in.PVCRef
+	out.StatefulsetRef = in.StatefulsetRef
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
 		*out = make([]appsv1.DeploymentCondition, len(*in))
