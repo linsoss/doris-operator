@@ -215,7 +215,7 @@ func MakePrometheusStatefulset(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *a
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{
 			AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-			StorageClassName: cr.Spec.StorageClassName,
+			StorageClassName: util.PointerFallback(cr.Spec.Prometheus.StorageClassName, cr.Spec.StorageClassName),
 		},
 	}
 	if storageRequest := cr.Spec.Prometheus.Requests.Storage(); storageRequest != nil {
@@ -230,6 +230,7 @@ func MakePrometheusStatefulset(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *a
 			Labels:    labels,
 		},
 		Spec: appv1.StatefulSetSpec{
+			ServiceName:          GetPrometheusServiceKey(cr.ObjKey()).Name,
 			Replicas:             &replicas,
 			Selector:             &metav1.LabelSelector{MatchLabels: labels},
 			Template:             podTemplate,
