@@ -288,10 +288,11 @@ func MakeGrafanaStatefulset(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv
 			Labels:    labels,
 		},
 		Spec: appv1.StatefulSetSpec{
-			ServiceName: GetGrafanaServiceKey(cr.ObjKey()).Name,
-			Replicas:    &replicas,
-			Selector:    &metav1.LabelSelector{MatchLabels: labels},
-			Template:    podTemplate,
+			ServiceName:          GetGrafanaServiceKey(cr.ObjKey()).Name,
+			Replicas:             &replicas,
+			Selector:             &metav1.LabelSelector{MatchLabels: labels},
+			Template:             podTemplate,
+			VolumeClaimTemplates: []corev1.PersistentVolumeClaim{pvc},
 		},
 	}
 	_ = controllerutil.SetOwnerReference(cr, statefulset, scheme)
