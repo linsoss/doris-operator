@@ -66,7 +66,7 @@ Doris 集群中。
 如果需要设置存储类型，可以修改 `${cluster_name}/doris-cluster.yaml` 中各组件的 `storageClassName` 字段。
 
 Doris 集群不同组件对磁盘的要求不一样，所以部署集群前，要根据当前 Kubernetes
-集群支持的存储类型以及使用场景，参考[存储配置文档](../configure-storage-class)为 Doris 集群各组件选择合适的存储类型。
+集群支持的存储类型以及使用场景，参考[存储配置文档](../%E9%85%8D%E7%BD%AE-storage-class/)为 Doris 集群各组件选择合适的存储类型。
 
 ### Doris 组件配置参数
 
