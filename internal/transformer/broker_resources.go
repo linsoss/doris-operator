@@ -176,6 +176,14 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 			SuccessThreshold: 1,
 			FailureThreshold: 3,
 		},
+		LivenessProbe: &corev1.Probe{
+			ProbeHandler:        util.NewTcpSocketProbeHandler(GetBrokerIpcPort(cr)),
+			InitialDelaySeconds: 20,
+			TimeoutSeconds:      1,
+			PeriodSeconds:       5,
+			SuccessThreshold:    1,
+			FailureThreshold:    5,
+		},
 	}
 	// pod template: merge additional pod containers configs defined by user
 	mainContainer.Env = append(mainContainer.Env, cr.Spec.Broker.AdditionalEnvs...)

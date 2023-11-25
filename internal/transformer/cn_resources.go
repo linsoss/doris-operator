@@ -236,6 +236,14 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			SuccessThreshold: 1,
 			FailureThreshold: 3,
 		},
+		LivenessProbe: &corev1.Probe{
+			ProbeHandler:        util.NewTcpSocketProbeHandler(GetCnHeartbeatServicePort(cr)),
+			InitialDelaySeconds: 20,
+			TimeoutSeconds:      1,
+			PeriodSeconds:       5,
+			SuccessThreshold:    1,
+			FailureThreshold:    5,
+		},
 	}
 	// pod template: init container
 	privileged := true
