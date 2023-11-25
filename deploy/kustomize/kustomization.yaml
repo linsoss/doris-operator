@@ -3,7 +3,7 @@ kind: Kustomization
 images:
   - name: controller
     newName: ghcr.io/linsoss/doris-operator
-    newTag: 1.0.1
+    newTag: 1.0.2
 
 namespace: doris-operator-system
 namePrefix: doris-operator-
