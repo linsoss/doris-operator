@@ -77,30 +77,27 @@ func (r *DorisMonitorReconciler) Sync() (dapi.DorisMonitorSyncStatus, error) {
 func (r *DorisMonitorReconciler) syncPrometheusStatus() (dapi.PrometheusStatus, error) {
 	status := util.PointerDeRefer(r.CR.Status.Prometheus.DeepCopy(), dapi.PrometheusStatus{})
 	serviceKey := tran.GetPrometheusServiceKey(r.CR.ObjKey())
-	pvcKey := tran.GetPrometheusPVCKey(r.CR.ObjKey())
-	deployKey := tran.GetPrometheusDeploymentKey(r.CR.ObjKey())
+	stsKey := tran.GetPrometheusStatefulsetKey(r.CR.ObjKey())
 
-	err := r.fillMonitorComponentStatus(&status.DorisMonitorComponentStatus, serviceKey, pvcKey, deployKey)
+	err := r.fillMonitorComponentStatus(&status.DorisMonitorComponentStatus, serviceKey, stsKey)
 	return status, err
 }
 
 func (r *DorisMonitorReconciler) syncGrafanaStatus() (dapi.GrafanaStatus, error) {
 	status := util.PointerDeRefer(r.CR.Status.Grafana.DeepCopy(), dapi.GrafanaStatus{})
 	serviceKey := tran.GetGrafanaServiceKey(r.CR.ObjKey())
-	pvcKey := tran.GetGrafanaPVCKey(r.CR.ObjKey())
-	deployKey := tran.GetGrafanaDeploymentKey(r.CR.ObjKey())
+	stsKey := tran.GetGrafanaStatefulsetKey(r.CR.ObjKey())
 
-	err := r.fillMonitorComponentStatus(&status.DorisMonitorComponentStatus, serviceKey, pvcKey, deployKey)
+	err := r.fillMonitorComponentStatus(&status.DorisMonitorComponentStatus, serviceKey, stsKey)
 	return status, err
 }
 
 func (r *DorisMonitorReconciler) syncLokiStatus() (dapi.LokiStatus, error) {
 	status := util.PointerDeRefer(r.CR.Status.Loki.DeepCopy(), dapi.LokiStatus{})
 	serviceKey := tran.GetLokiServiceKey(r.CR.ObjKey())
-	pvcKey := tran.GetLokiPVCKey(r.CR.ObjKey())
-	deployKey := tran.GetLokiDeploymentKey(r.CR.ObjKey())
+	stsKey := tran.GetLokiStatefulsetKey(r.CR.ObjKey())
 
-	err := r.fillMonitorComponentStatus(&status.DorisMonitorComponentStatus, serviceKey, pvcKey, deployKey)
+	err := r.fillMonitorComponentStatus(&status.DorisMonitorComponentStatus, serviceKey, stsKey)
 	return status, err
 }
 
@@ -125,12 +122,10 @@ func (r *DorisMonitorReconciler) syncPromtailStatus() (dapi.PromtailStatus, erro
 func (r *DorisMonitorReconciler) fillMonitorComponentStatus(
 	baseStatus *dapi.DorisMonitorComponentStatus,
 	serviceKey types.NamespacedName,
-	pvcKey types.NamespacedName,
 	deploymentKey types.NamespacedName) error {
 
 	baseStatus.ServiceRef = dapi.NewNamespacedName(serviceKey)
-	baseStatus.PVCRef = dapi.NewNamespacedName(pvcKey)
-	baseStatus.DeploymentRef = dapi.NewNamespacedName(deploymentKey)
+	baseStatus.StatefulsetRef = dapi.NewNamespacedName(deploymentKey)
 
 	// Get deployment status
 	deploy := &appv1.Deployment{}

@@ -110,7 +110,7 @@ func (r *DorisMonitorReconciler) recRbacResources() MonitorStageRecResult {
 // reconcile rbac resources used by the DorisMonitor
 func (r *DorisMonitorReconciler) recPrometheusResources() MonitorStageRecResult {
 	action := dapi.StageActionApply
-	// config map
+	// configmap
 	configMap, genConfErr := tran.MakePrometheusConfigMap(r.CR, r.Schema)
 	if genConfErr != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusConfigMap, action, genConfErr)
@@ -123,16 +123,11 @@ func (r *DorisMonitorReconciler) recPrometheusResources() MonitorStageRecResult 
 	if err := r.CreateOrUpdate(service, &corev1.Service{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStagePrometheusService, action, err)
 	}
-	// pvc
-	pvc := tran.MakePrometheusPVC(r.CR, r.Schema)
-	if err := r.CreateWhenNotExist(pvc, &corev1.PersistentVolumeClaim{}); err != nil {
-		return mnrStageFail(dapi.MnrOprStagePrometheusPVC, action, err)
-	}
-	// deployment
-	deployment := tran.MakePrometheusDeployment(r.CR, r.Schema)
-	deployment.Spec.Template.Annotations[PrometheusConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
-	if err := r.CreateOrUpdate(deployment, &appv1.Deployment{}); err != nil {
-		return mnrStageFail(dapi.MnrOprStagePrometheusDeployment, action, err)
+	// statefulset
+	statefulset := tran.MakePrometheusStatefulset(r.CR, r.Schema)
+	statefulset.Spec.Template.Annotations[PrometheusConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
+	if err := r.CreateOrUpdate(statefulset, &appv1.StatefulSet{}); err != nil {
+		return mnrStageFail(dapi.MnrOprStagePrometheusStatefulset, action, err)
 	}
 	return mnrStageSucc(dapi.MnrOprStagePrometheus, action)
 }
@@ -158,16 +153,11 @@ func (r *DorisMonitorReconciler) recGrafanaResources() MonitorStageRecResult {
 	if err := r.CreateOrUpdate(service, &corev1.Service{}); err != nil {
 		return mnrStageFail(dapi.MnrOprStageGrafanaService, action, err)
 	}
-	// pvc
-	pvc := tran.MakeGrafanaPVC(r.CR, r.Schema)
-	if err := r.CreateWhenNotExist(pvc, &corev1.PersistentVolumeClaim{}); err != nil {
-		return mnrStageFail(dapi.MnrOprStageGrafanaPVC, action, err)
-	}
-	// deployment
-	deployment := tran.MakeGrafanaDeployment(r.CR, r.Schema)
-	deployment.Spec.Template.Annotations[GrafanaConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
-	if err := r.CreateOrUpdate(deployment, &appv1.Deployment{}); err != nil {
-		return mnrStageFail(dapi.MnrOprStageGrafanaDeployment, action, err)
+	// statefulset
+	statefulset := tran.MakeGrafanaStatefulset(r.CR, r.Schema)
+	statefulset.Spec.Template.Annotations[GrafanaConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
+	if err := r.CreateOrUpdate(statefulset, &appv1.StatefulSet{}); err != nil {
+		return mnrStageFail(dapi.MnrOprStageGrafanaStatefulset, action, err)
 	}
 	return mnrStageSucc(dapi.MnrOprStageGrafana, action)
 }
@@ -190,16 +180,11 @@ func (r *DorisMonitorReconciler) recLokiResources() MonitorStageRecResult {
 		if err := r.CreateOrUpdate(service, &corev1.Service{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiService, action, err)
 		}
-		// pvc
-		pvc := tran.MakeLokiPVC(r.CR, r.Schema)
-		if err := r.CreateWhenNotExist(pvc, &corev1.PersistentVolumeClaim{}); err != nil {
-			return mnrStageFail(dapi.MnrOprStageLokiPVC, action, err)
-		}
-		// deployment
-		deployment := tran.MakeLokiDeployment(r.CR, r.Schema)
-		deployment.Spec.Template.Annotations[LokiConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
-		if err := r.CreateOrUpdate(deployment, &appv1.Deployment{}); err != nil {
-			return mnrStageFail(dapi.MnrOprStageLokiDeployment, action, err)
+		// statefulset
+		statefulset := tran.MakeLokiStatefulset(r.CR, r.Schema)
+		statefulset.Spec.Template.Annotations[LokiConfHashAnnotationKey] = util.Md5HashOr(configMap.Data, "")
+		if err := r.CreateOrUpdate(statefulset, &appv1.StatefulSet{}); err != nil {
+			return mnrStageFail(dapi.MnrOprStageLokiStatefulset, action, err)
 		}
 		return mnrStageSucc(dapi.MnrOprStageLoki, action)
 	}
@@ -217,15 +202,10 @@ func (r *DorisMonitorReconciler) recLokiResources() MonitorStageRecResult {
 		if err := r.DeleteWhenExist(serviceRef, &corev1.Service{}); err != nil {
 			return mnrStageFail(dapi.MnrOprStageLokiService, action, err)
 		}
-		// pvc
-		pvcRef := tran.GetLokiPVCKey(r.CR.ObjKey())
-		if err := r.DeleteWhenExist(pvcRef, &corev1.PersistentVolumeClaim{}); err != nil {
-			return mnrStageFail(dapi.MnrOprStageLokiPVC, action, err)
-		}
-		// deployment
-		deploymentRef := tran.GetLokiDeploymentKey(r.CR.ObjKey())
-		if err := r.DeleteWhenExist(deploymentRef, &corev1.PersistentVolumeClaim{}); err != nil {
-			return mnrStageFail(dapi.MnrOprStageLokiDeployment, action, err)
+		// statefulset
+		statefulsetRef := tran.GetLokiStatefulsetKey(r.CR.ObjKey())
+		if err := r.DeleteWhenExist(statefulsetRef, &appv1.StatefulSet{}); err != nil {
+			return mnrStageFail(dapi.MnrOprStageLokiStatefulset, action, err)
 		}
 		return mnrStageSucc(dapi.MnrOprStageLoki, action)
 	}

@@ -264,23 +264,16 @@ spec:
                       - type
                       type: object
                     type: array
-                  deploymentRef:
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    type: object
-                  pvcRef:
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    type: object
                   ready:
                     type: boolean
                   serviceRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    type: object
+                  statefulsetRef:
                     properties:
                       name:
                         type: string
@@ -316,23 +309,16 @@ spec:
                       - type
                       type: object
                     type: array
-                  deploymentRef:
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    type: object
-                  pvcRef:
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    type: object
                   ready:
                     type: boolean
                   serviceRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    type: object
+                  statefulsetRef:
                     properties:
                       name:
                         type: string
@@ -364,23 +350,16 @@ spec:
                       - type
                       type: object
                     type: array
-                  deploymentRef:
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    type: object
-                  pvcRef:
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    type: object
                   ready:
                     type: boolean
                   serviceRef:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    type: object
+                  statefulsetRef:
                     properties:
                       name:
                         type: string

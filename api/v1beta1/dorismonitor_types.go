@@ -101,7 +101,7 @@ type PrometheusSpec struct {
 	corev1.ResourceRequirements `json:",inline"`
 
 	// +optional
-	StorageClassName string `json:"storageClassName,omitempty"`
+	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
@@ -128,7 +128,7 @@ type GrafanaSpec struct {
 	corev1.ResourceRequirements `json:",inline"`
 
 	// +optional
-	StorageClassName string `json:"storageClassName,omitempty"`
+	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
@@ -148,7 +148,7 @@ type LokiSpec struct {
 	corev1.ResourceRequirements `json:",inline"`
 
 	// +optional
-	StorageClassName string `json:"storageClassName,omitempty"`
+	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
@@ -210,28 +210,25 @@ const (
 	MnrOprStageNamespacedServiceAccount DorisMonitorOprStage = "rbac/ServiceAccount"
 	MnrOprStageNamespacedRoleBinding    DorisMonitorOprStage = "rbac/RoleBinding"
 
-	MnrOprStagePrometheus           DorisMonitorOprStage = "prometheus"
-	MnrOprStagePrometheusConfigMap  DorisMonitorOprStage = "prometheus/ConfigMap"
-	MnrOprStagePrometheusService    DorisMonitorOprStage = "prometheus/Service"
-	MnrOprStagePrometheusPVC        DorisMonitorOprStage = "prometheus/PersistentVolumeClaim"
-	MnrOprStagePrometheusDeployment DorisMonitorOprStage = "prometheus/Deployment"
+	MnrOprStagePrometheus            DorisMonitorOprStage = "prometheus"
+	MnrOprStagePrometheusConfigMap   DorisMonitorOprStage = "prometheus/ConfigMap"
+	MnrOprStagePrometheusService     DorisMonitorOprStage = "prometheus/Service"
+	MnrOprStagePrometheusStatefulset DorisMonitorOprStage = "prometheus/Statefulset"
 
-	MnrOprStageGrafana           DorisMonitorOprStage = "grafana"
-	MnrOprStageGrafanaSecret     DorisMonitorOprStage = "grafana/Secret"
-	MnrOprStageGrafanaConfigMap  DorisMonitorOprStage = "grafana/ConfigMap"
-	MnrOprStageGrafanaService    DorisMonitorOprStage = "grafana/Service"
-	MnrOprStageGrafanaPVC        DorisMonitorOprStage = "grafana/PersistentVolumeClaim"
-	MnrOprStageGrafanaDeployment DorisMonitorOprStage = "grafana/Deployment"
+	MnrOprStageGrafana            DorisMonitorOprStage = "grafana"
+	MnrOprStageGrafanaSecret      DorisMonitorOprStage = "grafana/Secret"
+	MnrOprStageGrafanaConfigMap   DorisMonitorOprStage = "grafana/ConfigMap"
+	MnrOprStageGrafanaService     DorisMonitorOprStage = "grafana/Service"
+	MnrOprStageGrafanaStatefulset DorisMonitorOprStage = "grafana/Statefulset"
 
 	MnrOprStagePromtail          DorisMonitorOprStage = "promtail"
 	MnrOprStagePromtailConfigMap DorisMonitorOprStage = "promtail/ConfigMap"
 	MnrOprStagePromtailDaemonSet DorisMonitorOprStage = "promtail/DemonSet"
 
-	MnrOprStageLoki           DorisMonitorOprStage = "loki"
-	MnrOprStageLokiConfigMap  DorisMonitorOprStage = "loki/ConfigMap"
-	MnrOprStageLokiService    DorisMonitorOprStage = "loki/Service"
-	MnrOprStageLokiPVC        DorisMonitorOprStage = "loki/PersistentVolumeClaim"
-	MnrOprStageLokiDeployment DorisMonitorOprStage = "loki/Deployment"
+	MnrOprStageLoki            DorisMonitorOprStage = "loki"
+	MnrOprStageLokiConfigMap   DorisMonitorOprStage = "loki/ConfigMap"
+	MnrOprStageLokiService     DorisMonitorOprStage = "loki/Service"
+	MnrOprStageLokiStatefulset DorisMonitorOprStage = "loki/Statefulset"
 
 	MnrOprStageCompleted DorisMonitorOprStage = "completed"
 )
@@ -260,11 +257,10 @@ type PromtailStatus struct {
 
 // DorisMonitorComponentStatus defines the status of the doris monitor component
 type DorisMonitorComponentStatus struct {
-	ServiceRef    NamespacedName             `json:"serviceRef,omitempty"`
-	DeploymentRef NamespacedName             `json:"deploymentRef,omitempty"`
-	PVCRef        NamespacedName             `json:"pvcRef,omitempty"`
-	Ready         bool                       `json:"ready,omitempty"`
-	Conditions    []apps.DeploymentCondition `json:"conditions,omitempty"`
+	ServiceRef     NamespacedName             `json:"serviceRef,omitempty"`
+	StatefulsetRef NamespacedName             `json:"statefulsetRef,omitempty"`
+	Ready          bool                       `json:"ready,omitempty"`
+	Conditions     []apps.DeploymentCondition `json:"conditions,omitempty"`
 }
 
 func init() {

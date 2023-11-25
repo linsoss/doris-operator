@@ -870,8 +870,7 @@ func (in *DorisMonitor) DeepCopyObject() runtime.Object {
 func (in *DorisMonitorComponentStatus) DeepCopyInto(out *DorisMonitorComponentStatus) {
 	*out = *in
 	out.ServiceRef = in.ServiceRef
-	out.DeploymentRef = in.DeploymentRef
-	out.PVCRef = in.PVCRef
+	out.StatefulsetRef = in.StatefulsetRef
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
 		*out = make([]appsv1.DeploymentCondition, len(*in))
@@ -1113,6 +1112,11 @@ func (in *GrafanaSpec) DeepCopyInto(out *GrafanaSpec) {
 		(*in).DeepCopyInto(*out)
 	}
 	in.ResourceRequirements.DeepCopyInto(&out.ResourceRequirements)
+	if in.StorageClassName != nil {
+		in, out := &in.StorageClassName, &out.StorageClassName
+		*out = new(string)
+		**out = **in
+	}
 	if in.NodeSelector != nil {
 		in, out := &in.NodeSelector, &out.NodeSelector
 		*out = make(map[string]string, len(*in))
@@ -1199,6 +1203,11 @@ func (in *LokiSpec) DeepCopyInto(out *LokiSpec) {
 		**out = **in
 	}
 	in.ResourceRequirements.DeepCopyInto(&out.ResourceRequirements)
+	if in.StorageClassName != nil {
+		in, out := &in.StorageClassName, &out.StorageClassName
+		*out = new(string)
+		**out = **in
+	}
 	if in.NodeSelector != nil {
 		in, out := &in.NodeSelector, &out.NodeSelector
 		*out = make(map[string]string, len(*in))
@@ -1288,6 +1297,11 @@ func (in *PrometheusSpec) DeepCopyInto(out *PrometheusSpec) {
 		(*in).DeepCopyInto(*out)
 	}
 	in.ResourceRequirements.DeepCopyInto(&out.ResourceRequirements)
+	if in.StorageClassName != nil {
+		in, out := &in.StorageClassName, &out.StorageClassName
+		*out = new(string)
+		**out = **in
+	}
 	if in.NodeSelector != nil {
 		in, out := &in.NodeSelector, &out.NodeSelector
 		*out = make(map[string]string, len(*in))

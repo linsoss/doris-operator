@@ -72,14 +72,7 @@ func GetGrafanaServiceKey(monitorKey types.NamespacedName) types.NamespacedName 
 	}
 }
 
-func GetGrafanaPVCKey(monitorKey types.NamespacedName) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: monitorKey.Namespace,
-		Name:      fmt.Sprintf("%s-grafana-pvc", monitorKey.Name),
-	}
-}
-
-func GetGrafanaDeploymentKey(monitorKey types.NamespacedName) types.NamespacedName {
+func GetGrafanaStatefulsetKey(monitorKey types.NamespacedName) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: monitorKey.Namespace,
 		Name:      fmt.Sprintf("%s-grafana", monitorKey.Name),
@@ -197,7 +190,7 @@ func MakeGrafanaService(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev1.S
 	return service
 }
 
-func MakeGrafanaPVC(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev1.PersistentVolumeClaim {
+func MakeGrafanaStatefulset(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.StatefulSet {
 	if cr.Spec.Cluster == "" {
 		return nil
 	}
@@ -205,40 +198,9 @@ func MakeGrafanaPVC(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *corev1.Persi
 		Namespace: cr.Namespace,
 		Name:      cr.Spec.Cluster,
 	}
-	pvcRef := GetGrafanaPVCKey(cr.ObjKey())
-	labels := GetGrafanaLabels(clusterRef)
-
-	pvc := &corev1.PersistentVolumeClaim{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      pvcRef.Name,
-			Namespace: pvcRef.Namespace,
-			Labels:    labels,
-		},
-		Spec: corev1.PersistentVolumeClaimSpec{
-			AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-			StorageClassName: cr.Spec.StorageClassName,
-		},
-	}
-	storageRequest := cr.Spec.Grafana.Requests.Storage()
-	if storageRequest != nil {
-		pvc.Spec.Resources.Requests = corev1.ResourceList{corev1.ResourceStorage: *storageRequest}
-	}
-	_ = controllerutil.SetOwnerReference(cr, pvc, scheme)
-	return pvc
-}
-
-func MakeGrafanaDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.Deployment {
-	if cr.Spec.Cluster == "" {
-		return nil
-	}
-	clusterRef := types.NamespacedName{
-		Namespace: cr.Namespace,
-		Name:      cr.Spec.Cluster,
-	}
-	deploymentRef := GetGrafanaDeploymentKey(cr.ObjKey())
+	statefulsetRef := GetGrafanaStatefulsetKey(cr.ObjKey())
 	configMapRef := GetGrafanaConfigMapKey(cr.ObjKey())
 	secretRef := GetGrafanaSecretKey(cr.ObjKey())
-	pvcRef := GetGrafanaPVCKey(cr.ObjKey())
 	labels := GetGrafanaLabels(clusterRef)
 
 	replicas := int32(1)
@@ -265,10 +227,7 @@ func MakeGrafanaDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1
 						"dashboards.json": "doris-cluster-dashboards.json",
 						"dashboard.yml":   "dashboard.yml",
 					}),
-				}, {
-					Name: "grafana-data",
-					VolumeSource: corev1.VolumeSource{
-						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{ClaimName: pvcRef.Name}}},
+				},
 			},
 			Containers: []corev1.Container{{
 				Name:            "grafana",
@@ -307,20 +266,36 @@ func MakeGrafanaDeployment(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1
 		},
 	}
 
-	// deployment
-	deployment := &appv1.Deployment{
+	// volume claim template
+	pvc := corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentRef.Name,
-			Namespace: deploymentRef.Namespace,
-			Labels:    labels,
+			Name: "grafana-data",
 		},
-		Spec: appv1.DeploymentSpec{
-			Replicas: &replicas,
-			Selector: &metav1.LabelSelector{MatchLabels: labels},
-			Template: podTemplate,
+		Spec: corev1.PersistentVolumeClaimSpec{
+			AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+			StorageClassName: util.PointerFallback(cr.Spec.Grafana.StorageClassName, cr.Spec.StorageClassName),
 		},
 	}
-	_ = controllerutil.SetOwnerReference(cr, deployment, scheme)
-	_ = controllerutil.SetControllerReference(cr, deployment, scheme)
-	return deployment
+	if storageRequest := cr.Spec.Grafana.Requests.Storage(); storageRequest != nil {
+		pvc.Spec.Resources.Requests = corev1.ResourceList{corev1.ResourceStorage: *storageRequest}
+	}
+
+	// statefulset
+	statefulset := &appv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      statefulsetRef.Name,
+			Namespace: statefulsetRef.Namespace,
+			Labels:    labels,
+		},
+		Spec: appv1.StatefulSetSpec{
+			ServiceName:          GetGrafanaServiceKey(cr.ObjKey()).Name,
+			Replicas:             &replicas,
+			Selector:             &metav1.LabelSelector{MatchLabels: labels},
+			Template:             podTemplate,
+			VolumeClaimTemplates: []corev1.PersistentVolumeClaim{pvc},
+		},
+	}
+	_ = controllerutil.SetOwnerReference(cr, statefulset, scheme)
+	_ = controllerutil.SetControllerReference(cr, statefulset, scheme)
+	return statefulset
 }
