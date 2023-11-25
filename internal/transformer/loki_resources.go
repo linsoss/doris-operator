@@ -158,7 +158,7 @@ func MakeLokiStatefulset(cr *dapi.DorisMonitor, scheme *runtime.Scheme) *appv1.S
 			ImagePullSecrets:   cr.Spec.ImagePullSecrets,
 			NodeSelector:       util.MapFallback(cr.Spec.Loki.NodeSelector, cr.Spec.NodeSelector),
 			Volumes: []corev1.Volume{{
-				Name: "loki-config",
+				Name: "config",
 				VolumeSource: util.NewConfigMapItemsVolumeSource(
 					configMapRef.Name, map[string]string{"loki.yml": "loki.yml"}),
 			}},
