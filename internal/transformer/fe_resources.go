@@ -271,6 +271,9 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			{Name: "fe-meta", MountPath: "/opt/apache-doris/fe/doris-meta"},
 			{Name: "fe-log", MountPath: "/opt/apache-doris/fe/log"},
 		},
+		Lifecycle: &corev1.Lifecycle{
+			PreStop: util.NewExecLifecycleHandler("/bin/sh", "-c", "bin/stop_fe.sh"),
+		},
 		ReadinessProbe: &corev1.Probe{
 			ProbeHandler:        util.NewTcpSocketProbeHandler(GetFeEditLogPort(cr)),
 			InitialDelaySeconds: 3,

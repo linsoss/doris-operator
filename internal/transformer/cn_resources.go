@@ -229,6 +229,9 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			{Name: "conf", MountPath: "/etc/apache-doris/be/"},
 			{Name: "cn-log", MountPath: "/opt/apache-doris/be/log"},
 		},
+		Lifecycle: &corev1.Lifecycle{
+			PreStop: util.NewExecLifecycleHandler("/bin/sh", "-c", "bin/stop_be.sh"),
+		},
 		ReadinessProbe: &corev1.Probe{
 			ProbeHandler:     util.NewTcpSocketProbeHandler(GetCnHeartbeatServicePort(cr)),
 			TimeoutSeconds:   1,
