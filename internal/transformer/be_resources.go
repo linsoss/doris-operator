@@ -252,6 +252,9 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			{Name: "be-storage", MountPath: "/opt/apache-doris/be/storage"},
 			{Name: "be-log", MountPath: "/opt/apache-doris/be/log"},
 		},
+		Lifecycle: &corev1.Lifecycle{
+			PreStop: util.NewExecLifecycleHandler("/bin/sh", "-c", "bin/stop_be.sh"),
+		},
 		ReadinessProbe: &corev1.Probe{
 			ProbeHandler:     util.NewTcpSocketProbeHandler(GetBeHeartbeatServicePort(cr)),
 			TimeoutSeconds:   1,

@@ -94,6 +94,12 @@ func NewHttpGetProbeHandler(path string, httpPort int32) corev1.ProbeHandler {
 	}
 }
 
+func NewExecLifecycleHandler(command ...string) *corev1.LifecycleHandler {
+	return &corev1.LifecycleHandler{
+		Exec: &corev1.ExecAction{Command: command},
+	}
+}
+
 func NewResourceAvgUtilizationMetricSpec(name corev1.ResourceName, avgUnit *int32) acv2.MetricSpec {
 	return acv2.MetricSpec{
 		Type: acv2.ResourceMetricSourceType,

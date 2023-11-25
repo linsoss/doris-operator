@@ -169,6 +169,9 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: "conf", MountPath: "/opt/apache-doris/broker/conf"},
 		},
+		Lifecycle: &corev1.Lifecycle{
+			PreStop: util.NewExecLifecycleHandler("/bin/sh", "-c", "bin/stop_broker.sh"),
+		},
 		ReadinessProbe: &corev1.Probe{
 			ProbeHandler:     util.NewTcpSocketProbeHandler(GetBrokerIpcPort(cr)),
 			TimeoutSeconds:   1,
