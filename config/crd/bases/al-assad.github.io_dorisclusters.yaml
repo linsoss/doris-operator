@@ -2228,43 +2228,35 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     type: object
+                  retainDefaultStorage:
+                    type: boolean
                   serviceAccount:
                     type: string
                   statefulSetUpdateStrategy:
                     type: string
+                  storage:
+                    items:
+                      properties:
+                        medium:
+                          type: string
+                        name:
+                          type: string
+                        request:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        storageClassName:
+                          type: string
+                      required:
+                      - name
+                      - request
+                      - storageClassName
+                      type: object
+                    type: array
                   storageClassName:
                     type: string
-                  storageSeparation:
-                    properties:
-                      cold:
-                        properties:
-                          storageClassName:
-                            type: string
-                          storageSize:
-                            anyOf:
-                            - type: integer
-                            - type: string
-                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                            x-kubernetes-int-or-string: true
-                        required:
-                        - storageClassName
-                        - storageSize
-                        type: object
-                      hot:
-                        properties:
-                          storageClassName:
-                            type: string
-                          storageSize:
-                            anyOf:
-                            - type: integer
-                            - type: string
-                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                            x-kubernetes-int-or-string: true
-                        required:
-                        - storageClassName
-                        - storageSize
-                        type: object
-                    type: object
                   tolerations:
                     items:
                       properties:

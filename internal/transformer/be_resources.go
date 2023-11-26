@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -39,7 +40,8 @@ const (
 
 	BeProbeTimeoutSec = 200
 
-	BeRootPath = "/opt/apache-doris/be"
+	BeRootPath              = "/opt/apache-doris/be"
+	BeCustomStorageRootPath = "/var/lib/doris/data"
 )
 
 func GetBeComponentLabels(dorisClusterKey types.NamespacedName) map[string]string {
@@ -120,21 +122,13 @@ func MakeBeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 	if cr.Spec.BE == nil {
 		return nil
 	}
-
 	configMapRef := GetBeConfigMapKey(cr.ObjKey())
 	configs := util.MapFallback(cr.Spec.BE.Configs, make(map[string]string))
 	configs["be_node_role"] = "mix"
 
-	// inject storage_root_path config when be.storageSeparation was set
-	if cr.Spec.BE.StorageSeparation != nil {
-		storageRootPath := fmt.Sprintf("%s/storage,medium:HDD", BeRootPath)
-		if cr.Spec.BE.StorageSeparation.Hot != nil {
-			storageRootPath += fmt.Sprintf(";%s/storage-hot,medium:SSD", BeRootPath)
-		}
-		if cr.Spec.BE.Configs == nil {
-			cr.Spec.BE.Configs = make(map[string]string)
-		}
-		configs["storage_root_path"] = storageRootPath
+	// inject storage_root_path config when be.storage was set
+	if len(cr.Spec.BE.Storage) > 0 {
+		configs["storage_root_path"] = extractBeStorageRootPath(cr.Spec.BE)
 	}
 	data := map[string]string{
 		"be.conf": dumpCppBasedComponentConf(configs),
@@ -143,6 +137,7 @@ func MakeBeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 	if cr.Spec.HadoopConf != nil {
 		data = util.MergeMaps(cr.Spec.HadoopConf.Config, data)
 	}
+	// gen configmap
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configMapRef.Name,
@@ -151,7 +146,6 @@ func MakeBeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 		},
 		Data: data,
 	}
-
 	_ = controllerutil.SetOwnerReference(cr, configMap, scheme)
 	return configMap
 }
@@ -218,59 +212,6 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	accountSecretRef := GetOprSqlAccountSecretKey(cr.ObjKey())
 	beLabels := GetBeComponentLabels(cr.ObjKey())
 
-	// volume claim templates
-	var pvcTemplates []corev1.PersistentVolumeClaim
-	if cr.Spec.BE.StorageSeparation != nil {
-		// storage separation
-		hddStorage := cr.Spec.BE.StorageSeparation.Cold
-		if hddStorage == nil {
-			hddStorage = &dapi.BEStorageItem{
-				StorageClassName: cr.Spec.BE.StorageClassName,
-				StorageSize:      cr.Spec.BE.Requests.Storage(),
-			}
-		} else {
-			hddStorage.StorageClassName = util.PointerFallback(hddStorage.StorageClassName, cr.Spec.BE.StorageClassName)
-			hddStorage.StorageSize = util.PointerFallback(hddStorage.StorageSize, cr.Spec.BE.Requests.Storage())
-		}
-		pvcTemplates = []corev1.PersistentVolumeClaim{{
-			ObjectMeta: metav1.ObjectMeta{Name: "be-storage"},
-			Spec: corev1.PersistentVolumeClaimSpec{
-				AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-				StorageClassName: hddStorage.StorageClassName,
-				Resources: corev1.ResourceRequirements{
-					Requests: corev1.ResourceList{corev1.ResourceStorage: *hddStorage.StorageSize},
-				},
-			},
-		}}
-		if ssdStorage := cr.Spec.BE.StorageSeparation.Hot; ssdStorage != nil {
-			pvcTemplates = append(pvcTemplates,
-				corev1.PersistentVolumeClaim{
-					ObjectMeta: metav1.ObjectMeta{Name: "be-storage-hot"},
-					Spec: corev1.PersistentVolumeClaimSpec{
-						AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-						StorageClassName: ssdStorage.StorageClassName,
-						Resources: corev1.ResourceRequirements{
-							Requests: corev1.ResourceList{corev1.ResourceStorage: *ssdStorage.StorageSize},
-						},
-					},
-				},
-			)
-		}
-	} else {
-		// default storage
-		pvcTemplate := corev1.PersistentVolumeClaim{
-			ObjectMeta: metav1.ObjectMeta{Name: "be-storage"},
-			Spec: corev1.PersistentVolumeClaimSpec{
-				AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-				StorageClassName: cr.Spec.BE.StorageClassName,
-			},
-		}
-		if storageRequest := cr.Spec.BE.Requests.Storage(); storageRequest != nil {
-			pvcTemplate.Spec.Resources.Requests = corev1.ResourceList{corev1.ResourceStorage: *storageRequest}
-		}
-		pvcTemplates = []corev1.PersistentVolumeClaim{pvcTemplate}
-	}
-
 	// pod template: volumes
 	volumes := []corev1.Volume{
 		{Name: "conf", VolumeSource: util.NewConfigMapVolumeSource(GetBeConfigMapKey(cr.ObjKey()).Name)},
@@ -283,13 +224,10 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	volumeMounts := []corev1.VolumeMount{
 		{Name: "conf", MountPath: "/etc/apache-doris/be/"},
 		{Name: "be-log", MountPath: fmt.Sprintf("%s/log", BeRootPath)},
-		{Name: "be-storage", MountPath: fmt.Sprintf("%s/storage", BeRootPath)},
 	}
-	if cr.Spec.BE.StorageSeparation != nil && cr.Spec.BE.StorageSeparation.Hot != nil {
-		volumeMounts = append(volumeMounts,
-			corev1.VolumeMount{Name: "be-storage-hot", MountPath: fmt.Sprintf("%s/storage-hot", BeRootPath)},
-		)
-	}
+	volumeMounts = append(volumeMounts, genBeDataPVCVolumeMounts(cr.Spec.BE)...)
+	// merge addition volume mounts defined by user
+	volumeMounts = append(cr.Spec.BE.AdditionalVolumeMounts, volumeMounts...)
 
 	// pod template: main container
 	mainContainer := corev1.Container{
@@ -379,6 +317,9 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			appv1.RollingUpdateStatefulSetStrategyType),
 	}
 
+	// volume claim templates
+	pvcTemplates := genBePvcTemplates(cr.Spec.BE)
+
 	// statefulset
 	statefulSet := &appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -399,4 +340,65 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 	_ = controllerutil.SetOwnerReference(cr, statefulSet, scheme)
 	_ = controllerutil.SetControllerReference(cr, statefulSet, scheme)
 	return statefulSet
+}
+
+// Extract the storage_root_path from the BE spec
+func extractBeStorageRootPath(beSpec *dapi.BESpec) string {
+	parts := make([]string, 0, len(beSpec.Storage)+1)
+	for _, storage := range beSpec.Storage {
+		if storage.Medium == "" {
+			storage.Medium = "HDD"
+		}
+		parts = append(parts, fmt.Sprintf("%s/%s,medium:%s", BeCustomStorageRootPath, storage.Name, storage.Medium))
+	}
+	if beSpec.RetainDefaultStorage {
+		parts = append(parts, fmt.Sprintf("%s/storage,medium:HDD", BeRootPath))
+	}
+	return strings.Join(parts, ";")
+}
+
+// Generate the PVC templates for the BE statefulset
+func genBePvcTemplates(beSpec *dapi.BESpec) []corev1.PersistentVolumeClaim {
+	var pvcTemplates []corev1.PersistentVolumeClaim
+
+	defaultPvc := func() corev1.PersistentVolumeClaim {
+		return util.NewReadWriteOncePVC("be-storage", beSpec.StorageClassName, beSpec.Requests.Storage())
+	}
+	if len(beSpec.Storage) == 0 {
+		// default storage
+		pvcTemplates = []corev1.PersistentVolumeClaim{defaultPvc()}
+	} else {
+		// custom storage
+		for _, storage := range beSpec.Storage {
+			pvc := util.NewReadWriteOncePVC(storage.Name, beSpec.StorageClassName, storage.Request)
+			pvcTemplates = append(pvcTemplates, pvc)
+		}
+		if beSpec.RetainDefaultStorage {
+			pvcTemplates = append(pvcTemplates, defaultPvc())
+		}
+	}
+	return pvcTemplates
+}
+
+// Generate the volume mounts for the BE data storage PVC.
+func genBeDataPVCVolumeMounts(beSpec *dapi.BESpec) []corev1.VolumeMount {
+	var volumeMounts []corev1.VolumeMount
+
+	defaultVolumeMount := func() corev1.VolumeMount {
+		return corev1.VolumeMount{Name: "be-storage", MountPath: fmt.Sprintf("%s/storage", BeRootPath)}
+	}
+	if len(beSpec.Storage) == 0 {
+		// default storage
+		volumeMounts = append(volumeMounts, defaultVolumeMount())
+	} else {
+		// custom storage
+		for _, storage := range beSpec.Storage {
+			vm := corev1.VolumeMount{Name: storage.Name, MountPath: fmt.Sprintf("%s/%s", BeCustomStorageRootPath, storage.Name)}
+			volumeMounts = append(volumeMounts, vm)
+		}
+		if beSpec.RetainDefaultStorage {
+			volumeMounts = append(volumeMounts, defaultVolumeMount())
+		}
+	}
+	return volumeMounts
 }

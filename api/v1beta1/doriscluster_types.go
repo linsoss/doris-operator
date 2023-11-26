@@ -123,30 +123,29 @@ type BESpec struct {
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
 
-	// Cold-hot storage separation of BE data
+	// The custom storage of BE
 	// +optional
-	StorageSeparation *BEStorageSeparation `json:"storageSeparation,omitempty"`
+	Storage []BEStorage `json:"storage,omitempty"`
+
+	// Whether to retain the default data storage mount for BE which is located at be/storage,
+	// Default to false
+	// +optional
+	RetainDefaultStorage bool `json:"retainDefaultStorage,omitempty"`
 }
 
-// BEStorageSeparation defines the cold-hot storage separation of BE
-type BEStorageSeparation struct {
-	// Cold storage means medium:HDD labeled disk of BE,
-	// The value of spec.be.storageClassName and spec.be.requests.storage would be used when it is empty.
-	// +optional
-	Cold *BEStorageItem `json:"cold,omitempty"`
+// BEStorage defines the custom storage of BE
+type BEStorage struct {
+	// Name of the storage
+	Name string `json:"name"`
 
-	// Hot storage means medium:SSD labeled disk of BE
-	// +optional
-	Hot *BEStorageItem `json:"hot,omitempty"`
-}
+	// Medium of the storage, the optional values include “SSD” (hot data) and “HDD” (cold data).
+	// Default to HDD
+	Medium string `json:"medium,omitempty"`
 
-// BEStorageItem defines the storage item of BE
-type BEStorageItem struct {
 	// Storage size requirements, e.g: "500Gi"
-	// +required
-	StorageSize *resource.Quantity `json:"storageSize"`
+	Request *resource.Quantity `json:"request"`
 
-	// Storage class name
+	// K8s storage-class-name of the BE storage
 	StorageClassName *string `json:"storageClassName"`
 }
 
