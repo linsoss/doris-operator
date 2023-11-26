@@ -1,0 +1,38 @@
+apiVersion: al-assad.github.io/v1beta1
+kind: DorisCluster
+metadata:
+  name: basic
+spec:
+  version: 2.0.2
+  fe:
+    baseImage: ghcr.io/linsoss/doris-fe
+    replicas: 3
+    requests:
+      cpu: 500m
+      memory: 1Gi
+      storage: 50Gi
+  be:
+    baseImage: ghcr.io/linsoss/doris-be
+    replicas: 3
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    ## The custom storage of BE used to support cold and hot storage separation.
+    ## Ref: https://doris.apache.org/docs/1.2/install/standard-deployment/#deploy-be
+    ##    name: custom storage name
+    ##    medium: storage medium, SSD(hot storage) or HDD(cold storage)
+    ##    request: storage capacity, e.g. "500Gi"
+    ##    storageClassName: k8s storage class name for the pvc
+    storage:
+      - name: storage-cold-1
+        medium: HDD
+        request: 500Gi
+        storageClassName: hdd-pool
+      - name: storage-cold-2
+        medium: HDD
+        request: 500Gi
+        storageClassName: hdd-pool
+      - name: storage-hot
+        medium: SSD
+        request: 200Gi
+        storageClassName: ssd-pool

@@ -68,6 +68,9 @@ Doris 集群中。
 Doris 集群不同组件对磁盘的要求不一样，所以部署集群前，要根据当前 Kubernetes
 集群支持的存储类型以及使用场景，参考[存储配置文档](../%E9%85%8D%E7%BD%AE-storage-class/)为 Doris 集群各组件选择合适的存储类型。
 
+如果需要为 Doris BE
+配置冷热存储分离存储，可以参考 [配置 Doris BE 冷热分离存储](../../maintian/%E9%85%8D%E7%BD%AE-doris-be-%E5%86%B7%E7%83%AD%E5%88%86%E7%A6%BB%E5%AD%98%E5%82%A8/)。
+
 ### Doris 组件配置参数
 
 可以通过 `spec.<fe/be/cn/broker>.config`  来配置各个组件的参数。

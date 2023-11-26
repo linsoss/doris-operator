@@ -19,6 +19,7 @@ package v1beta1
 import (
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -117,10 +118,35 @@ type FESpec struct {
 type BESpec struct {
 	DorisComponentSpec `json:",inline"`
 
-	// The storageClassName of the persistent volume for BE data storage.
+	// The default storageClassName of the persistent volume for BE data storage
 	// Defaults to Kubernetes default storage class.
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
+
+	// The custom storage of BE
+	// +optional
+	Storage []BEStorage `json:"storage,omitempty"`
+
+	// Whether to retain the default data storage mount for BE which is located at be/storage,
+	// Default to false
+	// +optional
+	RetainDefaultStorage bool `json:"retainDefaultStorage,omitempty"`
+}
+
+// BEStorage defines the custom storage of BE
+type BEStorage struct {
+	// Name of the storage
+	Name string `json:"name"`
+
+	// Medium of the storage, the optional values include “SSD” (hot data) and “HDD” (cold data).
+	// Default to HDD
+	Medium string `json:"medium,omitempty"`
+
+	// Storage size requirements, e.g: "500Gi"
+	Request *resource.Quantity `json:"request"`
+
+	// K8s storage-class-name of the BE storage
+	StorageClassName *string `json:"storageClassName"`
 }
 
 // CNSpec contains details of CN members.
