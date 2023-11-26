@@ -1,7 +1,7 @@
 # doris operator controller main container configuration
 manager:
   # controller container image
-  image: ghcr.io/linsoss/doris-operator:1.0.2
+  image: ghcr.io/linsoss/doris-operator:1.0.3
   # controller container resources
   resources: { }
 
