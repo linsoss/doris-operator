@@ -228,6 +228,30 @@ spec:
     # BE Advanced Configuration #
     ############################
 
+    ## The custom storage of BE used to support cold and hot storage separation.
+    ## Ref: https://doris.apache.org/docs/1.2/install/standard-deployment/#deploy-be
+    ##    name: custom storage name
+    ##    medium: storage medium, SSD(hot storage) or HDD(cold storage)
+    ##    request: storage capacity, e.g. "500Gi"
+    ##    storageClassName: k8s storage class name for the pvc
+    # storage:
+    #  - name: storage-cold-1
+    #    medium: HDD
+    #    request: 500Gi
+    #    storageClassName: hdd-pool
+    #  - name: storage-cold-2
+    #    medium: HDD
+    #    request: 500Gi
+    #    storageClassName: hdd-pool
+    #  - name: storage-hot
+    #    medium: SSD
+    #    request: 200Gi
+    #    storageClassName: ssd-pool
+
+    ## Whether to retain the default data storage mount for BE which is located at be/storage,
+    # retainDefaultStorage: false
+
+
     ## Host aliases for BE pods, it will be merged with the hadoopConf field
     ## Ref: https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
     # hostAliases:
