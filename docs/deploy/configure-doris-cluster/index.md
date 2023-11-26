@@ -84,6 +84,9 @@ the [Storage Configuration document](../configure-storage-class) to select
 an appropriate storage class for each component according to the storage classes supported by the current Kubernetes
 cluster and usage scenario.
 
+If you need to configure cold-hot separation storage for Doris BE, you can refer
+to [Cold-Hot Separation Storage for Doris BE](../../maintian/cold-hot-separation-storage-for-doris-be/).
+
 ### Doris configuration
 
 You can configure parameters for various Doris components using `spec.<fe/be/cn/broker>.config`.
