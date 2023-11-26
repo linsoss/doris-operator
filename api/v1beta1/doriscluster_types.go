@@ -19,6 +19,7 @@ package v1beta1
 import (
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -117,10 +118,35 @@ type FESpec struct {
 type BESpec struct {
 	DorisComponentSpec `json:",inline"`
 
-	// The storageClassName of the persistent volume for BE data storage.
+	// The default storageClassName of the persistent volume for BE data storage
 	// Defaults to Kubernetes default storage class.
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
+
+	// Cold-hot storage separation of BE data
+	// +optional
+	StorageSeparation *BEStorageSeparation `json:"storageSeparation,omitempty"`
+}
+
+// BEStorageSeparation defines the cold-hot storage separation of BE
+type BEStorageSeparation struct {
+	// Cold storage means medium:HDD labeled disk of BE,
+	// The value of spec.be.storageClassName and spec.be.requests.storage would be used when it is empty.
+	// +optional
+	Cold *BEStorageItem `json:"cold,omitempty"`
+
+	// Hot storage means medium:SSD labeled disk of BE
+	// +optional
+	Hot *BEStorageItem `json:"hot,omitempty"`
+}
+
+// BEStorageItem defines the storage item of BE
+type BEStorageItem struct {
+	// Storage size requirements, e.g: "500Gi"
+	StorageSize *resource.Quantity `json:"storageSize"`
+
+	// Storage class name
+	StorageClassName *string `json:"storageClassName"`
 }
 
 // CNSpec contains details of CN members.

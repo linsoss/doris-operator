@@ -2234,6 +2234,37 @@ spec:
                     type: string
                   storageClassName:
                     type: string
+                  storageSeparation:
+                    properties:
+                      cold:
+                        properties:
+                          storageClassName:
+                            type: string
+                          storageSize:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                        required:
+                        - storageClassName
+                        - storageSize
+                        type: object
+                      hot:
+                        properties:
+                          storageClassName:
+                            type: string
+                          storageSize:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                        required:
+                        - storageClassName
+                        - storageSize
+                        type: object
+                    type: object
                   tolerations:
                     items:
                       properties:
