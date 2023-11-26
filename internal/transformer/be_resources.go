@@ -121,9 +121,21 @@ func MakeBeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 		return nil
 	}
 
+	configMapRef := GetBeConfigMapKey(cr.ObjKey())
 	configs := util.MapFallback(cr.Spec.BE.Configs, make(map[string]string))
 	configs["be_node_role"] = "mix"
-	configMapRef := GetBeConfigMapKey(cr.ObjKey())
+
+	// inject storage_root_path config when be.storageSeparation was set
+	if cr.Spec.BE.StorageSeparation != nil {
+		storageRootPath := fmt.Sprintf("%s/storage,medium:HDD", BeRootPath)
+		if cr.Spec.BE.StorageSeparation.Hot != nil {
+			storageRootPath += fmt.Sprintf(";%s/storage-hot,medium:SSD", BeRootPath)
+		}
+		if cr.Spec.BE.Configs == nil {
+			cr.Spec.BE.Configs = make(map[string]string)
+		}
+		configs["storage_root_path"] = storageRootPath
+	}
 	data := map[string]string{
 		"be.conf": dumpCppBasedComponentConf(configs),
 	}
@@ -138,14 +150,6 @@ func MakeBeConfigMap(cr *dapi.DorisCluster, scheme *runtime.Scheme) *corev1.Conf
 			Labels:    GetBeComponentLabels(cr.ObjKey()),
 		},
 		Data: data,
-	}
-	// inject storage_root_path config when be.storageSeparation was set
-	if cr.Spec.BE.StorageSeparation != nil {
-		storageRootPath := fmt.Sprintf("%s/storage,medium:HDD", BeRootPath)
-		if cr.Spec.BE.StorageSeparation.Hot != nil {
-			storageRootPath += fmt.Sprintf(";%s/storage-hot,medium:SSD", BeRootPath)
-		}
-		cr.Spec.BE.Configs["storage_root_path"] = storageRootPath
 	}
 
 	_ = controllerutil.SetOwnerReference(cr, configMap, scheme)
@@ -232,7 +236,11 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			ObjectMeta: metav1.ObjectMeta{Name: "be-storage"},
 			Spec: corev1.PersistentVolumeClaimSpec{
 				AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-				StorageClassName: cr.Spec.BE.StorageClassName},
+				StorageClassName: hddStorage.StorageClassName,
+				Resources: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{corev1.ResourceStorage: *hddStorage.StorageSize},
+				},
+			},
 		}}
 		if ssdStorage := cr.Spec.BE.StorageSeparation.Hot; ssdStorage != nil {
 			pvcTemplates = append(pvcTemplates,
@@ -240,7 +248,13 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 					ObjectMeta: metav1.ObjectMeta{Name: "be-storage-hot"},
 					Spec: corev1.PersistentVolumeClaimSpec{
 						AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-						StorageClassName: ssdStorage.StorageClassName}})
+						StorageClassName: ssdStorage.StorageClassName,
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{corev1.ResourceStorage: *ssdStorage.StorageSize},
+						},
+					},
+				},
+			)
 		}
 	} else {
 		// default storage

@@ -143,6 +143,7 @@ type BEStorageSeparation struct {
 // BEStorageItem defines the storage item of BE
 type BEStorageItem struct {
 	// Storage size requirements, e.g: "500Gi"
+	// +required
 	StorageSize *resource.Quantity `json:"storageSize"`
 
 	// Storage class name
