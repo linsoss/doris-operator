@@ -1,4 +1,4 @@
 ---
-title: "Installation Operator"
+title: "Install Operator"
 weight: 200
 ---
