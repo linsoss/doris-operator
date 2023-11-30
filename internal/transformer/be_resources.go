@@ -289,11 +289,16 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		hostAlias = cr.Spec.BE.HostAliases
 	}
 
+	// pod templateL annotations
+	podAnnotations := util.MergeMaps(cr.Annotations, cr.Spec.BE.Annotations)
+	metricsAnnotations := MakePrometheusAnnotations("/metrics", GetBeWebserverPort(cr))
+	podAnnotations = util.MergeMaps(metricsAnnotations, podAnnotations)
+
 	// pod template
 	podTemplate := corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:      beLabels,
-			Annotations: MakePrometheusAnnotations("/metrics", GetBeWebserverPort(cr)),
+			Annotations: podAnnotations,
 		},
 		Spec: corev1.PodSpec{
 			Volumes:            volumes,

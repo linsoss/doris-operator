@@ -205,7 +205,7 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 	podTemplate := corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:      brokerLabels,
-			Annotations: make(map[string]string),
+			Annotations: util.MergeMaps(cr.Annotations, cr.Spec.Broker.Annotations),
 		},
 		Spec: corev1.PodSpec{
 			Volumes:            volumes,

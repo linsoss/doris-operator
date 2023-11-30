@@ -304,15 +304,20 @@ func MakeFeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 		hostAlias = cr.Spec.FE.HostAliases
 	}
 
+	// pod template: annotation
+	podAnnotations := util.MergeMaps(cr.Annotations, cr.Spec.FE.Annotations)
+	metricsAnnotations := map[string]string{
+		PrometheusPathAnnoKey:   "/metrics",
+		PrometheusPortAnnoKey:   strconv.Itoa(int(GetFeHttpPort(cr))),
+		PrometheusScrapeAnnoKey: "true",
+	}
+	podAnnotations = util.MergeMaps(metricsAnnotations, podAnnotations)
+
 	// pod template
 	podTemplate := corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Labels: feLabels,
-			Annotations: map[string]string{
-				PrometheusPathAnnoKey:   "/metrics",
-				PrometheusPortAnnoKey:   strconv.Itoa(int(GetFeHttpPort(cr))),
-				PrometheusScrapeAnnoKey: "true",
-			},
+			Labels:      feLabels,
+			Annotations: podAnnotations,
 		},
 		Spec: corev1.PodSpec{
 			Volumes:            volumes,
