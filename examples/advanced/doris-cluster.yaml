@@ -137,6 +137,9 @@ spec:
     # FE Advanced Configuration #
     ############################
 
+    ## Annotations for FE pods
+    # annotations: {}
+
     ## Host aliases for FE pods, it will be merged with the hadoopConf field
     ## Ref: https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
     # hostAliases:
@@ -251,6 +254,8 @@ spec:
     ## Whether to retain the default data storage mount for BE which is located at be/storage,
     # retainDefaultStorage: false
 
+    ## Annotations for BE pods
+    # annotations: {}
 
     ## Host aliases for BE pods, it will be merged with the hadoopConf field
     ## Ref: https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
@@ -339,6 +344,9 @@ spec:
     # CN Advanced Configuration #
     ############################
 
+    ## Annotations for CN pods
+    # annotations: {}
+
     ## Host aliases for BE pods, it will be merged with the hadoopConf field
     ## Ref: https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
     # hostAliases:
@@ -421,6 +429,9 @@ spec:
     ################################
     # Broker Advanced Configuration #
     ################################
+
+    ## Annotations for Broker pods
+    # annotations: {}
 
     ## Host aliases for BE pods, it will be merged with the hadoopConf field
     ## Ref: https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
