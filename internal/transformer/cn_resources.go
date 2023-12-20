@@ -310,11 +310,12 @@ func MakeCnStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			Labels:    cnLabels,
 		},
 		Spec: appv1.StatefulSetSpec{
-			Replicas:       &cr.Spec.CN.Replicas,
-			ServiceName:    GetCnPeerServiceKey(cr.ObjKey()).Name,
-			Selector:       &metav1.LabelSelector{MatchLabels: cnLabels},
-			Template:       podTemplate,
-			UpdateStrategy: updateStg,
+			Replicas:            &cr.Spec.CN.Replicas,
+			ServiceName:         GetCnPeerServiceKey(cr.ObjKey()).Name,
+			Selector:            &metav1.LabelSelector{MatchLabels: cnLabels},
+			Template:            podTemplate,
+			UpdateStrategy:      updateStg,
+			PodManagementPolicy: appv1.ParallelPodManagement,
 		},
 	}
 

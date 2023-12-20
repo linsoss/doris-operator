@@ -236,11 +236,12 @@ func MakeBrokerStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1
 			Labels:    brokerLabels,
 		},
 		Spec: appv1.StatefulSetSpec{
-			Replicas:       &cr.Spec.Broker.Replicas,
-			ServiceName:    GetBrokerPeerServiceKey(cr.ObjKey()).Name,
-			Selector:       &metav1.LabelSelector{MatchLabels: brokerLabels},
-			Template:       podTemplate,
-			UpdateStrategy: updateStg,
+			Replicas:            &cr.Spec.Broker.Replicas,
+			ServiceName:         GetBrokerPeerServiceKey(cr.ObjKey()).Name,
+			Selector:            &metav1.LabelSelector{MatchLabels: brokerLabels},
+			Template:            podTemplate,
+			UpdateStrategy:      updateStg,
+			PodManagementPolicy: appv1.ParallelPodManagement,
 		},
 	}
 

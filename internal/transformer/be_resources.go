@@ -339,6 +339,7 @@ func MakeBeStatefulSet(cr *dapi.DorisCluster, scheme *runtime.Scheme) *appv1.Sta
 			VolumeClaimTemplates: pvcTemplates,
 			Template:             podTemplate,
 			UpdateStrategy:       updateStg,
+			PodManagementPolicy:  appv1.ParallelPodManagement,
 		},
 	}
 
