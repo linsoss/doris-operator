@@ -168,14 +168,24 @@ $(ENVTEST): $(LOCALBIN)
 
 ##@ Generate deployment resources under /deploy
 
+# doris-operator version
+OPR_VER ?=
+
 # Generate deploy/kustomize
 .PHONY: gen-deploy-kustomize
-gen-deploy-kustomize: manifests kustomize
+gen-deploy-kustomize: __check_opr_ver manifests kustomize
+	sed -i '' "s/newTag:.*/newTag: $(OPR_VER)/g" deploy/kustomize/kustomization.yaml
 	$(KUSTOMIZE) build config/crd > deploy/kustomize/crds.yaml
 	$(KUSTOMIZE) build config/rbac > deploy/kustomize/rbac.yaml
 	$(KUSTOMIZE) build config/manager > deploy/kustomize/manager.yaml
 	cp config/default/manager_auth_proxy_patch.yaml deploy/kustomize/manager_auth_proxy.yaml
 	$(KUSTOMIZE) build deploy/kustomize > deploy/kustomize/kustomized.yaml
+
+__check_opr_ver:
+	@if [ -z "$(OPR_VER)" ]; then \
+		echo "ERROR: OPR_VER(doris operator version) is not specified."; \
+		exit 1; \
+	fi
 
 
 HELMIFY ?= $(LOCALBIN)/helmify
@@ -192,11 +202,58 @@ init-deploy-helm: manifests kustomize helmify
 
 # Generate Helm chart from Kustomize
 .PHONY: gen-deploy-helm
-gen-deploy-helm: manifests kustomize helmify
+gen-deploy-helm: __check_opr_ver manifests kustomize helmify
+	sed -i '' "s/image: ghcr\.io\/linsoss\/doris-operator:.*/image: ghcr\.io\/linsoss\/doris-operator:$(OPR_VER)/g" deploy/helm/doris-operator/values.yaml
+	sed -i '' "s/version:.*/version: $(OPR_VER)/g" deploy/helm/doris-operator/Chart.yaml
+	sed -i '' "s/appVersion:.*/appVersion: v$(OPR_VER)/g" deploy/helm/doris-operator/Chart.yaml
 	mkdir -p deploy/helm/tmp/
 	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir deploy/helm/tmp
 	rsync -a --delete deploy/helm/tmp/crds deploy/helm/doris-operator/
 	rm -rf deploy/helm/tmp
+
+##@ Publish packages, Need to log in to ghcr.io in advance:
+## docker login ghcr.io -u xxx -p xxx
+## helm registry login -u xxx -p xxx ghcr.io
+
+# Build and publish Doris component images
+.PHONY: publish-doris-img
+DORIS_VER ?=
+publish-doris-img:
+	@if [ -z "$(DORIS_VER)" ]; then \
+		echo "ERROR: DORIS_VER is not specified."; \
+		exit 1; \
+	fi
+	@echo "begin to publish doris:$(DORIS_VER) to ghcr.io"
+	docker buildx create --name doris-builder --use --platform linux/amd64,linux/arm64
+	@cd images && \
+		echo "building doris-fe:$(DORIS_VER)" && \
+		docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/linsoss/doris-fe:$(DORIS_VER) -f fe/Dockerfile . --push && \
+		echo "building doris-broker:$(DORIS_VER)" && \
+		docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/linsoss/doris-broker:$(DORIS_VER) -f broker/Dockerfile . --push $$ \
+		echo "building doris-be:$(DORIS_VER)" && \
+		docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/linsoss/doris-be:$(DORIS_VER) -f be/Dockerfile . --push && \
+		echo "building doris-cn:$(DORIS_VER)" && \
+		docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/linsoss/doris-cn:$(DORIS_VER) -f cn/Dockerfile . --push
+	docker buildx rm doris-builder
+
+
+# Build and publish Doris operator packages
+.PHONY: publish-operator
+OPR_VER ?=
+publish-operator: __check_opr_ver gen-deploy-kustomize gen-deploy-helm
+	@echo "build doris-operator:$(OPR_VER) image"
+	@$(MAKE) docker-buildx IMG=ghcr.io/linsoss/doris-operator:$(OPR_VER)
+	@echo "publish kustomize package"
+	flux push artifact oci://ghcr.io/linsoss/kustomize/doris-operator:$(OPR_VER) \
+      --path="./deploy/kustomize" \
+      --source="https://github.com/linsoss/doris-operator.git" \
+      --revision="$(git branch --show-current)@sha1:$(git rev-parse HEAD)"
+	@echo "publish helm package"
+	cd deploy/helm && \
+    	helm package --version $(OPR_VER) doris-operator && \
+    	helm push doris-operator-$(OPR_VER).tgz oci://ghcr.io/linsoss/helm && \
+    	rm -f doris-operator-$(OPR_VER).tgz
+
 
 ##@ Website development
 WEBSITE_DIR ?= website

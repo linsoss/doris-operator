@@ -1094,6 +1094,10 @@ spec:
                         type: array
                     type: object
                 type: object
+              annotations:
+                additionalProperties:
+                  type: string
+                type: object
               be:
                 properties:
                   additionalContainers:
@@ -2873,6 +2877,10 @@ spec:
                               type: object
                             type: array
                         type: object
+                    type: object
+                  annotations:
+                    additionalProperties:
+                      type: string
                     type: object
                   baseImage:
                     type: string
@@ -4760,6 +4768,10 @@ spec:
                             type: array
                         type: object
                     type: object
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    type: object
                   baseImage:
                     type: string
                   claims:
@@ -6623,6 +6635,10 @@ spec:
                             type: array
                         type: object
                     type: object
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    type: object
                   baseImage:
                     type: string
                   claims:
@@ -8484,6 +8500,10 @@ spec:
                             type: array
                         type: object
                     type: object
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    type: object
                   baseImage:
                     type: string
                   claims:
@@ -9898,7 +9918,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: ghcr.io/linsoss/doris-operator:1.0.3
+        image: ghcr.io/linsoss/doris-operator:1.0.4
         livenessProbe:
           httpGet:
             path: /healthz

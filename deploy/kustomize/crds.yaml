@@ -1081,6 +1081,10 @@ spec:
                         type: array
                     type: object
                 type: object
+              annotations:
+                additionalProperties:
+                  type: string
+                type: object
               be:
                 properties:
                   additionalContainers:
@@ -2860,6 +2864,10 @@ spec:
                               type: object
                             type: array
                         type: object
+                    type: object
+                  annotations:
+                    additionalProperties:
+                      type: string
                     type: object
                   baseImage:
                     type: string
@@ -4747,6 +4755,10 @@ spec:
                             type: array
                         type: object
                     type: object
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    type: object
                   baseImage:
                     type: string
                   claims:
@@ -6610,6 +6622,10 @@ spec:
                             type: array
                         type: object
                     type: object
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    type: object
                   baseImage:
                     type: string
                   claims:
@@ -8470,6 +8486,10 @@ spec:
                               type: object
                             type: array
                         type: object
+                    type: object
+                  annotations:
+                    additionalProperties:
+                      type: string
                     type: object
                   baseImage:
                     type: string
