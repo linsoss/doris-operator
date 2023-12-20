@@ -4,7 +4,7 @@ metadata:
   name: basic
 spec:
   # Image tag of fe, be, cn and broker components.
-  version: 2.0.2
+  version: 2.0.3
 
   ###############################
   # Cluster Global Configuration #

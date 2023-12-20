@@ -7,7 +7,7 @@ kind: DorisCluster
 metadata:
   name: basic
 spec:
-  version: 2.0.2
+  version: 2.0.3
   busyBoxImage: dockerproxy.com/library/busybox:1.36
 
   fe:

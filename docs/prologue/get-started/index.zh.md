@@ -75,11 +75,11 @@ curl -s https://fluxcd.io/install.sh | sudo bash
 
 ```shell
 mkdir doris-operator
-flux pull artifact oci://ghcr.io/linsoss/kustomize/doris-operator:1.0.3 --output ./doris-operator/
+flux pull artifact oci://ghcr.io/linsoss/kustomize/doris-operator:{{< param last_doris_operator_version >}} --output ./doris-operator/
 kubectl apply -k doris-operator
 ```
 
-检查Doris Operator 组件是否正常运行：
+检查 Doris Operator 组件是否正常运行：
 
 ```shell
 kubectl get pods -n doris-operator-system

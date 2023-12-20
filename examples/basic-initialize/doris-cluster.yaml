@@ -3,7 +3,7 @@ kind: DorisCluster
 metadata:
   name: basic
 spec:
-  version: 2.0.2
+  version: 2.0.3
   fe:
     baseImage: ghcr.io/linsoss/doris-fe
     replicas: 1
