@@ -242,7 +242,7 @@ publish-doris-img:
 OPR_VER ?=
 publish-operator: __check_opr_ver gen-deploy-kustomize gen-deploy-helm
 	@echo "build doris-operator:$(OPR_VER) image"
-	make docker-buildx IMG=ghcr.io/linsoss/doris-operator:$(OPR_VER)
+	@$(MAKE) docker-buildx IMG=ghcr.io/linsoss/doris-operator:$(OPR_VER)
 	@echo "publish kustomize package"
 	flux push artifact oci://ghcr.io/linsoss/kustomize/doris-operator:$(OPR_VER) \
       --path="./deploy/kustomize" \
