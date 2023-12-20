@@ -31,13 +31,13 @@ This document describes how to deploy a Doris cluster on general Kubernetes.
    cluster on a machine that has internet access and then upload them to the server. Afterwards, use `docker load` to
    install the Docker images on the server.
 
-   Deploying a Doris cluster will require the following Docker images (assuming Doris cluster version is 2.0.2):
+   Deploying a Doris cluster will require the following Docker images (assuming Doris cluster version is {{< param last_doris_image_version >}}):
 
     ```shell
-    ghcr.io/linsoss/doris-fe:2.0.2
-    ghcr.io/linsoss/doris-be:2.0.2
-    ghcr.io/linsoss/doris-cn:2.0.2
-    ghcr.io/linsoss/doris-broker:2.0.2
+    ghcr.io/linsoss/doris-fe:{{< param last_doris_image_version >}}
+    ghcr.io/linsoss/doris-be:{{< param last_doris_image_version >}}
+    ghcr.io/linsoss/doris-cn:{{< param last_doris_image_version >}}
+    ghcr.io/linsoss/doris-broker:{{< param last_doris_image_version >}}
     prom/prometheus:v2.37.8
     grafana/grafana:9.5.2
     grafana/loki:2.9.1
@@ -49,10 +49,10 @@ This document describes how to deploy a Doris cluster on general Kubernetes.
    Then download all these images using the following command:
 
     ```shell
-    docker pull ghcr.io/linsoss/doris-fe:2.0.2
-    docker pull ghcr.io/linsoss/doris-be:2.0.2
-    docker pull ghcr.io/linsoss/doris-cn:2.0.2
-    docker pull ghcr.io/linsoss/doris-broker:2.0.2
+    docker pull ghcr.io/linsoss/doris-fe:{{< param last_doris_image_version >}}
+    docker pull ghcr.io/linsoss/doris-be:{{< param last_doris_image_version >}}
+    docker pull ghcr.io/linsoss/doris-cn:{{< param last_doris_image_version >}}
+    docker pull ghcr.io/linsoss/doris-broker:{{< param last_doris_image_version >}}
     docker pull prom/prometheus:v2.37.8
     docker pull grafana/grafana:9.5.2
     docker pull grafana/loki:2.9.1
@@ -60,10 +60,10 @@ This document describes how to deploy a Doris cluster on general Kubernetes.
     docker pull tnir/mysqlclient:1.4.6
     docker pull busybox:1.36
     
-    docker save -o doris-fe-2.0.2.tar ghcr.io/linsoss/doris-fe:2.0.2
-    docker save -o doris-be-2.0.2.tar ghcr.io/linsoss/doris-be:2.0.2
-    docker save -o doris-cn-2.0.2.tar ghcr.io/linsoss/doris-cn:2.0.2
-    docker save -o doris-broker-2.0.2.tar ghcr.io/linsoss/doris-broker:2.0.2
+    docker save -o doris-fe-{{< param last_doris_image_version >}}.tar ghcr.io/linsoss/doris-fe:{{< param last_doris_image_version >}}
+    docker save -o doris-be-{{< param last_doris_image_version >}}.tar ghcr.io/linsoss/doris-be:{{< param last_doris_image_version >}}
+    docker save -o doris-cn-{{< param last_doris_image_version >}}.tar ghcr.io/linsoss/doris-cn:{{< param last_doris_image_version >}}
+    docker save -o doris-broker-{{< param last_doris_image_version >}}.tar ghcr.io/linsoss/doris-broker:{{< param last_doris_image_version >}}
     docker save -o prometheus-v2.37.8.tar prom/prometheus:v2.37.8
     docker save -o grafana-9.5.2.tar grafana/grafana:9.5.2
     docker save -o loki-2.9.1.tar grafana/loki:2.9.1
@@ -76,10 +76,10 @@ This document describes how to deploy a Doris cluster on general Kubernetes.
    the server:
 
     ```shell
-    docker load -i doris-fe-2.0.2.tar
-    docker load -i doris-be-2.0.2.tar
-    docker load -i doris-cn-2.0.2.tar
-    docker load -i doris-broker-2.0.2.tar
+    docker load -i doris-fe-{{< param last_doris_image_version >}}.tar
+    docker load -i doris-be-{{< param last_doris_image_version >}}.tar
+    docker load -i doris-cn-{{< param last_doris_image_version >}}.tar
+    docker load -i doris-broker-{{< param last_doris_image_version >}}.tar
     docker load -i prometheus-v2.37.8.tar
     docker load -i grafana-9.5.2.tar
     docker load -i loki-2.9.1.tar

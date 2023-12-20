@@ -48,7 +48,7 @@ Doris 集群中。
 
 相关参数的格式如下：
 
-- `spec.version`，格式为 `imageTag`，例如 `2.0.2`
+- `spec.version`，格式为 `imageTag`，例如 `{{< param last_doris_image_version >}}`
 - `spec.<fe/be/cn/broker>.baseImage`，格式为 `imageName`，例如 `ghcr.io/linsoss/doris-fe` ；
 
 请注意必须使用 [doris-operator/images](https://github.com/linsoss/doris-operator/tree/dev/images)  进行构建的 Doris

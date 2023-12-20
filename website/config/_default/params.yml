@@ -1,3 +1,9 @@
+# last doris images version
+last_doris_image_version: "2.0.3"
+# last doris operator version
+last_doris_operator_version: "1.0.3"
+
+
 # Images (@hyas/images)
 image:
   ## General

@@ -8,7 +8,7 @@ metadata:
   name: basic
 spec:
   # Image tag of fe, be, cn and broker components.
-  version: 2.0.2
+  version: 2.0.3
 
   ## Doris FE configuration.
   # When this "fe" configuration key is not set, the Doris FE component will not be deployed,

@@ -59,7 +59,7 @@ It is recommended to configure `spec.<fe/be/cn/broker>.baseImage` and `spec.vers
 
 Here are the formats of the parameters:
 
-- `spec.version`: the format is `imageTag`, such as `2.0.2`
+- `spec.version`: the format is `imageTag`, such as `{{< param last_doris_image_version >}}`
 - `spec.<fe/be/cn/broker>.baseImage`: the format is `imageName`, such as `ghcr.io/linsoss/doris-fe`
 
 Please note that you must use the Doris images built
