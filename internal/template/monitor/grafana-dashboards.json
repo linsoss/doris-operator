@@ -1603,7 +1603,7 @@
             "type": "prometheus",
             "uid": "PEB833E60655F2EBA"
           },
-          "description": "The image wirte of each FE",
+          "description": "The image write of each FE",
           "fieldConfig": {
             "defaults": {
               "color": {

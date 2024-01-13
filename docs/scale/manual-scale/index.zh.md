@@ -92,7 +92,7 @@ FE、BE、Broker 通常需要 30 秒 - 1分钟完成扩容或缩容。
 垂直扩缩容操作指的是通过增加或减少 Pod 的资源限制，来达到集群扩缩容的目的。垂直扩缩容本质上是 Pod 滚动升级的过程。
 
 要对 FE、BE、CN、Broker 进行垂直扩缩容，通过 kubectl 修改集群所对应的 `DorisCluster`
-对象的 `spec.<fe/be/cn/broker>.resourecs` 至期望值。
+对象的 `spec.<fe/be/cn/broker>.resources` 至期望值。
 
 可以通过以下命令查看垂直扩缩容进度，当所有 Pod 都重建完毕进入 `Running` 状态后，垂直扩缩容完成。
 
