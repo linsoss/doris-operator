@@ -21,6 +21,7 @@ package discovery
 import (
 	"database/sql"
 	"fmt"
+
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -57,7 +58,7 @@ func ReadAllRowsAsString(rows *sql.Rows) []RowMap {
 	for rows.Next() {
 		columns := make([]any, len(cols))
 		columnPointers := make([]any, len(cols))
-		for i, _ := range columns {
+		for i := range columns {
 			columnPointers[i] = &columns[i]
 		}
 		_ = rows.Scan(columnPointers...)

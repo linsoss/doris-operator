@@ -43,7 +43,7 @@ func ArrayFallback[T any](array []T, fallback []T) []T {
 }
 
 func MapFallback[K comparable, V any](mapValue map[K]V, fallback map[K]V) map[K]V {
-	if mapValue == nil || len(mapValue) == 0 {
+	if len(mapValue) == 0 {
 		return fallback
 	} else {
 		return mapValue

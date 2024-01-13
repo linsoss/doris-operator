@@ -22,13 +22,20 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	ut "github.com/al-assad/doris-operator/internal/util"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+
 	u "github.com/rjNemo/underscore"
 )
 
 func ShowFrontendHosts(db *sql.DB) ([]string, error) {
 	rows, err := db.Query("show frontends")
-	defer rows.Close()
+	defer func() {
+		if err = rows.Close(); err != nil {
+			logf.Log.Error(err, "unable to close rows queried by 'show frontends' command")
+		}
+	}()
 
 	if err != nil {
 		return []string{}, ut.MergeErrors(errors.New("failed to execute sql 'show frontends'"), err)
@@ -42,7 +49,11 @@ func ShowFrontendHosts(db *sql.DB) ([]string, error) {
 
 func ShowBackendHosts(db *sql.DB) ([]string, error) {
 	rows, err := db.Query("show backends")
-	defer rows.Close()
+	defer func() {
+		if err = rows.Close(); err != nil {
+			logf.Log.Error(err, "unable to close rows queried by 'show backends' command")
+		}
+	}()
 
 	if err != nil {
 		return []string{}, ut.MergeErrors(errors.New("failed to execute sql 'show backends'"), err)
@@ -57,7 +68,11 @@ func ShowBackendHosts(db *sql.DB) ([]string, error) {
 // ShowBrokerNameHosts returns map structure: key is broker name, value is broker host
 func ShowBrokerNameHosts(db *sql.DB) (map[string]string, error) {
 	rows, err := db.Query("show broker")
-	defer rows.Close()
+	defer func() {
+		if err = rows.Close(); err != nil {
+			logf.Log.Error(err, "unable to close rows queried by 'show broker' command")
+		}
+	}()
 
 	if err != nil {
 		return map[string]string{}, ut.MergeErrors(errors.New("failed to execute sql 'show broker'"), err)
@@ -74,7 +89,7 @@ func AddFrontend(db *sql.DB, feHostPort string) error {
 	addSql := fmt.Sprintf(`alter system add follower "%s"`, feHostPort)
 	_, err := db.Exec(addSql)
 	if err != nil {
-		return ut.MergeErrors(errors.New(fmt.Sprintf("failed to execute sql '%s'", addSql)), err)
+		return ut.MergeErrors(fmt.Errorf("failed to execute sql '%s'", addSql), err)
 	}
 	return nil
 }
@@ -83,7 +98,7 @@ func AddBackend(db *sql.DB, beHostPort string) error {
 	addSql := fmt.Sprintf(`alter system add backend "%s"`, beHostPort)
 	_, err := db.Exec(addSql)
 	if err != nil {
-		return ut.MergeErrors(errors.New(fmt.Sprintf("failed to execute sql '%s'", addSql)), err)
+		return ut.MergeErrors(fmt.Errorf("failed to execute sql '%s'", addSql), err)
 	}
 	return nil
 }
@@ -92,7 +107,7 @@ func AddBroker(db *sql.DB, brokerName string, brokerHost string) error {
 	addSql := fmt.Sprintf(`alter system add broker %s "%s"`, brokerName, brokerHost)
 	_, err := db.Exec(addSql)
 	if err != nil {
-		return ut.MergeErrors(errors.New(fmt.Sprintf("failed to execute sql '%s'", addSql)), err)
+		return ut.MergeErrors(fmt.Errorf("failed to execute sql '%s'", addSql), err)
 	}
 	return nil
 }
@@ -101,7 +116,7 @@ func DropFrontend(db *sql.DB, feHostPort string) error {
 	addSql := fmt.Sprintf(`alter system drop follower "%s"`, feHostPort)
 	_, err := db.Exec(addSql)
 	if err != nil {
-		return ut.MergeErrors(errors.New(fmt.Sprintf("failed to execute sql '%s'", addSql)), err)
+		return ut.MergeErrors(fmt.Errorf("failed to execute sql '%s'", addSql), err)
 	}
 	return nil
 }
@@ -110,7 +125,7 @@ func DropBackend(db *sql.DB, beHostPort string) error {
 	addSql := fmt.Sprintf(`alter system drop backend "%s"`, beHostPort)
 	_, err := db.Exec(addSql)
 	if err != nil {
-		return ut.MergeErrors(errors.New(fmt.Sprintf("failed to execute sql '%s'", addSql)), err)
+		return ut.MergeErrors(fmt.Errorf("failed to execute sql '%s'", addSql), err)
 	}
 	return nil
 }
@@ -119,7 +134,7 @@ func DropBroker(db *sql.DB, brokerName string) error {
 	addSql := fmt.Sprintf(`alter system all broker %s`, brokerName)
 	_, err := db.Exec(addSql)
 	if err != nil {
-		return ut.MergeErrors(errors.New(fmt.Sprintf("failed to execute sql '%s'", addSql)), err)
+		return ut.MergeErrors(fmt.Errorf("failed to execute sql '%s'", addSql), err)
 	}
 	return nil
 }
