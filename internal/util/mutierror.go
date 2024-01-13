@@ -99,17 +99,3 @@ func (e *MultiTaggedError) Error() string {
 	}
 	return strings.Join(errStrs, "; ")
 }
-
-// MergeErrorsWithTag merges multiple errors into one with tags.
-func MergeErrorsWithTag(errors map[string]error) *MultiTaggedError {
-	errMap := make(map[string]error)
-	for tag, err := range errors {
-		if err != nil {
-			errMap[tag] = err
-		}
-	}
-	if len(errMap) == 0 {
-		return nil
-	}
-	return &MultiTaggedError{Errors: errMap}
-}

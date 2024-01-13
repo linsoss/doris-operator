@@ -20,9 +20,9 @@ package util
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"k8s.io/utils/strings/slices"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMergeErrors(t *testing.T) {
@@ -37,24 +37,4 @@ func TestMergeErrors(t *testing.T) {
 
 	err4 := MergeErrors(nil, nil)
 	assert.Nil(t, err4)
-}
-
-func TestMergeErrorsWithTags(t *testing.T) {
-	err1 := MergeErrorsWithTag(map[string]error{
-		"tag1": fmt.Errorf("foo"),
-		"tag2": fmt.Errorf("bar"),
-	})
-	assert.True(t, slices.Contains([]string{"[tag1] foo; [tag2] bar", "[tag2] bar; [tag1] foo"}, err1.Error()))
-
-	err2 := MergeErrorsWithTag(map[string]error{
-		"tag1": fmt.Errorf("foo"),
-		"tag2": nil,
-	})
-	assert.Equal(t, "[tag1] foo", err2.Error())
-
-	err3 := MergeErrorsWithTag(map[string]error{
-		"tag1": nil,
-		"tag2": nil,
-	})
-	assert.Nil(t, err3)
 }
