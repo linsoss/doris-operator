@@ -48,14 +48,13 @@ func (r *StCtrlErrSet) AsResult() (ctrl.Result, error) {
 	if r.Update != nil {
 		errMap["update-status"] = r.Update
 	}
-	mergedErr := util.MergeErrorsWithTag(errMap)
-	if mergedErr == nil {
+	if len(errMap) == 0 {
 		if updateConflict {
 			return ctrl.Result{Requeue: true}, nil
 		} else {
 			return ctrl.Result{}, nil
 		}
 	} else {
-		return ctrl.Result{Requeue: true}, mergedErr
+		return ctrl.Result{Requeue: true}, &util.MultiTaggedError{Errors: errMap}
 	}
 }
